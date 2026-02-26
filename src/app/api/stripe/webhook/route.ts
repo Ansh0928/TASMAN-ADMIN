@@ -52,6 +52,20 @@ export async function POST(request: NextRequest) {
                             },
                         });
 
+                        // Reduce stock for each ordered item
+                        for (const item of order.items) {
+                            await prisma.product.update({
+                                where: { id: item.productId },
+                                data: {
+                                    stockQuantity: {
+                                        decrement: item.quantity,
+                                    },
+                                },
+                            });
+                        }
+
+                        console.log(`Order ${orderId}: Stock updated for ${order.items.length} items`);
+
                         // Send order confirmation email
                         const customerEmail = order.user?.email || order.guestEmail;
                         const customerName = order.user?.name || order.guestName || 'Customer';

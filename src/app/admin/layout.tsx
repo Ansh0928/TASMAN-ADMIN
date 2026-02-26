@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft, ShieldAlert } from 'lucide-react';
 
 const adminNav = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -14,6 +15,49 @@ const adminNav = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const { data: session, status } = useSession();
+
+    // Loading state
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+                <p className="text-theme-text-muted">Loading...</p>
+            </div>
+        );
+    }
+
+    // Not logged in — redirect to login
+    if (status === 'unauthenticated') {
+        router.push('/auth/login?callbackUrl=/admin');
+        return null;
+    }
+
+    // Not an admin — show access denied
+    const userRole = (session?.user as any)?.role;
+    if (userRole !== 'ADMIN') {
+        return (
+            <div className="min-h-screen bg-theme-primary flex items-center justify-center px-4">
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-8 text-center space-y-6 max-w-md">
+                    <div className="flex justify-center">
+                        <ShieldAlert size={64} className="text-red-500" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold text-theme-text mb-2">Access Denied</h1>
+                        <p className="text-theme-text-muted">
+                            You don&apos;t have permission to access the admin panel. This area is restricted to administrators only.
+                        </p>
+                    </div>
+                    <Link
+                        href="/"
+                        className="inline-block px-6 py-2 bg-theme-accent text-white rounded-lg hover:opacity-90"
+                    >
+                        Back to Home
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-theme-primary">

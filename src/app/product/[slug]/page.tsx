@@ -19,7 +19,7 @@ interface Product {
     tags: string[];
 }
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
+export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [mainImage, setMainImage] = useState<string>('');
@@ -30,7 +30,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await fetch(`/api/products/${params.slug}`);
+                const { slug } = await params;
+                const res = await fetch(`/api/products/${slug}`);
                 const data = await res.json();
                 if (res.ok) {
                     setProduct(data);
@@ -46,17 +47,23 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         };
 
         fetchProduct();
-    }, [params.slug]);
+    }, [params]);
+
+    const isOutOfStock = !product || product.stockQuantity <= 0 || !product.isAvailable;
+    const maxQuantity = product ? product.stockQuantity : 0;
 
     const handleAddToCart = () => {
-        if (!product) return;
+        if (!product || isOutOfStock) return;
+
+        // Cap quantity at available stock
+        const safeQuantity = Math.min(quantity, maxQuantity);
 
         addItem({
             id: product.id,
             productId: product.id,
             name: product.name,
             price: parseFloat(product.price),
-            quantity,
+            quantity: safeQuantity,
             image: product.imageUrls[0] || '',
             unit: product.unit,
             slug: product.slug,
@@ -178,43 +185,60 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                         )}
 
                         {/* Add to Cart */}
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="flex items-center border border-theme-border rounded-lg">
+                        {isOutOfStock ? (
+                            <div className="mb-6">
                                 <button
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-2 text-theme-text hover:bg-theme-secondary transition-colors"
+                                    disabled
+                                    className="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed"
                                 >
-                                    −
-                                </button>
-                                <input
-                                    type="number"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                    className="w-16 text-center bg-transparent border-x border-theme-border text-theme-text focus:outline-none"
-                                />
-                                <button
-                                    onClick={() => setQuantity(quantity + 1)}
-                                    className="px-4 py-2 text-theme-text hover:bg-theme-secondary transition-colors"
-                                >
-                                    +
+                                    Out of Stock
                                 </button>
                             </div>
+                        ) : (
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="flex items-center border border-theme-border rounded-lg">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="px-4 py-2 text-theme-text hover:bg-theme-secondary transition-colors"
+                                    >
+                                        −
+                                    </button>
+                                    <input
+                                        type="number"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(Math.max(1, Math.min(maxQuantity, parseInt(e.target.value) || 1)))}
+                                        className="w-16 text-center bg-transparent border-x border-theme-border text-theme-text focus:outline-none"
+                                    />
+                                    <button
+                                        onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                                        disabled={quantity >= maxQuantity}
+                                        className="px-4 py-2 text-theme-text hover:bg-theme-secondary transition-colors disabled:opacity-30"
+                                    >
+                                        +
+                                    </button>
+                                </div>
 
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={!product.isAvailable}
-                                className="flex-1 bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {addedToCart ? (
-                                    <>
-                                        <Check size={20} />
-                                        Added to Cart
-                                    </>
-                                ) : (
-                                    'Add to Cart'
-                                )}
-                            </button>
-                        </div>
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="flex-1 bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                >
+                                    {addedToCart ? (
+                                        <>
+                                            <Check size={20} />
+                                            Added to Cart
+                                        </>
+                                    ) : (
+                                        'Add to Cart'
+                                    )}
+                                </button>
+                            </div>
+                        )}
+
+                        {!isOutOfStock && product.stockQuantity <= 5 && (
+                            <p className="text-yellow-500 text-sm mb-4">
+                                Only {product.stockQuantity} left in stock - order soon!
+                            </p>
+                        )}
 
                         {/* More Info */}
                         <div className="mt-auto pt-6 border-t border-theme-border">

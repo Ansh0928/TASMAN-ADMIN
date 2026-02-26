@@ -10,6 +10,7 @@ import SearchBar from '@/components/SearchBar';
 import Footer from '@/components/Footer';
 import MobileMenu from '@/components/MobileMenu';
 import { UserMenu } from '@/components/UserMenu';
+import SessionProvider from '@/components/SessionProvider';
 import { auth } from '@/lib/auth';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -36,6 +37,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} data-theme="dark" suppressHydrationWarning>
       <body className="bg-theme-primary text-theme-secondary font-sans min-h-screen flex justify-center selection:bg-[#FF8543]/30 selection:text-white antialiased">
+        <SessionProvider>
         <ThemeProvider>
           <CartProvider>
             <div className="w-full bg-theme-primary min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-300">
@@ -98,6 +100,7 @@ export default async function RootLayout({
             <MobileMenu />
           </CartProvider>
         </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )

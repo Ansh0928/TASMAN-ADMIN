@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Package } from 'lucide-react';
+import { useCart } from '@/components/CartProvider';
 
 export default function OrderConfirmationPage() {
     const searchParams = useSearchParams();
@@ -11,6 +12,16 @@ export default function OrderConfirmationPage() {
     const orderId = searchParams.get('order_id');
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const { clearCart } = useCart();
+    const cartCleared = useRef(false);
+
+    useEffect(() => {
+        // Clear the cart once when the order confirmation page loads
+        if (!cartCleared.current && orderId) {
+            clearCart();
+            cartCleared.current = true;
+        }
+    }, [orderId, clearCart]);
 
     useEffect(() => {
         const fetchOrder = async () => {
