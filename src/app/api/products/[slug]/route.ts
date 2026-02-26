@@ -1,0 +1,47 @@
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(
+    request: NextRequest,
+    { params }: { params: { slug: string } }
+) {
+    try {
+        const product = await prisma.product.findUnique({
+            where: { slug: params.slug },
+            include: { category: true },
+        });
+
+        if (!product) {
+            return NextResponse.json(
+                { message: 'Product not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            description: product.description,
+            price: product.price.toString(),
+            imageUrls: product.imageUrls,
+            category: {
+                id: product.category.id,
+                name: product.category.name,
+                slug: product.category.slug,
+            },
+            unit: product.unit,
+            stockQuantity: product.stockQuantity,
+            isAvailable: product.isAvailable,
+            isFeatured: product.isFeatured,
+            isTodaysSpecial: product.isTodaysSpecial,
+            tags: product.tags,
+        });
+    } catch (error) {
+        console.error('Product detail API error:', error);
+        return NextResponse.json(
+            { message: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
