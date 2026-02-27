@@ -447,9 +447,9 @@ export interface ProductDefinition {
     discountPercent?: number;
 
     // Delivery
-    deliveryEstimate: string;
-    freeDeliveryEligible: boolean;
-    cutoffTime: string;
+    deliveryEstimate?: string;
+    freeDeliveryEligible?: boolean;
+    cutoffTime?: string;
 
     // Badges & flags
     badges: string[];

@@ -46,7 +46,6 @@ export default function ProductDetailClient({
         const safeQuantity = Math.min(quantity, maxQuantity);
 
         addItem({
-            id: product.id,
             productId: product.id,
             name: product.name,
             price: parseFloat(product.price),

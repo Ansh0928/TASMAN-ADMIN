@@ -19,8 +19,8 @@ export const authConfig: NextAuthConfig = {
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
-                session.user.role = token.role as string;
-                session.user.wholesaleStatus = token.wholesaleStatus as string | null;
+                session.user.role = token.role as 'CUSTOMER' | 'WHOLESALE' | 'ADMIN';
+                session.user.wholesaleStatus = token.wholesaleStatus as 'PENDING' | 'APPROVED' | 'REJECTED' | null;
             }
             return session;
         },
