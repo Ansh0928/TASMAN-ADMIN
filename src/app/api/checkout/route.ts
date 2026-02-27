@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
                 tax: serverTax,
                 total: serverTotal,
                 items: {
-                    create: orderItems.map((item) => ({
+                    create: orderItems.map((item: { productId: string; quantity: number; unitPrice: Decimal; total: Decimal }) => ({
                         productId: item.productId,
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
