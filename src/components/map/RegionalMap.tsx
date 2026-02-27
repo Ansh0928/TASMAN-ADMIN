@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-
-const geoUrl = "/australia.geojson";
 
 // Map region IDs from the JSON to standard state abbreviations
 const regionMapping: Record<string, string> = {
@@ -100,8 +98,30 @@ const REGIONAL_DATA: Record<string, {
 
 export default function RegionalMap() {
     const [activeRegion, setActiveRegion] = useState<string | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [geoData, setGeoData] = useState<any>(null);
+
+    useEffect(() => {
+        fetch("/australia.geojson")
+            .then((res) => res.json())
+            .then((data) => setGeoData(data))
+            .catch((err) => console.error("Failed to load geojson:", err));
+    }, []);
 
     const regionData = activeRegion ? REGIONAL_DATA[activeRegion] : null;
+
+    if (!geoData) {
+        return (
+            <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
+                <div className="relative w-full h-[800px] flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="w-16 h-16 border-4 border-[#FF8543]/30 border-t-[#FF8543] rounded-full animate-spin mx-auto mb-4" />
+                        <p className="text-slate-400 text-sm">Loading map...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
@@ -136,10 +156,10 @@ export default function RegionalMap() {
                         {/* Shadow Layer (Faux 3D Depth) */}
                         <div className="absolute inset-0 translate-y-8 translate-x-4 mix-blend-multiply opacity-50 blur-md pointer-events-none">
                             <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
-                                <Geographies geography={geoUrl}>
+                                <Geographies geography={geoData}>
                                     {({ geographies }) =>
-                                        geographies.map((geo) => (
-                                            <Geography key={geo.rsmKey + "-shadow"} geography={geo} fill="#000000" stroke="none" />
+                                        geographies.map((geo, idx) => (
+                                            <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
                                         ))
                                     }
                                 </Geographies>
@@ -149,10 +169,10 @@ export default function RegionalMap() {
                         {/* Extrusion / Base Layer (Faux 3D Depth) */}
                         <div className="absolute inset-0 translate-y-3 translate-x-1.5 pointer-events-none">
                             <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
-                                <Geographies geography={geoUrl}>
+                                <Geographies geography={geoData}>
                                     {({ geographies }) =>
-                                        geographies.map((geo) => (
-                                            <Geography key={geo.rsmKey + "-base"} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
+                                        geographies.map((geo, idx) => (
+                                            <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
                                         ))
                                     }
                                 </Geographies>
@@ -162,9 +182,9 @@ export default function RegionalMap() {
                         {/* Interactive Top Layer */}
                         <div className="absolute inset-0 pointer-events-auto">
                             <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
-                                <Geographies geography={geoUrl}>
+                                <Geographies geography={geoData}>
                                     {({ geographies }) =>
-                                        geographies.map((geo) => {
+                                        geographies.map((geo, idx) => {
                                             const regionName = geo.properties.STATE_NAME;
                                             const regionCode = regionMapping[regionName] || null;
                                             const isActive = activeRegion === regionCode;
@@ -172,7 +192,7 @@ export default function RegionalMap() {
 
                                             return (
                                                 <Geography
-                                                    key={geo.rsmKey}
+                                                    key={`top-${geo.rsmKey || idx}`}
                                                     geography={geo}
                                                     onClick={() => {
                                                         if (isSupported) setActiveRegion(isActive ? null : regionCode);
