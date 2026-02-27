@@ -34,7 +34,7 @@ export default function WholesalePricesPage() {
 
         // Not logged in — redirect to login
         if (status === 'unauthenticated') {
-            router.push('/auth/login?callbackUrl=/wholesale/prices');
+            router.push('/wholesale/login');
             return;
         }
 

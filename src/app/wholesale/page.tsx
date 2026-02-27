@@ -61,7 +61,7 @@ export default function WholesalePage() {
                         Apply for Wholesale
                     </Link>
                     <Link
-                        href="/auth/login"
+                        href="/wholesale/login"
                         className="border border-theme-border text-theme-text px-8 py-3 rounded-lg font-semibold hover:border-theme-accent transition-colors text-lg"
                     >
                         Already Approved? Sign In

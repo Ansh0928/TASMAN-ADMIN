@@ -257,7 +257,7 @@ export default function WholesaleApplyPage() {
 
                     <p className="text-sm text-theme-text-muted">
                         Already have an account?{' '}
-                        <Link href="/auth/login" className="text-theme-accent hover:underline">
+                        <Link href="/wholesale/login" className="text-theme-accent hover:underline">
                             Sign in here
                         </Link>
                     </p>

@@ -48,9 +48,11 @@ enum Unit {
 model User {
   id              String           @id @default(cuid())
   email           String           @unique
-  passwordHash    String           @map("password_hash")
+  passwordHash    String?          @map("password_hash")
   name            String
   phone           String?
+  image           String?          // Profile picture from Google OAuth
+  authProvider    String?          @map("auth_provider") // "credentials" | "google"
   role            Role             @default(CUSTOMER)
   wholesaleStatus WholesaleStatus? @map("wholesale_status")
   companyName     String?          @map("company_name")

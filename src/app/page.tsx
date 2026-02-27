@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Box, Store, Globe, Truck, Anchor, MapPin, ChevronRight } from 'lucide-react';
+import { Box, Store, Globe, Truck, Anchor, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ProductCarousel from '@/components/ProductCarousel';
+import ProductCard, { type ProductCardData } from '@/components/ProductCard';
+import RegionalMapLazy from '@/components/map/RegionalMapLazy';
 
 const BUSINESS_CARDS = [
     {
@@ -20,7 +23,7 @@ const BUSINESS_CARDS = [
         image: '/assets/retail-store.jpeg',
     },
     {
-        href: '/our-products',
+        href: '/our-business/online-delivery',
         icon: Globe,
         title: 'Online & Delivery',
         description: 'Order premium seafood online and get it delivered fresh to your door on the Gold Coast.',
@@ -42,50 +45,30 @@ const BUSINESS_CARDS = [
     },
 ];
 
-interface Product {
-    slug: string;
-    name: string;
-    price: string;
-    imageUrls: string[];
-}
-
-function getDayOfWeek() {
-    return new Date().toLocaleDateString('en-AU', { weekday: 'long' });
-}
-
 export default function Home() {
-    const day = getDayOfWeek();
-    const [todaysSpecials, setTodaysSpecials] = useState<Product[]>([]);
-    const [bestBuys, setBestBuys] = useState<Product[]>([]);
+    const [bestBuys, setBestBuys] = useState<ProductCardData[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchBestBuys = async () => {
             try {
-                const [specialsRes, buyRes] = await Promise.all([
-                    fetch('/api/products?todaysSpecial=true&limit=4'),
-                    fetch('/api/products?featured=true&limit=4'),
-                ]);
-
-                const specialsData = await specialsRes.json();
-                const buyData = await buyRes.json();
-
-                setTodaysSpecials(specialsData.products || []);
-                setBestBuys(buyData.products || []);
+                const res = await fetch('/api/products?featured=true&limit=10');
+                const data = await res.json();
+                setBestBuys(data.products || []);
             } catch (error) {
-                console.error('Failed to fetch products:', error);
+                console.error('Failed to fetch best buys:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProducts();
+        fetchBestBuys();
     }, []);
 
     return (
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
-            {/* Hero Header */}
+            {/* Hero Banner */}
             <div className="w-full bg-[#0A192F] py-16 md:py-24">
                 <div className="container mx-auto px-6 text-center">
                     <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-4">Tasman Star Seafoods</h1>
@@ -107,7 +90,7 @@ export default function Home() {
                                 <Link
                                     key={card.href}
                                     href={card.href}
-                                    className="group bg-theme-card rounded-2xl shadow-sm border border-theme-subtle overflow-hidden hover:shadow-xl transition-all hover:border-[#FF8543]/50 flex flex-col"
+                                    className="group bg-theme-secondary rounded-2xl shadow-sm border border-theme-border overflow-hidden hover:shadow-xl transition-all hover:border-theme-accent/50 flex flex-col"
                                 >
                                     <div className="h-52 bg-theme-tertiary overflow-hidden relative">
                                         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
@@ -118,13 +101,13 @@ export default function Home() {
                                         />
                                     </div>
                                     <div className="p-6 flex flex-col items-center text-center flex-grow">
-                                        <div className="w-12 h-12 bg-[#FF8543]/10 rounded-full flex items-center justify-center -mt-12 z-20 mb-3 shadow-md border-4 border-theme-card">
-                                            <Icon className="text-[#FF8543]" size={24} />
+                                        <div className="w-12 h-12 bg-theme-accent/10 rounded-full flex items-center justify-center -mt-12 z-20 mb-3 shadow-md border-4 border-theme-secondary">
+                                            <Icon className="text-theme-accent" size={24} />
                                         </div>
-                                        <h2 className="font-serif text-xl font-bold text-theme-primary mb-2 group-hover:text-[#FF8543] transition-colors">
+                                        <h2 className="font-serif text-xl font-bold text-theme-text mb-2 group-hover:text-theme-accent transition-colors">
                                             {card.title}
                                         </h2>
-                                        <p className="text-theme-muted text-sm">{card.description}</p>
+                                        <p className="text-theme-text-muted text-sm">{card.description}</p>
                                     </div>
                                 </Link>
                             );
@@ -132,97 +115,27 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* Today's Specials */}
-                <section className="container mx-auto px-4 md:px-6 py-8">
-                    <div className="border-t border-theme-subtle pt-10">
-                        <div className="flex items-end justify-between mb-8">
-                            <div>
-                                <h2 className="text-3xl font-serif font-bold text-theme-primary mb-2">Today&apos;s Specials</h2>
-                                <div className="flex items-center gap-3">
-                                    <span className="px-2 py-1 bg-[#FF7F50] text-white text-xs font-bold rounded uppercase tracking-wider">Fresh Today</span>
-                                    <span className="text-theme-muted text-sm">{day} &mdash; Refreshed daily</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {loading ? (
-                                <p className="text-theme-text-muted">Loading...</p>
-                            ) : todaysSpecials.length > 0 ? (
-                                todaysSpecials.map((product) => (
-                                    <ProductCard key={product.slug} product={product} badge="Today" />
-                                ))
-                            ) : (
-                                <p className="text-theme-text-muted">No specials available</p>
-                            )}
-                        </div>
-                    </div>
+                {/* Explore Our Waters — Isometric Australia Map */}
+                <section className="container mx-auto px-4 md:px-8 max-w-6xl">
+                    <RegionalMapLazy />
                 </section>
 
                 {/* Best Buys */}
-                <section className="container mx-auto px-4 md:px-6 py-8 pb-20">
-                    <div className="border-t border-theme-subtle pt-10">
-                        <div className="flex items-end justify-between mb-8">
-                            <div>
-                                <h2 className="text-3xl font-serif font-bold text-theme-primary mb-2">Best Buys</h2>
-                                <div className="flex items-center gap-3">
-                                    <span className="px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded uppercase tracking-wider">Popular</span>
-                                    <span className="text-theme-muted text-sm">Customer favorites</span>
-                                </div>
-                            </div>
-                            <Link href="/our-products" className="hidden md:flex items-center text-[#FF8543] hover:text-theme-primary transition-colors text-sm font-medium gap-1">
-                                View All <ChevronRight size={16} />
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {loading ? (
-                                <p className="text-theme-text-muted">Loading...</p>
-                            ) : bestBuys.length > 0 ? (
-                                bestBuys.map((product) => (
-                                    <ProductCard key={product.slug} product={product} badge="Best Buy" />
-                                ))
-                            ) : (
-                                <p className="text-theme-text-muted">No products available</p>
-                            )}
-                        </div>
-                    </div>
-                </section>
+                {!loading && bestBuys.length > 0 && (
+                    <section className="container mx-auto max-w-7xl pb-16">
+                        <ProductCarousel
+                            title="Best Buys"
+                            subtitle="Our top picks for you"
+                            viewAllHref="/our-products"
+                        >
+                            {bestBuys.map((product) => (
+                                <ProductCard key={product.id} product={product} badge="Best Buy" />
+                            ))}
+                        </ProductCarousel>
+                    </section>
+                )}
 
             </main>
         </div>
-    );
-}
-
-function ProductCard({ product, badge }: { product: Product; badge?: string }) {
-    return (
-        <Link href={`/product/${product.slug}`} className="bg-theme-card rounded-2xl overflow-hidden shadow-lg border border-theme-subtle flex flex-col group relative hover:border-[#E2743A]/50 transition-colors duration-300">
-            {badge && (
-                <div className="absolute top-4 left-4 z-10 bg-[#FF7F50] text-white text-xs font-bold px-3 py-1 rounded shadow-lg uppercase">
-                    {badge}
-                </div>
-            )}
-
-            <div className="aspect-[4/3] w-full bg-theme-tertiary overflow-hidden relative">
-                {product.imageUrls && product.imageUrls.length > 0 ? (
-                    <img src={product.imageUrls[0]} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-transform duration-700" />
-                ) : (
-                    <div className="w-full h-full bg-theme-tertiary flex items-center justify-center text-theme-muted text-4xl">🐟</div>
-                )}
-            </div>
-
-            <div className="p-5 flex flex-col flex-grow justify-between">
-                <div>
-                    <h3 className="text-theme-primary font-serif text-lg leading-snug mb-2 group-hover:text-[#E2743A] transition-colors line-clamp-2">{product.name}</h3>
-                    <p className="text-theme-muted text-xs uppercase tracking-wider mb-4 flex items-center gap-1">
-                        <MapPin size={12} className="text-[#FF8543]" /> Gold Coast, QLD
-                    </p>
-                </div>
-                <div className="flex items-end justify-between mt-auto">
-                    <span className="text-[#FF7F50] font-bold text-xl">${parseFloat(product.price).toFixed(2)}</span>
-                    <div className="w-10 h-10 rounded-full bg-[#FF8543] hover:bg-[#1A908A] text-white flex items-center justify-center font-bold text-xl transition-all shadow-md group-hover:scale-110">
-                        +
-                    </div>
-                </div>
-            </div>
-        </Link>
     );
 }

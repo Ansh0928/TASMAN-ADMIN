@@ -18,6 +18,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const router = useRouter();
     const { data: session, status } = useSession();
 
+    // Admin login page renders without the admin layout shell
+    if (pathname === '/admin/login') {
+        return <>{children}</>;
+    }
+
     // Loading state
     if (status === 'loading') {
         return (
@@ -29,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Not logged in — redirect to login
     if (status === 'unauthenticated') {
-        router.push('/auth/login?callbackUrl=/admin');
+        router.push('/admin/login');
         return null;
     }
 

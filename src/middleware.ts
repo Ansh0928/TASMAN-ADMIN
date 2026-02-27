@@ -10,10 +10,16 @@ export function middleware(request: NextRequest) {
 
     const isLoggedIn = !!sessionToken;
 
-    // Protect admin, wholesale, and account routes - redirect to login if no session
     if (!isLoggedIn) {
-        const loginUrl = new URL('/auth/login', request.url);
-        loginUrl.searchParams.set('callbackUrl', pathname);
+        // Route to the correct login page based on the protected area
+        let loginPath = '/auth/login';
+        if (pathname.startsWith('/admin')) {
+            loginPath = '/admin/login';
+        } else if (pathname.startsWith('/wholesale/prices')) {
+            loginPath = '/wholesale/login';
+        }
+
+        const loginUrl = new URL(loginPath, request.url);
         return NextResponse.redirect(loginUrl);
     }
 
@@ -21,5 +27,9 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/wholesale/prices', '/account/:path*'],
+    matcher: [
+        '/admin/((?!login).*)',   // protect /admin/* except /admin/login
+        '/wholesale/prices',
+        '/account/:path*',
+    ],
 };

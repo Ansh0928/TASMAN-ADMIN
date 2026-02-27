@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { sendWholesaleApplicationReceivedEmail, sendWholesaleNewApplicationAdminEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
     try {
@@ -48,6 +49,17 @@ export async function POST(request: NextRequest) {
                 abn,
             },
         });
+
+        // Send confirmation emails (fire-and-forget — don't block the response)
+        const emailData = { name: contactName, email, companyName, abn, phone };
+
+        sendWholesaleApplicationReceivedEmail(emailData)
+            .then((r) => console.log(`Wholesale application received email to ${email}: ${r.success ? 'sent' : 'failed'}`))
+            .catch((e) => console.error('Wholesale application email error:', e));
+
+        sendWholesaleNewApplicationAdminEmail(emailData)
+            .then((r) => console.log(`Wholesale admin notification for ${companyName}: ${r.success ? 'sent' : 'failed'}`))
+            .catch((e) => console.error('Wholesale admin notification error:', e));
 
         return NextResponse.json(
             { message: 'Application submitted successfully', userId: user.id },

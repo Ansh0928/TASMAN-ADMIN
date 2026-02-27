@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import bcrypt from 'bcryptjs';
+import { GoogleIcon } from '@/components/GoogleIcon';
 
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
@@ -24,179 +26,110 @@ export default function RegisterPage() {
         const confirmPassword = formData.get('confirmPassword') as string;
         const phone = formData.get('phone') as string;
 
-        // Validation
-        if (!name || !email || !password || !confirmPassword) {
-            setError('All fields are required');
-            setIsLoading(false);
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
-            setIsLoading(false);
-            return;
-        }
-
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters long');
-            setIsLoading(false);
-            return;
-        }
+        if (password !== confirmPassword) { setError('Passwords do not match'); setIsLoading(false); return; }
+        if (password.length < 8) { setError('Password must be at least 8 characters'); setIsLoading(false); return; }
 
         try {
-            // Hash password
             const hashedPassword = await bcrypt.hash(password, 12);
-
-            // Create user
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    passwordHash: hashedPassword,
-                    phone: phone || undefined,
-                }),
+                body: JSON.stringify({ name, email, passwordHash: hashedPassword, phone: phone || undefined }),
             });
-
             if (!response.ok) {
                 const data = await response.json();
                 setError(data.message || 'Failed to create account');
                 return;
             }
-
             setSuccess(true);
-
-            // Auto sign in
-            const result = await signIn('credentials', {
-                email,
-                password,
-                redirect: false,
-            });
-
-            if (result?.ok) {
-                router.push('/account');
-                router.refresh();
-            } else {
-                // Redirect to login if auto-signin fails
-                router.push('/auth/login?message=Account created. Please sign in.');
-            }
-        } catch (err) {
+            const result = await signIn('credentials', { email, password, redirect: false });
+            if (result?.ok) { router.push('/'); router.refresh(); }
+            else { router.push('/auth/login?message=Account created. Please sign in.'); }
+        } catch {
             setError('An error occurred. Please try again.');
-            console.error(err);
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleGoogle = () => { setIsGoogleLoading(true); signIn('google', { callbackUrl: '/' }); };
+    const busy = isLoading || isGoogleLoading;
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-theme-primary px-4">
-            <div className="w-full max-w-md space-y-8">
+        <div className="min-h-[80vh] flex items-center justify-center bg-theme-primary px-4 py-12">
+            <div className="w-full max-w-sm space-y-6">
                 <div className="text-center">
-                    <h1 className="text-4xl font-bold text-theme-text mb-2">Create Account</h1>
-                    <p className="text-theme-text-muted">Join Tasman Star for faster checkout</p>
+                    <h1 className="text-3xl font-bold text-theme-text">Create Account</h1>
+                    <p className="text-theme-text-muted mt-1 text-sm">Sign up to shop and checkout faster</p>
                 </div>
 
                 {success ? (
-                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded text-green-500">
-                        Account created successfully! You're being signed in...
+                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-400 text-sm">
+                        Account created! Signing you in...
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-500 text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-theme-text mb-2">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                required
-                                disabled={isLoading}
-                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
-                                placeholder="John Doe"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-theme-text mb-2">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required
-                                disabled={isLoading}
-                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
-                                placeholder="you@example.com"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-theme-text mb-2">
-                                Phone (optional)
-                            </label>
-                            <input
-                                type="tel"
-                                id="phone"
-                                name="phone"
-                                disabled={isLoading}
-                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
-                                placeholder="+61 7 5555 0000"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-theme-text mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                required
-                                disabled={isLoading}
-                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-text mb-2">
-                                Confirm Password
-                            </label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                required
-                                disabled={isLoading}
-                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-theme-accent text-white py-2 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity"
-                        >
-                            {isLoading ? 'Creating account...' : 'Create Account'}
+                    <>
+                        <button onClick={handleGoogle} disabled={busy}
+                            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text font-medium hover:border-theme-accent transition-colors disabled:opacity-50">
+                            <GoogleIcon />
+                            {isGoogleLoading ? 'Redirecting...' : 'Sign up with Google'}
                         </button>
-                    </form>
+
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-theme-border" /></div>
+                            <div className="relative flex justify-center text-xs"><span className="px-3 bg-theme-primary text-theme-text-muted">or</span></div>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-3.5">
+                            {error && (
+                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">{error}</div>
+                            )}
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-medium text-theme-text mb-1.5">Full Name</label>
+                                <input type="text" id="name" name="name" required disabled={busy}
+                                    className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    placeholder="John Doe" />
+                            </div>
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-theme-text mb-1.5">Email</label>
+                                <input type="email" id="email" name="email" required disabled={busy}
+                                    className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    placeholder="you@example.com" />
+                            </div>
+                            <div>
+                                <label htmlFor="phone" className="block text-sm font-medium text-theme-text mb-1.5">Phone <span className="text-theme-text-muted">(optional)</span></label>
+                                <input type="tel" id="phone" name="phone" disabled={busy}
+                                    className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    placeholder="+61 7 5555 0000" />
+                            </div>
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-theme-text mb-1.5">Password</label>
+                                <input type="password" id="password" name="password" required disabled={busy}
+                                    className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    placeholder="Min. 8 characters" />
+                            </div>
+                            <div>
+                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-text mb-1.5">Confirm Password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required disabled={busy}
+                                    className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    placeholder="••••••••" />
+                            </div>
+                            <button type="submit" disabled={busy}
+                                className="w-full bg-theme-accent text-white py-2.5 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                {isLoading ? 'Creating account...' : 'Create Account'}
+                            </button>
+                        </form>
+                    </>
                 )}
 
-                <div className="text-center text-sm text-theme-text-muted">
+                <p className="text-center text-sm text-theme-text-muted">
                     Already have an account?{' '}
-                    <Link href="/auth/login" className="text-theme-accent hover:underline font-semibold">
-                        Sign in
+                    <Link href="/auth/login" className="text-theme-accent hover:underline font-semibold">Sign in</Link>
+                </p>
+
+                <div className="pt-4 border-t border-theme-border">
+                    <Link href="/wholesale/apply" className="block text-center text-xs text-theme-text-muted hover:text-theme-accent transition-colors">
+                        Are you a business? Apply for wholesale access &rarr;
                     </Link>
                 </div>
             </div>

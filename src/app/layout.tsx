@@ -43,7 +43,7 @@ export default async function RootLayout({
             <div className="w-full bg-theme-primary min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-300">
 
               {/* Header */}
-              <header className="sticky top-0 z-50 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent transition-colors duration-300">
+              <header className="sticky top-0 z-50 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 transition-colors duration-300">
                 <div className="container mx-auto px-6 h-20 flex items-center justify-between">
 
                   {/* Logo */}
@@ -77,7 +77,7 @@ export default async function RootLayout({
               </header>
 
               {/* Mobile Nav */}
-              <nav className="lg:hidden sticky top-20 z-40 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent overflow-x-auto scrollbar-hide">
+              <nav className="lg:hidden sticky top-20 z-40 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-1 px-4 py-2 min-w-max">
                   <a href="/" className="text-theme-secondary hover:text-[#E2743A] transition-colors text-sm font-medium px-3 py-1.5 rounded-full whitespace-nowrap">Our Business</a>
                   <a href="/about" className="text-theme-secondary hover:text-[#E2743A] transition-colors text-sm font-medium px-3 py-1.5 rounded-full whitespace-nowrap">About Us</a>

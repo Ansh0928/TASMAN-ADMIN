@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
                 passwordHash,
                 phone: phone || null,
                 role: 'CUSTOMER',
+                authProvider: 'credentials',
             },
         });
 
