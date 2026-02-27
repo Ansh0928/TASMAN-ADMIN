@@ -63,6 +63,11 @@ export default async function RootLayout({
                       <span className="w-2 h-2 rounded-full bg-[#FF7F50] animate-pulse"></span>
                       Deals
                     </a>
+                    {session?.user?.role === 'WHOLESALE' && session.user.wholesaleStatus === 'APPROVED' && (
+                      <a href="/wholesale/prices" className="hover:text-blue-300 transition-colors flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-full text-blue-400">
+                        Wholesale
+                      </a>
+                    )}
                   </nav>
 
                   <SearchBar />
@@ -91,6 +96,11 @@ export default async function RootLayout({
                     <span className="w-2 h-2 rounded-full bg-[#FF7F50] animate-pulse"></span>
                     Deals
                   </a>
+                  {session?.user?.role === 'WHOLESALE' && session.user.wholesaleStatus === 'APPROVED' && (
+                    <a href="/wholesale/prices" className="text-blue-400 hover:text-blue-300 transition-colors text-sm font-medium px-3 py-1.5 rounded-full whitespace-nowrap bg-blue-500/10 border border-blue-500/20">
+                      Wholesale
+                    </a>
+                  )}
                 </div>
               </nav>
 

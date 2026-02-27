@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut } from 'lucide-react';
+import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut, Building2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
 import { logout } from '@/app/actions/auth';
@@ -20,6 +20,7 @@ interface MobileMenuProps {
         email?: string | null;
         role?: string;
         image?: string | null;
+        wholesaleStatus?: string | null;
     } | null;
 }
 
@@ -93,6 +94,19 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                             </a>
                         );
                     })}
+                    {user?.role === 'WHOLESALE' && user?.wholesaleStatus === 'APPROVED' && (
+                        <a
+                            href="/wholesale/prices"
+                            className={`py-3 px-4 rounded-xl text-base font-medium transition-colors flex items-center gap-3 ${
+                                pathname === '/wholesale/prices'
+                                    ? 'bg-blue-500/10 text-blue-400'
+                                    : 'text-blue-400 hover:bg-blue-500/10'
+                            }`}
+                        >
+                            <Building2 size={18} />
+                            Wholesale Prices
+                        </a>
+                    )}
                 </nav>
 
                 {/* Bottom section — pushed to bottom */}
