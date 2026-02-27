@@ -67,10 +67,14 @@ export default async function RootLayout({
 
                   <SearchBar />
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    <ThemeToggle />
+                  <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+                    <div className="hidden lg:block">
+                      <ThemeToggle />
+                    </div>
                     <CartIcon />
-                    <UserMenu user={session?.user} />
+                    <div className="hidden lg:flex">
+                      <UserMenu user={session?.user} />
+                    </div>
                   </div>
 
                 </div>
@@ -97,7 +101,7 @@ export default async function RootLayout({
               <CartSidebar />
               <Footer />
             </div>
-            <MobileMenu />
+            <MobileMenu user={session?.user} />
           </CartProvider>
         </ThemeProvider>
         </SessionProvider>

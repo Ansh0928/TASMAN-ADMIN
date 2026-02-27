@@ -46,7 +46,7 @@ export default function ProductCarousel({ title, subtitle, viewAllHref, children
     };
 
     return (
-        <section className="py-8">
+        <section className="py-4 md:py-8">
             {/* Header */}
             <div className="flex items-end justify-between mb-6 px-4 md:px-0">
                 <div>
@@ -57,7 +57,7 @@ export default function ProductCarousel({ title, subtitle, viewAllHref, children
                     {viewAllHref && (
                         <Link
                             href={viewAllHref}
-                            className="hidden md:flex items-center text-theme-accent hover:underline text-sm font-medium gap-1"
+                            className="flex items-center text-theme-accent hover:underline text-sm font-medium gap-1"
                         >
                             View All <ChevronRight size={16} />
                         </Link>
@@ -83,10 +83,19 @@ export default function ProductCarousel({ title, subtitle, viewAllHref, children
                 </div>
             </div>
 
+            {/* Mobile swipe hint */}
+            {canScrollRight && (
+                <div className="md:hidden flex justify-end pr-4 mb-1">
+                    <span className="text-theme-text-muted text-xs flex items-center gap-1">
+                        Swipe <ChevronRight size={12} />
+                    </span>
+                </div>
+            )}
+
             {/* Scrollable container */}
             <div
                 ref={scrollRef}
-                className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 md:px-0 pb-4 no-scrollbar"
+                className="flex gap-3 md:gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory px-4 md:px-0 pb-4 no-scrollbar"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {children}

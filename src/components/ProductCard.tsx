@@ -51,7 +51,7 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
     const isOutOfStock = product.stockQuantity <= 0;
 
     return (
-        <div className="snap-start flex-shrink-0 w-[180px] md:w-[220px]">
+        <div className="snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px]">
             <Link
                 href={`/product/${product.slug}`}
                 className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent transition-all group"

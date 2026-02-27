@@ -100,6 +100,14 @@ export default function RegionalMap() {
     const [activeRegion, setActiveRegion] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [geoData, setGeoData] = useState<any>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         fetch("/australia.geojson")
@@ -109,11 +117,13 @@ export default function RegionalMap() {
     }, []);
 
     const regionData = activeRegion ? REGIONAL_DATA[activeRegion] : null;
+    const mapScale = isMobile ? 480 : 800;
+    const projConfig = { scale: mapScale, center: createCoordinates(135, -28) };
 
     if (!geoData) {
         return (
             <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
-                <div className="relative w-full h-[800px] flex items-center justify-center">
+                <div className="relative w-full h-[400px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
                     <div className="text-center">
                         <div className="w-16 h-16 border-4 border-[#FF8543]/30 border-t-[#FF8543] rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-slate-400 text-sm">Loading map...</p>
@@ -127,61 +137,65 @@ export default function RegionalMap() {
         <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
 
             {/* Map Section */}
-            <div className="relative w-full h-[800px] flex items-center justify-center perspective-[1000px]">
+            <div className={`relative w-full h-[400px] md:h-[600px] lg:h-[800px] flex items-center justify-center ${!isMobile ? 'perspective-[1000px]' : ''}`}>
 
                 {/* Hero Text Overlay */}
-                <div className="absolute top-10 left-0 w-full z-20 pointer-events-none text-center flex flex-col items-center">
+                <div className="absolute top-6 md:top-10 left-0 w-full z-20 pointer-events-none text-center flex flex-col items-center px-4">
                     <p className="text-[#FF8543] text-xs font-bold tracking-[0.3em] uppercase mb-2">Sourcing Map</p>
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
+                    <h2 className="text-2xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-2 md:mb-4">
                         Explore Our Waters
                     </h2>
-                    <p className="text-slate-300 max-w-lg mx-auto text-sm leading-relaxed backdrop-blur-sm bg-[#0A192F]/50 p-3 rounded-xl border border-white/5">
+                    <p className="hidden sm:block text-slate-300 max-w-lg mx-auto text-xs md:text-sm leading-relaxed backdrop-blur-sm bg-[#0A192F]/50 p-2 md:p-3 rounded-xl border border-white/5">
                         Discover the premium seafood species we source from the pristine waters around Australia.
-                        <span className="text-white font-semibold"> Click on a region to see what we catch.</span>
+                        <span className="text-white font-semibold"> Tap a region to see what we catch.</span>
                     </p>
                 </div>
 
-                {/* Isometric Map Container */}
-                <div className="w-[120%] h-[120%] absolute inset-0 flex items-center justify-center -mt-20 pointer-events-none">
+                {/* Map Container — flat on mobile, oversized isometric on desktop */}
+                <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${isMobile ? 'w-full h-full' : 'w-[120%] h-[120%] -mt-20'}`}>
 
-                    {/* CSS 3D Transformation applied here to create the Isometric perspective */}
+                    {/* 3D Transform Wrapper — flat on mobile, isometric on desktop */}
                     <div
                         className="w-full h-full"
-                        style={{
+                        style={isMobile ? {} : {
                             transform: "rotateX(55deg) rotateZ(-30deg) translateZ(0)",
                             transformStyle: "preserve-3d",
                             transition: "all 0.5s ease-in-out",
                         }}
                     >
-                        {/* Shadow Layer (Faux 3D Depth) */}
-                        <div className="absolute inset-0 translate-y-8 translate-x-4 mix-blend-multiply opacity-50 blur-md pointer-events-none">
-                            <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
-                                <Geographies geography={geoData}>
-                                    {({ geographies }) =>
-                                        geographies.map((geo, idx) => (
-                                            <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
-                                        ))
-                                    }
-                                </Geographies>
-                            </ComposableMap>
-                        </div>
+                        {/* Shadow Layer (Faux 3D Depth) — desktop only */}
+                        {!isMobile && (
+                            <div className="absolute inset-0 translate-y-8 translate-x-4 mix-blend-multiply opacity-50 blur-md pointer-events-none">
+                                <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
+                                    <Geographies geography={geoData}>
+                                        {({ geographies }) =>
+                                            geographies.map((geo, idx) => (
+                                                <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
+                                            ))
+                                        }
+                                    </Geographies>
+                                </ComposableMap>
+                            </div>
+                        )}
 
-                        {/* Extrusion / Base Layer (Faux 3D Depth) */}
-                        <div className="absolute inset-0 translate-y-3 translate-x-1.5 pointer-events-none">
-                            <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
-                                <Geographies geography={geoData}>
-                                    {({ geographies }) =>
-                                        geographies.map((geo, idx) => (
-                                            <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
-                                        ))
-                                    }
-                                </Geographies>
-                            </ComposableMap>
-                        </div>
+                        {/* Extrusion / Base Layer (Faux 3D Depth) — desktop only */}
+                        {!isMobile && (
+                            <div className="absolute inset-0 translate-y-3 translate-x-1.5 pointer-events-none">
+                                <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
+                                    <Geographies geography={geoData}>
+                                        {({ geographies }) =>
+                                            geographies.map((geo, idx) => (
+                                                <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
+                                            ))
+                                        }
+                                    </Geographies>
+                                </ComposableMap>
+                            </div>
+                        )}
 
                         {/* Interactive Top Layer */}
                         <div className="absolute inset-0 pointer-events-auto">
-                            <ComposableMap projection="geoMercator" projectionConfig={{ scale: 800, center: createCoordinates(135, -28) }} className="w-full h-full">
+                            <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
                                 <Geographies geography={geoData}>
                                     {({ geographies }) =>
                                         geographies.map((geo, idx) => {
@@ -233,7 +247,7 @@ export default function RegionalMap() {
 
             </div>
 
-            {/* Region Info Panel — Below the map, never overlapping */}
+            {/* Region Info Panel — Below the map */}
             <AnimatePresence>
                 {activeRegion && regionData && (
                     <motion.div
@@ -243,12 +257,12 @@ export default function RegionalMap() {
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         className="overflow-hidden"
                     >
-                        <div className="border-t border-white/10 px-6 md:px-10 py-8">
+                        <div className="border-t border-white/10 px-4 md:px-6 lg:px-10 py-5 md:py-8">
                             <div className="max-w-4xl mx-auto">
-                                <div className="flex justify-between items-start mb-6">
+                                <div className="flex justify-between items-start mb-4 md:mb-6">
                                     <div>
                                         <p className="text-[#FF8543] text-xs font-bold tracking-[0.3em] uppercase mb-1">Regional Seafood</p>
-                                        <h3 className="text-3xl md:text-4xl font-serif font-bold text-white drop-shadow-md">
+                                        <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-white drop-shadow-md">
                                             {regionData.name}
                                         </h3>
                                     </div>
@@ -260,25 +274,25 @@ export default function RegionalMap() {
                                     </button>
                                 </div>
 
-                                <p className="text-slate-300 font-sans mb-8 leading-relaxed max-w-2xl">
+                                <p className="text-slate-300 font-sans mb-6 md:mb-8 leading-relaxed max-w-2xl text-sm md:text-base">
                                     {regionData.description}
                                 </p>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                                     {regionData.species.map((sp, idx) => (
-                                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-5 group hover:border-[#FF8543]/30 transition-all">
-                                            <div className="w-14 h-14 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center text-3xl shadow-inner border border-white/5 mb-4 group-hover:scale-110 group-hover:border-[#FF8543]/50 transition-all">
+                                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 group hover:border-[#FF8543]/30 transition-all">
+                                            <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center text-2xl md:text-3xl shadow-inner border border-white/5 mb-3 md:mb-4 group-hover:scale-110 group-hover:border-[#FF8543]/50 transition-all">
                                                 {sp.emoji}
                                             </div>
-                                            <h4 className="text-white font-bold text-base tracking-wide mb-1 group-hover:text-[#FF8543] transition-colors">{sp.name}</h4>
-                                            <p className="text-slate-400 text-sm leading-snug">{sp.desc}</p>
+                                            <h4 className="text-white font-bold text-sm md:text-base tracking-wide mb-1 group-hover:text-[#FF8543] transition-colors">{sp.name}</h4>
+                                            <p className="text-slate-400 text-xs md:text-sm leading-snug">{sp.desc}</p>
                                         </div>
                                     ))}
                                 </div>
 
                                 <a
                                     href={regionData.categorySlug ? `/our-business/online-delivery?category=${regionData.categorySlug}` : "/our-business/online-delivery"}
-                                    className="inline-block bg-gradient-to-r from-[#FF8543] to-[#E2743A] hover:to-[#c45e2e] text-white font-bold py-3.5 px-8 rounded-xl shadow-[0_4px_14px_rgba(255,133,67,0.4)] hover:shadow-[0_6px_20px_rgba(255,133,67,0.6)] transition-all uppercase tracking-wider text-sm"
+                                    className="inline-block bg-gradient-to-r from-[#FF8543] to-[#E2743A] hover:to-[#c45e2e] text-white font-bold py-3 md:py-3.5 px-6 md:px-8 rounded-xl shadow-[0_4px_14px_rgba(255,133,67,0.4)] hover:shadow-[0_6px_20px_rgba(255,133,67,0.6)] transition-all uppercase tracking-wider text-xs md:text-sm"
                                 >
                                     Shop {regionData.name} Products
                                 </a>
