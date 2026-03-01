@@ -1,14 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X, Search } from 'lucide-react';
 import Link from 'next/link';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 interface Category {
     id: string;
     name: string;
     slug: string;
+}
+
+interface ProductOption {
+    id: string;
+    name: string;
+    slug: string;
+    imageUrls: string[];
+    category: { id: string; name: string };
 }
 
 export default function EditProduct() {
@@ -17,42 +26,50 @@ export default function EditProduct() {
     const productId = params.id as string;
 
     const [categories, setCategories] = useState<Category[]>([]);
+    const [allProducts, setAllProducts] = useState<ProductOption[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [relatedSearch, setRelatedSearch] = useState('');
+    const [relatedDropdownOpen, setRelatedDropdownOpen] = useState(false);
+    const relatedDropdownRef = useRef<HTMLDivElement>(null);
 
     const [form, setForm] = useState({
         name: '',
         description: '',
         price: '',
         categoryId: '',
-        imageUrls: '',
+        imageUrls: [] as string[],
         stockQuantity: '0',
         unit: 'PIECE',
         isAvailable: true,
         isFeatured: false,
         isTodaysSpecial: false,
         tags: '',
+        relatedProductIds: [] as string[],
     });
 
     useEffect(() => {
         Promise.all([
             fetch(`/api/admin/products/${productId}`).then(r => r.json()),
             fetch('/api/categories').then(r => r.json()),
-        ]).then(([product, catData]) => {
+            fetch('/api/admin/products?limit=200').then(r => r.json()),
+        ]).then(([product, catData, productsData]) => {
             setCategories(catData.categories || catData);
+            setAllProducts((productsData.products || []).filter((p: ProductOption) => p.id !== productId));
             setForm({
                 name: product.name || '',
                 description: product.description || '',
                 price: product.price || '',
                 categoryId: product.categoryId || '',
-                imageUrls: (product.imageUrls || []).join('\n'),
+                imageUrls: product.imageUrls || [],
                 stockQuantity: String(product.stockQuantity || 0),
                 unit: product.unit || 'PIECE',
                 isAvailable: product.isAvailable ?? true,
                 isFeatured: product.isFeatured ?? false,
                 isTodaysSpecial: product.isTodaysSpecial ?? false,
                 tags: (product.tags || []).join(', '),
+                relatedProductIds: product.relatedProductIds || [],
             });
             setLoading(false);
         }).catch((err) => {
@@ -61,6 +78,30 @@ export default function EditProduct() {
             setLoading(false);
         });
     }, [productId]);
+
+    // Close related products dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (relatedDropdownRef.current && !relatedDropdownRef.current.contains(event.target as Node)) {
+                setRelatedDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filteredProducts = useMemo(() => {
+        return allProducts.filter(p =>
+            !form.relatedProductIds.includes(p.id) &&
+            (relatedSearch === '' || p.name.toLowerCase().includes(relatedSearch.toLowerCase()))
+        );
+    }, [allProducts, form.relatedProductIds, relatedSearch]);
+
+    const selectedRelatedProducts = useMemo(() => {
+        return form.relatedProductIds
+            .map(id => allProducts.find(p => p.id === id))
+            .filter(Boolean) as ProductOption[];
+    }, [allProducts, form.relatedProductIds]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -73,9 +114,10 @@ export default function EditProduct() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...form,
-                    imageUrls: form.imageUrls ? form.imageUrls.split('\n').map(u => u.trim()).filter(Boolean) : [],
+                    imageUrls: form.imageUrls,
                     stockQuantity: parseInt(form.stockQuantity, 10),
                     tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    relatedProductIds: form.relatedProductIds,
                 }),
             });
 
@@ -168,18 +210,90 @@ export default function EditProduct() {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-theme-text-muted text-sm mb-1">Image URLs (one per line)</label>
-                        <textarea rows={3} value={form.imageUrls}
-                            onChange={(e) => setForm({ ...form, imageUrls: e.target.value })}
-                            className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none" />
-                    </div>
+                    <ImageUploader
+                        value={form.imageUrls}
+                        onChange={(urls) => setForm({ ...form, imageUrls: urls })}
+                        folder="products"
+                    />
 
                     <div>
                         <label className="block text-theme-text-muted text-sm mb-1">Tags (comma separated)</label>
                         <input type="text" value={form.tags}
                             onChange={(e) => setForm({ ...form, tags: e.target.value })}
                             className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none" />
+                    </div>
+
+                    {/* Related Products */}
+                    <div>
+                        <label className="block text-theme-text-muted text-sm mb-1">Related Products</label>
+                        <p className="text-theme-text-muted text-xs mb-2">Select products to show as recommendations on this product&apos;s page.</p>
+
+                        {/* Selected related products */}
+                        {selectedRelatedProducts.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {selectedRelatedProducts.map((p) => (
+                                    <span
+                                        key={p.id}
+                                        className="inline-flex items-center gap-1 px-3 py-1 bg-theme-accent/10 text-theme-accent text-sm rounded-full"
+                                    >
+                                        {p.name}
+                                        <button
+                                            type="button"
+                                            onClick={() => setForm({
+                                                ...form,
+                                                relatedProductIds: form.relatedProductIds.filter(id => id !== p.id),
+                                            })}
+                                            className="hover:text-red-400 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Searchable dropdown */}
+                        <div className="relative" ref={relatedDropdownRef}>
+                            <div className="relative">
+                                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-muted" />
+                                <input
+                                    type="text"
+                                    placeholder="Search products to add..."
+                                    value={relatedSearch}
+                                    onChange={(e) => {
+                                        setRelatedSearch(e.target.value);
+                                        setRelatedDropdownOpen(true);
+                                    }}
+                                    onFocus={() => setRelatedDropdownOpen(true)}
+                                    className="w-full pl-9 pr-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                                />
+                            </div>
+                            {relatedDropdownOpen && filteredProducts.length > 0 && (
+                                <div className="absolute z-20 w-full mt-1 bg-theme-secondary border border-theme-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {filteredProducts.slice(0, 20).map((p) => (
+                                        <button
+                                            key={p.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setForm({
+                                                    ...form,
+                                                    relatedProductIds: [...form.relatedProductIds, p.id],
+                                                });
+                                                setRelatedSearch('');
+                                                setRelatedDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2 hover:bg-theme-accent/10 text-theme-text text-sm flex items-center gap-2 transition-colors"
+                                        >
+                                            {p.imageUrls && p.imageUrls[0] && (
+                                                <img src={p.imageUrls[0]} alt="" className="w-6 h-6 rounded object-cover flex-shrink-0" />
+                                            )}
+                                            <span className="truncate">{p.name}</span>
+                                            <span className="text-theme-text-muted text-xs ml-auto flex-shrink-0">{p.category?.name}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex gap-6">

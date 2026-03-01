@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Save, X, FolderPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, FolderPlus, Star, Zap, Send } from 'lucide-react';
 
 interface WholesaleItem {
     id: string;
@@ -10,6 +10,8 @@ interface WholesaleItem {
     unit: string;
     price: string;
     isAvailable: boolean;
+    isTodaysSpecial: boolean;
+    isFeatured: boolean;
     sortOrder: number;
     categoryId: string;
 }
@@ -35,7 +37,13 @@ export default function AdminWholesale() {
 
     // Edit item
     const [editingItem, setEditingItem] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState({ name: '', description: '', unit: '', price: '', isAvailable: true });
+    const [editForm, setEditForm] = useState({ name: '', description: '', unit: '', price: '', isAvailable: true, isTodaysSpecial: false, isFeatured: false });
+
+    // Broadcast modal
+    const [showBroadcast, setShowBroadcast] = useState(false);
+    const [broadcastForm, setBroadcastForm] = useState({ subject: '', message: '', email: true, sms: true });
+    const [broadcastSending, setBroadcastSending] = useState(false);
+    const [broadcastResult, setBroadcastResult] = useState<string | null>(null);
 
     const fetchData = async () => {
         try {
@@ -114,7 +122,50 @@ export default function AdminWholesale() {
             unit: item.unit,
             price: item.price.toString(),
             isAvailable: item.isAvailable,
+            isTodaysSpecial: item.isTodaysSpecial,
+            isFeatured: item.isFeatured,
         });
+    };
+
+    const toggleItemFlag = async (itemId: string, flag: 'isTodaysSpecial' | 'isFeatured', current: boolean) => {
+        try {
+            const res = await fetch(`/api/admin/wholesale/${itemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: 'item', [flag]: !current }),
+            });
+            if (res.ok) fetchData();
+        } catch (err) {
+            console.error('Failed to toggle flag:', err);
+        }
+    };
+
+    const sendBroadcast = async () => {
+        if (!broadcastForm.subject || !broadcastForm.message) return;
+        setBroadcastSending(true);
+        setBroadcastResult(null);
+        try {
+            const channels: string[] = [];
+            if (broadcastForm.email) channels.push('email');
+            if (broadcastForm.sms) channels.push('sms');
+
+            const res = await fetch('/api/admin/wholesale/broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: broadcastForm.subject, message: broadcastForm.message, channels }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setBroadcastResult(`Sent ${data.emailsSent || 0} emails, ${data.smsSent || 0} SMS`);
+                setTimeout(() => { setShowBroadcast(false); setBroadcastResult(null); }, 3000);
+            } else {
+                setBroadcastResult(data.message || 'Failed to send');
+            }
+        } catch {
+            setBroadcastResult('Failed to send broadcast');
+        } finally {
+            setBroadcastSending(false);
+        }
     };
 
     const saveEditItem = async (itemId: string) => {
@@ -154,13 +205,69 @@ export default function AdminWholesale() {
                     <h2 className="text-3xl font-bold text-theme-text">Wholesale Price List</h2>
                     <p className="text-theme-text-muted mt-1">Manage your wholesale price sheet. Approved wholesale users see this as a read-only list.</p>
                 </div>
-                <button
-                    onClick={() => setShowNewCategory(true)}
-                    className="bg-theme-accent text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-theme-accent/90"
-                >
-                    <FolderPlus size={18} /> Add Category
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowBroadcast(true)}
+                        className="border border-theme-border text-theme-text px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-theme-secondary"
+                    >
+                        <Send size={18} /> Notify Wholesalers
+                    </button>
+                    <button
+                        onClick={() => setShowNewCategory(true)}
+                        className="bg-theme-accent text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-theme-accent/90"
+                    >
+                        <FolderPlus size={18} /> Add Category
+                    </button>
+                </div>
             </div>
+
+            {/* Broadcast Modal */}
+            {showBroadcast && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-theme-secondary border border-theme-border rounded-xl p-6 max-w-md w-full">
+                        <h3 className="text-lg font-bold text-theme-text mb-4">Send Notification to Wholesalers</h3>
+                        <div className="space-y-3">
+                            <input
+                                type="text"
+                                placeholder="Subject"
+                                value={broadcastForm.subject}
+                                onChange={(e) => setBroadcastForm({ ...broadcastForm, subject: e.target.value })}
+                                className="w-full px-4 py-2 bg-theme-primary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                            />
+                            <textarea
+                                rows={4}
+                                placeholder="Message..."
+                                value={broadcastForm.message}
+                                onChange={(e) => setBroadcastForm({ ...broadcastForm, message: e.target.value })}
+                                className="w-full px-4 py-2 bg-theme-primary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                            />
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2 text-theme-text text-sm">
+                                    <input type="checkbox" checked={broadcastForm.email}
+                                        onChange={(e) => setBroadcastForm({ ...broadcastForm, email: e.target.checked })}
+                                        className="accent-theme-accent" /> Email
+                                </label>
+                                <label className="flex items-center gap-2 text-theme-text text-sm">
+                                    <input type="checkbox" checked={broadcastForm.sms}
+                                        onChange={(e) => setBroadcastForm({ ...broadcastForm, sms: e.target.checked })}
+                                        className="accent-theme-accent" /> SMS
+                                </label>
+                            </div>
+                            {broadcastResult && (
+                                <p className="text-sm text-theme-accent">{broadcastResult}</p>
+                            )}
+                            <div className="flex gap-2 justify-end">
+                                <button onClick={() => { setShowBroadcast(false); setBroadcastResult(null); }}
+                                    className="px-4 py-2 text-theme-text-muted hover:text-theme-text text-sm">Cancel</button>
+                                <button onClick={sendBroadcast} disabled={broadcastSending}
+                                    className="bg-theme-accent text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50">
+                                    {broadcastSending ? 'Sending...' : 'Send'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* New Category Form */}
             {showNewCategory && (
@@ -251,6 +358,8 @@ export default function AdminWholesale() {
                                             <th className="text-left p-3 font-medium">Item</th>
                                             <th className="text-left p-3 font-medium">Unit</th>
                                             <th className="text-right p-3 font-medium">Price</th>
+                                            <th className="text-center p-3 font-medium">Special</th>
+                                            <th className="text-center p-3 font-medium">Featured</th>
                                             <th className="text-center p-3 font-medium">Status</th>
                                             <th className="text-right p-3 font-medium">Actions</th>
                                         </tr>
@@ -276,6 +385,18 @@ export default function AdminWholesale() {
                                                                 className="w-full px-2 py-1 bg-theme-primary border border-theme-border rounded text-theme-text text-sm text-right" />
                                                         </td>
                                                         <td className="p-3 text-center">
+                                                            <button onClick={() => setEditForm({ ...editForm, isTodaysSpecial: !editForm.isTodaysSpecial })}
+                                                                className={`p-1.5 rounded ${editForm.isTodaysSpecial ? 'text-yellow-400 bg-yellow-500/20' : 'text-theme-text-muted'}`}>
+                                                                <Zap size={16} />
+                                                            </button>
+                                                        </td>
+                                                        <td className="p-3 text-center">
+                                                            <button onClick={() => setEditForm({ ...editForm, isFeatured: !editForm.isFeatured })}
+                                                                className={`p-1.5 rounded ${editForm.isFeatured ? 'text-theme-accent bg-theme-accent/20' : 'text-theme-text-muted'}`}>
+                                                                <Star size={16} />
+                                                            </button>
+                                                        </td>
+                                                        <td className="p-3 text-center">
                                                             <button onClick={() => setEditForm({ ...editForm, isAvailable: !editForm.isAvailable })}
                                                                 className={`text-xs px-2 py-1 rounded ${editForm.isAvailable ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                                                 {editForm.isAvailable ? 'Available' : 'Hidden'}
@@ -296,6 +417,20 @@ export default function AdminWholesale() {
                                                         </td>
                                                         <td className="p-3 text-theme-text-muted text-sm">{item.unit}</td>
                                                         <td className="p-3 text-theme-text text-right font-medium">${parseFloat(item.price).toFixed(2)}</td>
+                                                        <td className="p-3 text-center">
+                                                            <button onClick={() => toggleItemFlag(item.id, 'isTodaysSpecial', item.isTodaysSpecial)}
+                                                                className={`p-1.5 rounded ${item.isTodaysSpecial ? 'text-yellow-400 bg-yellow-500/20' : 'text-theme-text-muted hover:text-yellow-400'}`}
+                                                                title={item.isTodaysSpecial ? 'Remove from Today\'s Specials' : 'Mark as Today\'s Special'}>
+                                                                <Zap size={16} />
+                                                            </button>
+                                                        </td>
+                                                        <td className="p-3 text-center">
+                                                            <button onClick={() => toggleItemFlag(item.id, 'isFeatured', item.isFeatured)}
+                                                                className={`p-1.5 rounded ${item.isFeatured ? 'text-theme-accent bg-theme-accent/20' : 'text-theme-text-muted hover:text-theme-accent'}`}
+                                                                title={item.isFeatured ? 'Remove Featured' : 'Mark as Featured'}>
+                                                                <Star size={16} />
+                                                            </button>
+                                                        </td>
                                                         <td className="p-3 text-center">
                                                             <span className={`text-xs px-2 py-0.5 rounded ${item.isAvailable ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                                                                 {item.isAvailable ? 'Available' : 'Hidden'}

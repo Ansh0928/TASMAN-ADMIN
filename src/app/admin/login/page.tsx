@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { GoogleIcon } from '@/components/GoogleIcon';
-import { Shield } from 'lucide-react';
+import { Shield, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -40,14 +40,19 @@ export default function AdminLoginPage() {
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-theme-primary px-4 py-12">
             <div className="w-full max-w-sm space-y-6">
-                {/* Header */}
-                <div className="text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium mb-4">
-                        <Shield size={16} />
-                        Team Access
+                {/* Branded Header Bar */}
+                <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-lg p-5 text-center shadow-lg">
+                    <div className="flex justify-center mb-3">
+                        <div className="w-14 h-14 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
+                            <Shield size={28} className="text-white" />
+                        </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-theme-text">Team Sign In</h1>
-                    <p className="text-theme-text-muted mt-1 text-sm">Tasman Star staff &amp; admin access</p>
+                    <h1 className="text-2xl font-bold text-white">Team Sign In</h1>
+                    <p className="text-red-100 mt-1 text-sm">Tasman Star staff &amp; admin access</p>
+                    <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium">
+                        <Lock size={12} />
+                        Team Access Only
+                    </div>
                 </div>
 
                 {fieldError && (

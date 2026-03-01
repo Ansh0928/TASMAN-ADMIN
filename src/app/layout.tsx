@@ -44,12 +44,12 @@ export default async function RootLayout({
 
               {/* Header */}
               <header className="sticky top-0 z-50 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 transition-colors duration-300">
-                <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+                <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
 
                   {/* Logo */}
-                  <div className="flex items-center gap-2">
-                    <a href="/" className="h-16 w-auto flex items-center bg-theme-primary rounded-xl px-2 transition-colors duration-300">
-                      <img src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" className="h-12 w-auto object-contain" />
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a href="/" className="h-12 sm:h-16 w-auto flex items-center bg-theme-primary rounded-xl px-2 transition-colors duration-300">
+                      <img src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" className="h-9 sm:h-12 w-auto object-contain" />
                     </a>
                   </div>
 
@@ -86,7 +86,7 @@ export default async function RootLayout({
               </header>
 
               {/* Mobile Nav */}
-              <nav className="lg:hidden sticky top-20 z-40 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
+              <nav className="lg:hidden sticky top-16 sm:top-20 z-40 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-1 px-4 py-2 min-w-max">
                   <a href="/" className="text-theme-secondary hover:text-[#E2743A] transition-colors text-sm font-medium px-3 py-1.5 rounded-full whitespace-nowrap">Our Business</a>
                   <a href="/about" className="text-theme-secondary hover:text-[#E2743A] transition-colors text-sm font-medium px-3 py-1.5 rounded-full whitespace-nowrap">About Us</a>

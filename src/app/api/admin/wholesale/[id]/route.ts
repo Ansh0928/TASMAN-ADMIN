@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { notifyWholesalersOfUpdate } from '@/lib/wholesale-notifications';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
 
         if (type === 'item') {
-            const { name, description, unit, price, isAvailable, sortOrder, categoryId } = body;
+            const { name, description, unit, price, isAvailable, isTodaysSpecial, isFeatured, sortOrder, categoryId } = body;
             const item = await prisma.wholesalePriceItem.update({
                 where: { id },
                 data: {
@@ -34,10 +35,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                     ...(unit && { unit }),
                     ...(price !== undefined && { price: parseFloat(price) }),
                     ...(isAvailable !== undefined && { isAvailable }),
+                    ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
+                    ...(isFeatured !== undefined && { isFeatured }),
                     ...(sortOrder !== undefined && { sortOrder }),
                     ...(categoryId && { categoryId }),
                 },
             });
+            // Notify wholesalers (fire-and-forget)
+            notifyWholesalersOfUpdate().catch(console.error);
             return NextResponse.json({ item });
         }
 

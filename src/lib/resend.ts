@@ -41,6 +41,7 @@ interface OrderEmailData {
     deliveryState?: string | null;
     deliveryPostcode?: string | null;
     pickupTime?: string | null;
+    invoiceUrl?: string;
 }
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
@@ -128,6 +129,15 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
                 <div style="margin-top: 24px; padding: 16px; background: #f0f9ff; border-radius: 8px; color: #555;">
                     ${fulfillmentInfo}
                 </div>
+
+                ${data.invoiceUrl ? `
+                <!-- Invoice Button -->
+                <div style="text-align: center; margin: 24px 0;">
+                    <a href="${data.invoiceUrl}" style="display: inline-block; background: #FF8543; color: white; font-weight: bold; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px;">
+                        View Invoice
+                    </a>
+                </div>
+                ` : ''}
 
                 <p style="color: #555; margin-top: 24px;">If you have any questions about your order, please contact us at <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a> or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.</p>
             </div>

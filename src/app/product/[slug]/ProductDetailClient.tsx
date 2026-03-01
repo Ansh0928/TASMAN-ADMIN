@@ -90,12 +90,12 @@ export default function ProductDetailClient({
                         </div>
 
                         {product.imageUrls.length > 1 && (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide sm:grid sm:grid-cols-4 sm:overflow-x-visible sm:pb-0">
                                 {product.imageUrls.map((image, idx) => (
                                     <button
                                         key={idx}
                                         onClick={() => setMainImage(image)}
-                                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-colors ${
+                                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-colors shrink-0 w-16 sm:w-auto ${
                                             mainImage === image ? 'border-theme-accent' : 'border-theme-border'
                                         }`}
                                     >
@@ -171,8 +171,8 @@ export default function ProductDetailClient({
                                 </button>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="flex items-center border border-theme-border rounded-xl overflow-hidden">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
+                                <div className="flex items-center border border-theme-border rounded-xl overflow-hidden self-start">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         className="px-4 py-3 text-theme-text hover:bg-theme-secondary transition-colors text-lg"

@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Package } from 'lucide-react';
+import { CheckCircle, Package, FileText } from 'lucide-react';
 import { useCart } from '@/components/CartProvider';
+import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 
 export default function OrderConfirmationPage() {
     const searchParams = useSearchParams();
@@ -148,7 +149,7 @@ export default function OrderConfirmationPage() {
                         </div>
                     )}
 
-                    <div className="space-x-4 pt-4">
+                    <div className="flex flex-wrap justify-center gap-3 pt-4">
                         <Link
                             href="/"
                             className="inline-block px-6 py-2 bg-theme-accent text-white rounded-lg hover:opacity-90 transition-opacity"
@@ -161,11 +162,24 @@ export default function OrderConfirmationPage() {
                         >
                             Continue Shopping
                         </Link>
+                        {order?.stripeInvoiceUrl && (
+                            <a
+                                href={order.stripeInvoiceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-6 py-2 border border-theme-accent text-theme-accent rounded-lg hover:bg-theme-accent/5 transition-colors"
+                            >
+                                <FileText size={16} />
+                                Download Invoice
+                            </a>
+                        )}
                     </div>
 
                     <p className="text-sm text-theme-text-muted pt-4">
                         We've sent a confirmation email to {order?.guestEmail}
                     </p>
+
+                    <PushNotificationPrompt />
                 </div>
             </div>
         </div>

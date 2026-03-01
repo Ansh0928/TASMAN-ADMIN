@@ -174,13 +174,32 @@ export async function POST(request: NextRequest) {
             quantity: 1,
         });
 
+        // Look up or create Stripe customer by email
+        const existingCustomers = await stripe.customers.list({
+            email: guestEmail,
+            limit: 1,
+        });
+
+        let stripeCustomerId: string;
+        if (existingCustomers.data.length > 0) {
+            stripeCustomerId = existingCustomers.data[0].id;
+        } else {
+            const newCustomer = await stripe.customers.create({
+                email: guestEmail,
+                name: guestName,
+                phone: guestPhone,
+            });
+            stripeCustomerId = newCustomer.id;
+        }
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
             success_url: `${process.env.NEXTAUTH_URL}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
             cancel_url: `${process.env.NEXTAUTH_URL}/checkout`,
-            customer_email: guestEmail,
+            customer: stripeCustomerId,
+            invoice_creation: { enabled: true },
             metadata: {
                 orderId: order.id,
             },

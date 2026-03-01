@@ -51,10 +51,10 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
     const isOutOfStock = product.stockQuantity <= 0;
 
     return (
-        <div className="snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px]">
+        <div className="snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]">
             <Link
                 href={`/product/${product.slug}`}
-                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent transition-all group"
+                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent transition-all group h-full flex flex-col"
             >
                 {/* Image container */}
                 <div className="relative aspect-square bg-theme-tertiary overflow-hidden">
@@ -104,14 +104,14 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
                 </div>
 
                 {/* Details */}
-                <div className="p-3">
+                <div className="p-3 flex flex-col flex-1">
                     <h3 className="text-theme-text font-semibold text-sm leading-tight line-clamp-2 mb-1 group-hover:text-theme-accent transition-colors">
                         {product.name}
                     </h3>
                     <p className="text-theme-text-muted text-xs mb-2">
                         {product.unit}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-auto">
                         <span className="text-theme-accent font-bold text-base">
                             ${parseFloat(product.price).toFixed(2)}
                         </span>

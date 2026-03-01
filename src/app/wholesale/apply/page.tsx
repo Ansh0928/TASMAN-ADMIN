@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle, ChevronLeft } from 'lucide-react';
+import { CheckCircle, ChevronLeft, Mail, MessageSquare } from 'lucide-react';
 
 export default function WholesaleApplyPage() {
     const [formData, setFormData] = useState({
@@ -81,9 +81,19 @@ export default function WholesaleApplyPage() {
                         <h1 className="text-4xl font-bold text-theme-text mb-2">Application Submitted!</h1>
                         <p className="text-theme-text-muted">
                             Thank you for applying for wholesale access. Our team will review your application
-                            and you&apos;ll receive an email at <strong className="text-theme-text">{formData.email}</strong> once
+                            and you&apos;ll receive an email and SMS confirmation at <strong className="text-theme-text">{formData.email}</strong> and <strong className="text-theme-text">{formData.phone}</strong> once
                             your application is approved.
                         </p>
+                        <div className="flex items-center justify-center gap-4 mt-4 text-sm text-theme-text-muted">
+                            <span className="inline-flex items-center gap-1.5">
+                                <Mail size={16} className="text-green-500" />
+                                Email confirmation sent
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                                <MessageSquare size={16} className="text-green-500" />
+                                SMS confirmation sent
+                            </span>
+                        </div>
                         <p className="text-theme-text-muted mt-3">
                             This usually takes 1-2 business days. Once approved, you can sign in with your email and password to view wholesale prices.
                         </p>

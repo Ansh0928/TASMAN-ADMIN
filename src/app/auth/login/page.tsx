@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { GoogleIcon } from '@/components/GoogleIcon';
+import { Building2 } from 'lucide-react';
 
 export default function CustomerLoginPage() {
     const router = useRouter();
@@ -90,10 +91,15 @@ export default function CustomerLoginPage() {
                     <Link href="/auth/register" className="text-theme-accent hover:underline font-semibold">Create an account</Link>
                 </p>
 
-                <div className="pt-4 border-t border-theme-border space-y-2">
-                    <Link href="/wholesale/login" className="block text-center text-xs text-theme-text-muted hover:text-theme-accent transition-colors">
-                        Wholesale customer? Sign in here &rarr;
-                    </Link>
+                <Link
+                    href="/wholesale/login"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-theme-border bg-theme-secondary text-theme-text hover:border-theme-accent transition-colors text-sm font-medium"
+                >
+                    <Building2 size={16} className="text-theme-accent" />
+                    Are you a wholesale partner? Sign in here
+                </Link>
+
+                <div className="pt-4 border-t border-theme-border">
                     <Link href="/admin/login" className="block text-center text-xs text-theme-text-muted hover:text-theme-accent transition-colors">
                         Team member? Sign in here &rarr;
                     </Link>

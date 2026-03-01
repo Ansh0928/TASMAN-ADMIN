@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Lock, Clock, XCircle } from 'lucide-react';
+import { ChevronLeft, Lock, Clock, XCircle, Zap, Star } from 'lucide-react';
 import Link from 'next/link';
 
 interface WholesaleCategory {
@@ -19,6 +19,8 @@ interface WholesalePriceItem {
     unit: string;
     price: string;
     isAvailable: boolean;
+    isTodaysSpecial?: boolean;
+    isFeatured?: boolean;
 }
 
 export default function WholesalePricesPage() {
@@ -145,6 +147,38 @@ export default function WholesalePricesPage() {
                         </p>
                     </div>
 
+                    {/* Today's Specials Section */}
+                    {(() => {
+                        const specials = categories.flatMap(c =>
+                            c.items.filter(i => i.isTodaysSpecial && i.isAvailable)
+                        );
+                        if (specials.length === 0) return null;
+                        return (
+                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg overflow-hidden">
+                                <div className="px-6 py-4 border-b border-yellow-500/20 flex items-center gap-2">
+                                    <Zap size={20} className="text-yellow-500" />
+                                    <h2 className="text-xl font-bold text-theme-text">Today&apos;s Specials</h2>
+                                </div>
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                                    {specials.map(item => (
+                                        <div key={item.id} className="bg-theme-secondary/80 border border-theme-border rounded-lg p-4">
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <p className="font-bold text-theme-text">{item.name}</p>
+                                                    <p className="text-theme-text-muted text-sm">{item.unit}</p>
+                                                </div>
+                                                <p className="text-xl font-bold text-theme-accent">${parseFloat(item.price).toFixed(2)}</p>
+                                            </div>
+                                            {item.description && (
+                                                <p className="text-sm text-theme-text-muted mt-2">{item.description}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     {categories.length === 0 ? (
                         <div className="text-center py-12">
                             <p className="text-theme-text-muted">No wholesale categories available yet. Check back soon!</p>
@@ -177,7 +211,19 @@ export default function WholesalePricesPage() {
                                                     >
                                                         <td className="px-6 py-4">
                                                             <div>
-                                                                <p className="font-medium text-theme-text">{item.name}</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="font-medium text-theme-text">{item.name}</p>
+                                                                    {item.isFeatured && (
+                                                                        <span className="flex items-center gap-0.5 text-xs bg-theme-accent/15 text-theme-accent px-1.5 py-0.5 rounded">
+                                                                            <Star size={10} /> Featured
+                                                                        </span>
+                                                                    )}
+                                                                    {item.isTodaysSpecial && (
+                                                                        <span className="flex items-center gap-0.5 text-xs bg-yellow-500/15 text-yellow-500 px-1.5 py-0.5 rounded">
+                                                                            <Zap size={10} /> Special
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                                 {item.description && (
                                                                     <p className="text-sm text-theme-text-muted">{item.description}</p>
                                                                 )}

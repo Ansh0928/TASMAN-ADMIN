@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import ImageUploader from '@/components/admin/ImageUploader';
 
 interface Category {
     id: string;
@@ -22,7 +23,7 @@ export default function NewProduct() {
         description: '',
         price: '',
         categoryId: '',
-        imageUrls: '',
+        imageUrls: [] as string[],
         stockQuantity: '0',
         unit: 'PIECE',
         isAvailable: true,
@@ -49,7 +50,7 @@ export default function NewProduct() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...form,
-                    imageUrls: form.imageUrls ? form.imageUrls.split('\n').map(u => u.trim()).filter(Boolean) : [],
+                    imageUrls: form.imageUrls,
                     stockQuantity: parseInt(form.stockQuantity, 10),
                     tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 }),
@@ -160,16 +161,11 @@ export default function NewProduct() {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-theme-text-muted text-sm mb-1">Image URLs (one per line)</label>
-                        <textarea
-                            rows={3}
-                            placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                            value={form.imageUrls}
-                            onChange={(e) => setForm({ ...form, imageUrls: e.target.value })}
-                            className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
-                        />
-                    </div>
+                    <ImageUploader
+                        value={form.imageUrls}
+                        onChange={(urls) => setForm({ ...form, imageUrls: urls })}
+                        folder="products"
+                    />
 
                     <div>
                         <label className="block text-theme-text-muted text-sm mb-1">Tags (comma separated)</label>

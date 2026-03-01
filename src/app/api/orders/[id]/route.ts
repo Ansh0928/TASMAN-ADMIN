@@ -48,6 +48,7 @@ export async function GET(
                 total: item.total.toString(),
                 product: item.product,
             })),
+            stripeInvoiceUrl: order.stripeInvoiceUrl,
             createdAt: order.createdAt,
         });
     } catch (error) {

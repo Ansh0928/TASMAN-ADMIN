@@ -2,9 +2,96 @@
 
 import { useCart } from '@/components/CartProvider';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Check } from 'lucide-react';
+
+interface RecommendedProduct {
+    id: string;
+    name: string;
+    slug: string;
+    price: string;
+    imageUrls: string[];
+    unit: string;
+    stockQuantity: number;
+    category: { id: string; name: string; slug: string };
+    isFeatured?: boolean;
+    isTodaysSpecial?: boolean;
+    tags?: string[];
+}
+
+function CheckoutRecommendationCard({ product }: { product: RecommendedProduct }) {
+    const { addItem } = useCart();
+    const [added, setAdded] = useState(false);
+
+    const handleAdd = () => {
+        if (product.stockQuantity <= 0) return;
+        addItem({
+            productId: product.id,
+            name: product.name,
+            price: parseFloat(product.price),
+            quantity: 1,
+            image: product.imageUrls[0] || '',
+            unit: product.unit,
+            slug: product.slug,
+        });
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+    };
+
+    const isOutOfStock = product.stockQuantity <= 0;
+
+    return (
+        <div className="flex-shrink-0 w-[160px] sm:w-[180px]">
+            <Link
+                href={`/product/${product.slug}`}
+                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent transition-all group"
+            >
+                <div className="relative aspect-square bg-theme-tertiary overflow-hidden">
+                    {product.imageUrls && product.imageUrls[0] ? (
+                        <img
+                            src={product.imageUrls[0]}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl">🐟</div>
+                    )}
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="text-white text-xs font-bold bg-red-500 px-2 py-0.5 rounded-full">Out of Stock</span>
+                        </div>
+                    )}
+                </div>
+                <div className="p-2">
+                    <h4 className="text-theme-text font-semibold text-xs leading-tight line-clamp-2 mb-1 group-hover:text-theme-accent transition-colors">
+                        {product.name}
+                    </h4>
+                    <div className="flex items-center justify-between gap-1">
+                        <span className="text-theme-accent font-bold text-sm">
+                            ${parseFloat(product.price).toFixed(2)}
+                        </span>
+                        {!isOutOfStock && (
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleAdd();
+                                }}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all ${
+                                    added ? 'bg-emerald-500 scale-110' : 'bg-theme-accent hover:scale-110'
+                                }`}
+                                aria-label="Add to cart"
+                            >
+                                {added ? <Check size={14} /> : '+'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </Link>
+        </div>
+    );
+}
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -12,6 +99,7 @@ export default function CheckoutPage() {
     const [fulfillment, setFulfillment] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([]);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -24,6 +112,26 @@ export default function CheckoutPage() {
         postcode: '',
         pickupTime: '',
     });
+
+    // Fetch cart-based recommendations
+    useEffect(() => {
+        if (items.length === 0) return;
+
+        const productIds = items.map(item => item.productId);
+
+        fetch('/api/products/recommendations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productIds }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                setRecommendations(data.recommendations || []);
+            })
+            .catch(err => {
+                console.error('Failed to fetch recommendations:', err);
+            });
+    }, [items.length]); // refetch when cart item count changes
 
     if (items.length === 0) {
         return (
@@ -140,9 +248,9 @@ export default function CheckoutPage() {
                     </div>
                 )}
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="flex flex-col-reverse lg:flex-row gap-8">
                     {/* Checkout Form */}
-                    <div className="md:col-span-2">
+                    <div className="flex-1 lg:flex-[2]">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Contact Info */}
                             <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
@@ -298,8 +406,8 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Order Summary */}
-                    <div>
-                        <div className="bg-theme-secondary border border-theme-border rounded-lg p-6 sticky top-4">
+                    <div className="lg:flex-1 lg:max-w-sm">
+                        <div className="bg-theme-secondary border border-theme-border rounded-lg p-6 lg:sticky lg:top-24">
                             <h2 className="text-xl font-bold text-theme-text mb-4">Order Summary</h2>
 
                             <div className="space-y-3 mb-4 pb-4 border-b border-theme-border">
@@ -334,6 +442,22 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* You May Also Like - Cart Recommendations */}
+                {recommendations.length > 0 && (
+                    <div className="mt-10 border-t border-theme-border pt-8">
+                        <h2 className="text-2xl font-serif font-bold text-theme-text mb-2">You May Also Like</h2>
+                        <p className="text-theme-text-muted text-sm mb-4">Add something extra to your order</p>
+                        <div
+                            className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4"
+                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                        >
+                            {recommendations.map((product) => (
+                                <CheckoutRecommendationCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -33,6 +33,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             isFeatured: product.isFeatured,
             isTodaysSpecial: product.isTodaysSpecial,
             tags: product.tags,
+            relatedProductIds: product.relatedProductIds,
         });
     } catch (err) {
         console.error('Get product error:', err);
@@ -48,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags } = body;
+        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags, relatedProductIds } = body;
 
         const product = await prisma.product.update({
             where: { id },
@@ -64,6 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 ...(isFeatured !== undefined && { isFeatured }),
                 ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
                 ...(tags && { tags }),
+                ...(relatedProductIds !== undefined && { relatedProductIds }),
             },
             include: { category: true },
         });

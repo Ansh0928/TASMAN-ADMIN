@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { sendPushNotification } from '@/lib/web-push';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -50,6 +51,31 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             where: { id },
             data: { status },
         });
+
+        // Send push notifications to the user if they have subscriptions
+        if (order.userId) {
+            const subscriptions = await prisma.pushSubscription.findMany({
+                where: { userId: order.userId },
+            });
+
+            const statusLabel = status.charAt(0) + status.slice(1).toLowerCase();
+
+            for (const sub of subscriptions) {
+                await sendPushNotification(
+                    {
+                        endpoint: sub.endpoint,
+                        keys: { p256dh: sub.p256dh, auth: sub.auth },
+                    },
+                    {
+                        title: 'Order Update',
+                        body: `Your order is now ${statusLabel}`,
+                        url: `/order-confirmation?order_id=${order.id}`,
+                    }
+                ).catch((err) => {
+                    console.error('Push notification send error:', err);
+                });
+            }
+        }
 
         return NextResponse.json({ order });
     } catch (err) {

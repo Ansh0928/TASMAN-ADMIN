@@ -52,6 +52,34 @@ export async function POST(request: NextRequest) {
                             },
                         });
 
+                        // Retrieve invoice URL if an invoice was created
+                        let invoiceUrl: string | undefined;
+                        if (session.invoice) {
+                            try {
+                                const invoice = await stripe.invoices.retrieve(
+                                    typeof session.invoice === 'string'
+                                        ? session.invoice
+                                        : session.invoice.id
+                                );
+                                const invoiceId = typeof session.invoice === 'string'
+                                    ? session.invoice
+                                    : session.invoice.id;
+                                invoiceUrl = invoice.hosted_invoice_url ?? undefined;
+
+                                await prisma.order.update({
+                                    where: { id: orderId },
+                                    data: {
+                                        stripeInvoiceId: invoiceId,
+                                        stripeInvoiceUrl: invoiceUrl ?? null,
+                                    },
+                                });
+
+                                console.log(`Order ${orderId}: Invoice saved (${invoiceId})`);
+                            } catch (invoiceError) {
+                                console.error(`Order ${orderId}: Failed to retrieve invoice:`, invoiceError);
+                            }
+                        }
+
                         // Reduce stock for each ordered item
                         for (const item of order.items) {
                             await prisma.product.update({
@@ -86,6 +114,7 @@ export async function POST(request: NextRequest) {
                                 deliveryState: order.deliveryState,
                                 deliveryPostcode: order.deliveryPostcode,
                                 pickupTime: order.pickupTime?.toISOString(),
+                                invoiceUrl,
                             });
 
                             // Log notification

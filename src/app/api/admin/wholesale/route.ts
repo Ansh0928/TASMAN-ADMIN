@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { notifyWholesalersOfUpdate } from '@/lib/wholesale-notifications';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
                     sortOrder: sortOrder || 0,
                 },
             });
+            // Notify wholesalers (fire-and-forget)
+            notifyWholesalersOfUpdate().catch(console.error);
             return NextResponse.json({ item }, { status: 201 });
         }
 

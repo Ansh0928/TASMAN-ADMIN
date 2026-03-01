@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { sendWholesaleStatusEmail } from '@/lib/resend';
+import { sendSMS, wholesaleApprovedSMS, wholesaleRejectedSMS } from '@/lib/twilio';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -92,6 +93,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 companyName: user.companyName,
             });
             console.log(`Wholesale ${wholesaleStatus} email to ${user.email}: ${emailResult.success ? 'sent' : 'failed'}`);
+
+            // Send SMS notification (fire-and-forget)
+            if (user.phone) {
+                const smsBody = wholesaleStatus === 'APPROVED'
+                    ? wholesaleApprovedSMS(user.name)
+                    : wholesaleRejectedSMS(user.name);
+                sendSMS(user.phone, smsBody)
+                    .then((r) => console.log(`Wholesale ${wholesaleStatus} SMS to ${user.phone}: ${r.success ? 'sent' : 'failed'}`))
+                    .catch((e) => console.error('Wholesale status SMS error:', e));
+            }
         }
 
         return NextResponse.json({ user });

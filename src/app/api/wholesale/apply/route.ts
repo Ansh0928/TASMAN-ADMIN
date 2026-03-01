@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendWholesaleApplicationReceivedEmail, sendWholesaleNewApplicationAdminEmail } from '@/lib/resend';
+import { sendSMS, wholesaleApplicationReceivedSMS } from '@/lib/twilio';
 
 export async function POST(request: NextRequest) {
     try {
@@ -60,6 +61,13 @@ export async function POST(request: NextRequest) {
         sendWholesaleNewApplicationAdminEmail(emailData)
             .then((r) => console.log(`Wholesale admin notification for ${companyName}: ${r.success ? 'sent' : 'failed'}`))
             .catch((e) => console.error('Wholesale admin notification error:', e));
+
+        // Send SMS to applicant (fire-and-forget)
+        if (phone) {
+            sendSMS(phone, wholesaleApplicationReceivedSMS(contactName))
+                .then((r) => console.log(`Wholesale application SMS to ${phone}: ${r.success ? 'sent' : 'failed'}`))
+                .catch((e) => console.error('Wholesale application SMS error:', e));
+        }
 
         return NextResponse.json(
             { message: 'Application submitted successfully', userId: user.id },
