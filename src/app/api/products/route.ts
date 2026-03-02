@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Products API error:', error);
         return NextResponse.json(
-            { message: 'Internal server error' },
+            { message: 'Internal server error', debug: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         );
     }
