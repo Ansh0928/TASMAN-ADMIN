@@ -70,6 +70,12 @@ describe('POST /api/checkout', () => {
             id: 'cs_test_123',
             url: 'https://checkout.stripe.com/pay/cs_test_123',
         });
+
+        // Default: no promotion codes found
+        stripeMock.promotionCodes.list.mockResolvedValue({ data: [] });
+
+        // Default: coupon retrieve throws (not found)
+        stripeMock.coupons.retrieve.mockRejectedValue(new Error('No such coupon'));
     });
 
     it('creates a Stripe checkout session for valid delivery order', async () => {
@@ -312,5 +318,91 @@ describe('POST /api/checkout', () => {
 
         expect(response.status).toBe(500);
         expect(data.message).toBe('Failed to create checkout session');
+    });
+
+    it('applies discount code when valid promotion code provided', async () => {
+        stripeMock.promotionCodes.list.mockResolvedValue({
+            data: [{
+                id: 'promo_test_123',
+                coupon: {
+                    id: 'coupon_test_123',
+                    percent_off: 10,
+                    amount_off: null,
+                },
+            }],
+        });
+
+        const response = await POST(createRequest({
+            ...validCheckoutBody,
+            discountCode: 'SAVE10',
+        }));
+
+        expect(response.status).toBe(200);
+
+        // Verify order.create includes discount fields
+        const createCall = prismaMock.order.create.mock.calls[0][0];
+        expect(createCall.data.discountCode).toBe('SAVE10');
+        expect(createCall.data.discountAmount.toNumber()).toBeGreaterThan(0);
+
+        // Verify Stripe session has discount applied
+        const sessionCall = stripeMock.checkout.sessions.create.mock.calls[0][0];
+        expect(sessionCall.discounts).toEqual([{ promotion_code: 'promo_test_123' }]);
+    });
+
+    it('applies discount code when valid coupon ID provided', async () => {
+        // No promotion code match
+        stripeMock.promotionCodes.list.mockResolvedValue({ data: [] });
+
+        // Direct coupon ID match
+        stripeMock.coupons.retrieve.mockResolvedValue({
+            id: 'FLAT5',
+            valid: true,
+            percent_off: null,
+            amount_off: 500, // $5 in cents
+        });
+
+        const response = await POST(createRequest({
+            ...validCheckoutBody,
+            discountCode: 'FLAT5',
+        }));
+
+        expect(response.status).toBe(200);
+
+        const createCall = prismaMock.order.create.mock.calls[0][0];
+        expect(createCall.data.discountCode).toBe('FLAT5');
+        expect(createCall.data.discountAmount.toNumber()).toBeGreaterThan(0);
+
+        const sessionCall = stripeMock.checkout.sessions.create.mock.calls[0][0];
+        expect(sessionCall.discounts).toEqual([{ coupon: 'FLAT5' }]);
+    });
+
+    it('ignores invalid discount code silently', async () => {
+        const response = await POST(createRequest({
+            ...validCheckoutBody,
+            discountCode: 'INVALIDCODE',
+        }));
+
+        expect(response.status).toBe(200);
+
+        // Order created without discount
+        const createCall = prismaMock.order.create.mock.calls[0][0];
+        expect(createCall.data.discountCode).toBeNull();
+        expect(createCall.data.discountAmount.toNumber()).toBe(0);
+
+        // Stripe session created without discounts
+        const sessionCall = stripeMock.checkout.sessions.create.mock.calls[0][0];
+        expect(sessionCall.discounts).toBeUndefined();
+    });
+
+    it('stores delivery notes on order', async () => {
+        const response = await POST(createRequest({
+            ...validCheckoutBody,
+            notes: 'Leave at front door',
+        }));
+
+        expect(response.status).toBe(200);
+
+        const createCall = prismaMock.order.create.mock.calls[0][0];
+        expect(createCall.data.notes).toBe('Leave at front door');
     });
 });

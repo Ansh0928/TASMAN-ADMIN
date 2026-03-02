@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function UnauthorizedPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-theme-primary px-4">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-theme-primary px-4">
             <div className="text-center space-y-6">
                 <h1 className="text-4xl font-bold text-theme-text">Access Denied</h1>
                 <p className="text-lg text-theme-text-muted">

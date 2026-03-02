@@ -2,14 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, ShoppingCart, Users, TrendingUp } from 'lucide-react';
+import { Package, ShoppingCart, Users, TrendingUp, RotateCcw } from 'lucide-react';
+
+interface DailyRevenue {
+    date: string;
+    revenue: number;
+}
 
 interface Stats {
     totalOrders: number;
+    confirmedOrders: number;
     totalRevenue: number;
+    totalRefunded: number;
+    netRevenue: number;
     totalProducts: number;
     totalCustomers: number;
     pendingWholesaleApplications: number;
+    dailyRevenue: DailyRevenue[];
 }
 
 export default function AdminDashboard() {
@@ -62,11 +71,23 @@ export default function AdminDashboard() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard icon={ShoppingCart} title="Total Orders" value={stats.totalOrders} />
-                <StatCard icon={TrendingUp} title="Revenue" value={`$${stats.totalRevenue.toFixed(2)}`} />
+                <StatCard icon={TrendingUp} title="Net Revenue" value={`$${stats.netRevenue.toFixed(2)}`} />
                 <StatCard icon={Package} title="Products" value={stats.totalProducts} />
-                <StatCard icon={Users} title="Pending Wholesale" value={stats.pendingWholesaleApplications}
-                    highlight={stats.pendingWholesaleApplications > 0} />
+                {stats.totalRefunded > 0 ? (
+                    <StatCard icon={RotateCcw} title="Refunded" value={`$${stats.totalRefunded.toFixed(2)}`} highlight />
+                ) : (
+                    <StatCard icon={Users} title="Pending Wholesale" value={stats.pendingWholesaleApplications}
+                        highlight={stats.pendingWholesaleApplications > 0} />
+                )}
             </div>
+
+            {/* Daily Revenue Chart */}
+            {stats.dailyRevenue && stats.dailyRevenue.length > 0 && (
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-6 mb-8">
+                    <h3 className="text-lg font-bold text-theme-text mb-4">Revenue (Last 30 Days)</h3>
+                    <RevenueChart data={stats.dailyRevenue} />
+                </div>
+            )}
 
             {/* Quick Links */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -104,5 +125,32 @@ function QuickLink({ href, title, desc }: { href: string; title: string; desc: s
             <h3 className="text-lg font-bold text-theme-text mb-1">{title}</h3>
             <p className="text-theme-text-muted text-sm">{desc}</p>
         </Link>
+    );
+}
+
+function RevenueChart({ data }: { data: DailyRevenue[] }) {
+    const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
+
+    return (
+        <div className="flex items-end gap-[2px] h-32">
+            {data.map((day) => {
+                const height = maxRevenue > 0 ? (day.revenue / maxRevenue) * 100 : 0;
+                const date = new Date(day.date + 'T00:00:00');
+                const label = `${date.getDate()}/${date.getMonth() + 1}`;
+                return (
+                    <div key={day.date} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                        <div
+                            className="w-full bg-theme-accent/60 hover:bg-theme-accent rounded-t transition-colors min-h-[2px]"
+                            style={{ height: `${Math.max(height, 2)}%` }}
+                        />
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-theme-primary border border-theme-border rounded px-2 py-1 text-xs whitespace-nowrap z-10">
+                            <p className="text-theme-text font-bold">${day.revenue.toFixed(2)}</p>
+                            <p className="text-theme-text-muted">{label}</p>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
     );
 }

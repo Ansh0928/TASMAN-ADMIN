@@ -14,6 +14,7 @@ vi.mock('twilio', () => {
 
 import {
     sendSMS,
+    sendOrderStatusSMS,
     wholesaleApplicationReceivedSMS,
     wholesaleApprovedSMS,
     wholesaleRejectedSMS,
@@ -87,5 +88,42 @@ describe('sendSMS', () => {
         expect(result.error).toBeInstanceOf(Error);
 
         process.env.TWILIO_PHONE_NUMBER = originalPhone;
+    });
+});
+
+describe('sendOrderStatusSMS', () => {
+    const orderId = 'order-abcd1234';
+
+    it('returns correct message for PREPARING', () => {
+        const result = sendOrderStatusSMS(orderId, 'PREPARING', 'DELIVERY');
+        expect(result).toContain('ABCD1234');
+        expect(result).toContain('being prepared');
+    });
+
+    it('returns pickup message for READY + PICKUP', () => {
+        const result = sendOrderStatusSMS(orderId, 'READY', 'PICKUP');
+        expect(result).toContain('ABCD1234');
+        expect(result).toContain('ready for pickup');
+        expect(result).toContain('213 Brisbane Rd');
+    });
+
+    it('returns delivery message for READY + DELIVERY', () => {
+        const result = sendOrderStatusSMS(orderId, 'READY', 'DELIVERY');
+        expect(result).toContain('ABCD1234');
+        expect(result).toContain('out for delivery');
+    });
+
+    it('returns correct message for DELIVERED', () => {
+        const result = sendOrderStatusSMS(orderId, 'DELIVERED', 'DELIVERY');
+        expect(result).toContain('ABCD1234');
+        expect(result).toContain('delivered');
+        expect(result).toContain('Enjoy');
+    });
+
+    it('returns correct message for CANCELLED', () => {
+        const result = sendOrderStatusSMS(orderId, 'CANCELLED', 'DELIVERY');
+        expect(result).toContain('ABCD1234');
+        expect(result).toContain('cancelled');
+        expect(result).toContain('info@tasmanstar.com.au');
     });
 });

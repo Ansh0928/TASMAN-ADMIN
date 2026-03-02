@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
             deliveryState,
             deliveryPostcode,
             pickupTime,
+            discountCode,
+            notes,
         } = await request.json();
 
         // Basic validation
@@ -105,8 +107,51 @@ export async function POST(request: NextRequest) {
         });
 
         const serverDeliveryFee = new Decimal(fulfillment === 'DELIVERY' ? 10 : 0);
-        const serverTax = serverSubtotal.plus(serverDeliveryFee).times(0.1);
-        const serverTotal = serverSubtotal.plus(serverDeliveryFee).plus(serverTax);
+
+        // Validate coupon server-side if provided
+        let validatedCouponId: string | undefined;
+        let validatedPromotionCodeId: string | undefined;
+        let serverDiscountAmount = new Decimal(0);
+
+        if (discountCode && typeof discountCode === 'string') {
+            const trimmedCode = discountCode.trim().toUpperCase();
+
+            // Try promotion codes first
+            const promotionCodes = await stripe.promotionCodes.list({
+                code: trimmedCode,
+                active: true,
+                limit: 1,
+            });
+
+            if (promotionCodes.data.length > 0) {
+                const promo = promotionCodes.data[0] as any;
+                validatedCouponId = promo.coupon.id;
+                validatedPromotionCodeId = promo.id;
+                if (promo.coupon.percent_off) {
+                    serverDiscountAmount = serverSubtotal.times(promo.coupon.percent_off).div(100);
+                } else if (promo.coupon.amount_off) {
+                    serverDiscountAmount = Decimal.min(new Decimal(promo.coupon.amount_off).div(100), serverSubtotal);
+                }
+            } else {
+                // Try direct coupon ID
+                try {
+                    const coupon = await stripe.coupons.retrieve(trimmedCode);
+                    if (coupon.valid) {
+                        validatedCouponId = coupon.id;
+                        if (coupon.percent_off) {
+                            serverDiscountAmount = serverSubtotal.times(coupon.percent_off).div(100);
+                        } else if (coupon.amount_off) {
+                            serverDiscountAmount = Decimal.min(new Decimal(coupon.amount_off).div(100), serverSubtotal);
+                        }
+                    }
+                } catch {
+                    // Invalid coupon — ignore silently, no discount applied
+                }
+            }
+        }
+
+        const serverTax = serverSubtotal.plus(serverDeliveryFee).minus(serverDiscountAmount).times(0.1);
+        const serverTotal = serverSubtotal.plus(serverDeliveryFee).minus(serverDiscountAmount).plus(serverTax);
 
         // Create order in database with server-side calculated prices
         const order = await prisma.order.create({
@@ -125,6 +170,9 @@ export async function POST(request: NextRequest) {
                 deliveryFee: serverDeliveryFee,
                 tax: serverTax,
                 total: serverTotal,
+                discountCode: validatedCouponId ? (discountCode as string).trim().toUpperCase() : null,
+                discountAmount: serverDiscountAmount,
+                notes: notes?.trim() || null,
                 items: {
                     create: orderItems.map((item: { productId: string; quantity: number; unitPrice: Decimal; total: Decimal }) => ({
                         productId: item.productId,
@@ -192,8 +240,7 @@ export async function POST(request: NextRequest) {
             stripeCustomerId = newCustomer.id;
         }
 
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+        const sessionParams: any = {
             line_items: lineItems,
             mode: 'payment',
             success_url: `${process.env.NEXTAUTH_URL}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
@@ -203,7 +250,16 @@ export async function POST(request: NextRequest) {
             metadata: {
                 orderId: order.id,
             },
-        });
+        };
+
+        // Apply Stripe discount if coupon was validated
+        if (validatedPromotionCodeId) {
+            sessionParams.discounts = [{ promotion_code: validatedPromotionCodeId }];
+        } else if (validatedCouponId) {
+            sessionParams.discounts = [{ coupon: validatedCouponId }];
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionParams);
 
         // Update order with Stripe session ID
         await prisma.order.update({

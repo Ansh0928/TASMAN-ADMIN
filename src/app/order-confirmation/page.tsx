@@ -44,7 +44,7 @@ export default function OrderConfirmationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+            <div className="min-h-[100dvh] bg-theme-primary flex items-center justify-center">
                 <p className="text-theme-text-muted">Loading order details...</p>
             </div>
         );

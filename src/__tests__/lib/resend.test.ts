@@ -16,6 +16,9 @@ vi.mock('resend', () => ({
 
 import {
     sendOrderConfirmationEmail,
+    sendOrderStatusEmail,
+    sendRefundNotificationEmail,
+    sendPaymentFailureEmail,
     sendWholesaleApplicationReceivedEmail,
     sendWholesaleNewApplicationAdminEmail,
     sendWholesaleStatusEmail,
@@ -206,6 +209,114 @@ describe('Resend email functions', () => {
 
             expect(result.success).toBe(false);
             expect(result.error).toBeInstanceOf(Error);
+        });
+    });
+
+    describe('sendOrderStatusEmail', () => {
+        it('sends PREPARING email with correct subject and recipient', async () => {
+            await sendOrderStatusEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'John',
+                customerEmail: 'john@test.com',
+                status: 'PREPARING',
+                fulfillment: 'DELIVERY',
+            });
+
+            expect(mockEmailsSend).toHaveBeenCalledTimes(1);
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.to).toBe('john@test.com');
+            expect(call.subject).toContain('Order Update');
+            expect(call.subject).toContain('ABCD1234');
+            expect(call.html).toContain('preparing');
+        });
+
+        it('sends CANCELLED email with correct subject', async () => {
+            await sendOrderStatusEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'John',
+                customerEmail: 'john@test.com',
+                status: 'CANCELLED',
+                fulfillment: 'DELIVERY',
+            });
+
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.subject).toContain('cancelled');
+        });
+
+        it('returns error for unknown status', async () => {
+            const result = await sendOrderStatusEmail({
+                orderId: 'order-1',
+                customerName: 'John',
+                customerEmail: 'john@test.com',
+                status: 'UNKNOWN' as any,
+                fulfillment: 'DELIVERY',
+            });
+
+            expect(result.success).toBe(false);
+            expect(mockEmailsSend).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('sendRefundNotificationEmail', () => {
+        it('sends full refund email with correct subject', async () => {
+            await sendRefundNotificationEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'Jane',
+                customerEmail: 'jane@test.com',
+                refundAmount: '50.00',
+                isFullRefund: true,
+            });
+
+            expect(mockEmailsSend).toHaveBeenCalledTimes(1);
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.to).toBe('jane@test.com');
+            expect(call.subject).toContain('Refund Processed');
+            expect(call.subject).toContain('ABCD1234');
+            expect(call.html).toContain('Full Refund');
+            expect(call.html).toContain('$50.00');
+        });
+
+        it('sends partial refund email', async () => {
+            await sendRefundNotificationEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'Jane',
+                customerEmail: 'jane@test.com',
+                refundAmount: '25.00',
+                isFullRefund: false,
+            });
+
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.html).toContain('Partial Refund');
+            expect(call.html).toContain('$25.00');
+        });
+    });
+
+    describe('sendPaymentFailureEmail', () => {
+        it('sends payment failure email with correct subject', async () => {
+            await sendPaymentFailureEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'Bob',
+                customerEmail: 'bob@test.com',
+            });
+
+            expect(mockEmailsSend).toHaveBeenCalledTimes(1);
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.to).toBe('bob@test.com');
+            expect(call.subject).toContain('Payment Issue');
+            expect(call.subject).toContain('ABCD1234');
+            expect(call.html).toContain("didn't go through");
+        });
+
+        it('includes retry link in the email', async () => {
+            await sendPaymentFailureEmail({
+                orderId: 'order-abcd1234',
+                customerName: 'Bob',
+                customerEmail: 'bob@test.com',
+            });
+
+            const call = mockEmailsSend.mock.calls[0][0];
+            expect(call.html).toContain('/checkout');
+            expect(call.html).toContain('Try Again');
         });
     });
 });

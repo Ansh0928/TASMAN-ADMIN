@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Truck, Store } from 'lucide-react';
+import { ChevronDown, ChevronUp, Truck, Store, ExternalLink, AlertTriangle, StickyNote } from 'lucide-react';
 
 interface OrderItem {
     productName: string;
@@ -17,6 +17,16 @@ interface Order {
     status: string;
     fulfillment: string;
     total: string;
+    subtotal: string;
+    deliveryFee: string;
+    tax: string;
+    discountCode: string | null;
+    discountAmount: string;
+    notes: string | null;
+    stripePaymentIntent: string | null;
+    stripeInvoiceUrl: string | null;
+    refundStatus: string;
+    refundedAmount: string;
     itemCount: number;
     items: OrderItem[];
     createdAt: string;
@@ -32,6 +42,11 @@ const STATUS_COLORS: Record<string, string> = {
     CANCELLED: 'bg-red-500/20 text-red-400',
 };
 
+const REFUND_COLORS: Record<string, string> = {
+    PARTIAL: 'bg-orange-500/20 text-orange-400',
+    FULL: 'bg-red-500/20 text-red-400',
+};
+
 export default function AdminOrders() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -39,6 +54,14 @@ export default function AdminOrders() {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    // Refund UI state
+    const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+    const [refundAmount, setRefundAmount] = useState('');
+    const [refundReason, setRefundReason] = useState('requested_by_customer');
+    const [refundLoading, setRefundLoading] = useState(false);
+    const [refundError, setRefundError] = useState('');
+    const [refundSuccess, setRefundSuccess] = useState('');
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -75,6 +98,50 @@ export default function AdminOrders() {
         }
     };
 
+    const handleRefund = async (orderId: string, fullRefund: boolean) => {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const maxRefundable = parseFloat(order.total) - parseFloat(order.refundedAmount);
+        const amount = fullRefund ? maxRefundable : parseFloat(refundAmount);
+
+        if (!fullRefund && (isNaN(amount) || amount <= 0 || amount > maxRefundable)) {
+            setRefundError(`Amount must be between $0.01 and $${maxRefundable.toFixed(2)}`);
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to refund $${amount.toFixed(2)}?`)) return;
+
+        setRefundLoading(true);
+        setRefundError('');
+        setRefundSuccess('');
+
+        try {
+            const res = await fetch(`/api/admin/orders/${orderId}/refund`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: fullRefund ? undefined : amount,
+                    reason: refundReason,
+                }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setRefundSuccess(`Refunded $${data.refundAmount.toFixed(2)} successfully`);
+                setRefundOrderId(null);
+                setRefundAmount('');
+                fetchOrders(); // Refresh to show updated status
+            } else {
+                setRefundError(data.message || 'Failed to process refund');
+            }
+        } catch {
+            setRefundError('Failed to process refund');
+        } finally {
+            setRefundLoading(false);
+        }
+    };
+
     return (
         <>
             <div className="flex items-center justify-between mb-6">
@@ -98,6 +165,14 @@ export default function AdminOrders() {
                 ))}
             </div>
 
+            {/* Refund Success Message */}
+            {refundSuccess && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mb-4 text-emerald-400 text-sm flex justify-between items-center">
+                    <span>{refundSuccess}</span>
+                    <button onClick={() => setRefundSuccess('')} className="text-emerald-400 hover:text-emerald-300">&times;</button>
+                </div>
+            )}
+
             {loading ? (
                 <p className="text-theme-text-muted text-center py-8">Loading orders...</p>
             ) : orders.length === 0 ? (
@@ -113,16 +188,22 @@ export default function AdminOrders() {
                             >
                                 <div className="flex items-center gap-4">
                                     <div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <span className="text-theme-text font-mono text-sm">#{order.id.slice(-8)}</span>
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[order.status] || ''}`}>
                                                 {order.status}
                                             </span>
+                                            {order.refundStatus !== 'NONE' && (
+                                                <span className={`text-xs px-2 py-0.5 rounded-full ${REFUND_COLORS[order.refundStatus] || ''}`}>
+                                                    {order.refundStatus === 'PARTIAL' ? 'Partial Refund' : 'Refunded'}
+                                                </span>
+                                            )}
                                             {order.fulfillment === 'DELIVERY' ? (
                                                 <Truck size={14} className="text-theme-text-muted" />
                                             ) : (
                                                 <Store size={14} className="text-theme-text-muted" />
                                             )}
+                                            {order.notes && <StickyNote size={14} className="text-yellow-400" />}
                                         </div>
                                         <p className="text-theme-text-muted text-sm mt-1">
                                             {order.customerName} &middot; {order.itemCount} item{order.itemCount !== 1 ? 's' : ''}
@@ -163,6 +244,17 @@ export default function AdminOrders() {
                                         </div>
                                     </div>
 
+                                    {/* Delivery Notes */}
+                                    {order.notes && (
+                                        <div className="mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                                            <p className="text-yellow-400 text-sm font-medium flex items-center gap-1.5">
+                                                <StickyNote size={14} />
+                                                Delivery Notes
+                                            </p>
+                                            <p className="text-theme-text text-sm mt-1">{order.notes}</p>
+                                        </div>
+                                    )}
+
                                     {/* Order Items */}
                                     <table className="w-full text-sm">
                                         <thead>
@@ -184,6 +276,125 @@ export default function AdminOrders() {
                                             ))}
                                         </tbody>
                                     </table>
+
+                                    {/* Payment Breakdown */}
+                                    <div className="mt-4 pt-4 border-t border-theme-border">
+                                        <h4 className="text-theme-text font-semibold text-sm mb-2">Payment Details</h4>
+                                        <div className="grid grid-cols-2 gap-1 text-sm max-w-xs">
+                                            <span className="text-theme-text-muted">Subtotal</span>
+                                            <span className="text-theme-text text-right">${parseFloat(order.subtotal).toFixed(2)}</span>
+                                            {parseFloat(order.discountAmount) > 0 && (
+                                                <>
+                                                    <span className="text-emerald-400">Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span>
+                                                    <span className="text-emerald-400 text-right">-${parseFloat(order.discountAmount).toFixed(2)}</span>
+                                                </>
+                                            )}
+                                            <span className="text-theme-text-muted">Delivery</span>
+                                            <span className="text-theme-text text-right">${parseFloat(order.deliveryFee).toFixed(2)}</span>
+                                            <span className="text-theme-text-muted">GST</span>
+                                            <span className="text-theme-text text-right">${parseFloat(order.tax).toFixed(2)}</span>
+                                            <span className="text-theme-text font-bold">Total</span>
+                                            <span className="text-theme-accent font-bold text-right">${parseFloat(order.total).toFixed(2)}</span>
+                                            {parseFloat(order.refundedAmount) > 0 && (
+                                                <>
+                                                    <span className="text-red-400">Refunded</span>
+                                                    <span className="text-red-400 text-right">-${parseFloat(order.refundedAmount).toFixed(2)}</span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Payment Intent & Invoice */}
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            {order.stripePaymentIntent && (
+                                                <span className="text-xs text-theme-text-muted bg-theme-primary px-2 py-1 rounded font-mono">
+                                                    {order.stripePaymentIntent}
+                                                </span>
+                                            )}
+                                            {order.stripeInvoiceUrl && (
+                                                <a
+                                                    href={order.stripeInvoiceUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-theme-accent hover:underline flex items-center gap-1"
+                                                >
+                                                    View Invoice <ExternalLink size={10} />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Refund Controls */}
+                                    {order.stripePaymentIntent && order.refundStatus !== 'FULL' && (
+                                        <div className="mt-4 pt-4 border-t border-theme-border">
+                                            <h4 className="text-theme-text font-semibold text-sm mb-2 flex items-center gap-1.5">
+                                                <AlertTriangle size={14} className="text-theme-accent" />
+                                                Refund
+                                            </h4>
+                                            {refundOrderId === order.id ? (
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2 items-end flex-wrap">
+                                                        <div>
+                                                            <label className="block text-xs text-theme-text-muted mb-1">Amount (AUD)</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                min="0.01"
+                                                                max={(parseFloat(order.total) - parseFloat(order.refundedAmount)).toFixed(2)}
+                                                                value={refundAmount}
+                                                                onChange={(e) => setRefundAmount(e.target.value)}
+                                                                placeholder={(parseFloat(order.total) - parseFloat(order.refundedAmount)).toFixed(2)}
+                                                                className="px-2 py-1 w-28 text-sm bg-theme-primary border border-theme-border rounded text-theme-text focus:border-theme-accent focus:outline-none"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs text-theme-text-muted mb-1">Reason</label>
+                                                            <select
+                                                                value={refundReason}
+                                                                onChange={(e) => setRefundReason(e.target.value)}
+                                                                className="px-2 py-1 text-sm bg-theme-primary border border-theme-border rounded text-theme-text focus:border-theme-accent focus:outline-none"
+                                                            >
+                                                                <option value="requested_by_customer">Customer Request</option>
+                                                                <option value="duplicate">Duplicate</option>
+                                                                <option value="fraudulent">Fraudulent</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    {refundError && (
+                                                        <p className="text-red-400 text-xs">{refundError}</p>
+                                                    )}
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleRefund(order.id, false)}
+                                                            disabled={refundLoading}
+                                                            className="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                                                        >
+                                                            {refundLoading ? 'Processing...' : 'Partial Refund'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleRefund(order.id, true)}
+                                                            disabled={refundLoading}
+                                                            className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 transition-colors"
+                                                        >
+                                                            {refundLoading ? 'Processing...' : 'Full Refund'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setRefundOrderId(null); setRefundError(''); }}
+                                                            className="px-3 py-1 text-sm text-theme-text-muted hover:text-theme-text transition-colors"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { setRefundOrderId(order.id); setRefundAmount(''); setRefundError(''); }}
+                                                    className="px-3 py-1 text-sm bg-theme-primary border border-theme-border rounded text-theme-text hover:border-red-500 hover:text-red-400 transition-colors"
+                                                >
+                                                    Process Refund
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

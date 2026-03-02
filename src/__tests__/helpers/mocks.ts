@@ -19,6 +19,7 @@ export const prismaMock = {
     order: {
         findMany: vi.fn(),
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         count: vi.fn(),
@@ -96,6 +97,15 @@ export const stripeMock = {
     },
     invoices: {
         retrieve: vi.fn(),
+    },
+    promotionCodes: {
+        list: vi.fn(),
+    },
+    coupons: {
+        retrieve: vi.fn(),
+    },
+    refunds: {
+        create: vi.fn(),
     },
 };
 
@@ -209,14 +219,29 @@ export const factories = {
         total: '109.89',
         subtotal: '89.99',
         gst: '9.00',
+        tax: '9.00',
         deliveryFee: '10.00',
         fulfillment: 'DELIVERY',
         stripeSessionId: 'cs_test_123',
+        stripePaymentIntent: null,
         stripeInvoiceId: null,
         stripeInvoiceUrl: null,
+        guestEmail: 'test@example.com',
+        guestName: 'Test User',
+        guestPhone: '+61400000000',
         customerEmail: 'test@example.com',
         customerName: 'Test User',
         deliveryAddress: '123 Test St',
+        deliveryStreet: null,
+        deliveryCity: null,
+        deliveryState: null,
+        deliveryPostcode: null,
+        pickupTime: null,
+        notes: null,
+        discountCode: null,
+        discountAmount: '0',
+        refundStatus: 'NONE',
+        refundedAmount: '0',
         createdAt: new Date(),
         updatedAt: new Date(),
         ...overrides,

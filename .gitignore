@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+*.eml
 
 # debug
 npm-debug.log*
@@ -35,6 +36,18 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Raw source images (converted to WebP in public/assets/products/)
+public/assets/*.HEIC
+public/assets/*.heic
+public/assets/*.JPEG
+public/assets/*.JPG
+public/assets/*.MOV
+public/assets/*.mov
+public/assets/*.PNG
+public/assets/*.doc
+public/assets/*.pages
+public/assets/*.dmg
 
 # typescript
 *.tsbuildinfo
