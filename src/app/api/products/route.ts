@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Products API error:', error);
         return NextResponse.json(
-            { message: 'Internal server error', debug: error instanceof Error ? error.message : String(error) },
+            { message: 'Internal server error', debug: error instanceof Error ? error.message : String(error), dbHost: (process.env.DATABASE_URL || '').replace(/\/\/[^@]+@/, '//***@').split('/')[2]?.split('?')[0] },
             { status: 500 }
         );
     }
