@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Anchor, Handshake, Globe, Truck, Phone, Mail, Fish } from 'lucide-react';
+import { Anchor, Handshake, Globe, Truck, Phone, Mail, Fish, MapPin, Waves } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Our Partners | Tasman Star Seafoods',
@@ -35,6 +35,14 @@ const PARTNERS = [
     },
 ];
 
+const MARQUEE_PARTNERS = [
+    { name: 'Sydney Fish Market', icon: Anchor, color: 'text-blue-400' },
+    { name: 'Brisbane City', icon: MapPin, color: 'text-orange-400' },
+    { name: 'Salmon Kings', icon: Fish, color: 'text-pink-400' },
+    { name: 'Gold Coast Trawlers', icon: Waves, color: 'text-teal-400' },
+    { name: 'Pacific Seafoods', icon: Globe, color: 'text-indigo-400' },
+];
+
 export default function OurPartnerPage() {
     return (
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
@@ -54,6 +62,45 @@ export default function OurPartnerPage() {
             </div>
 
             <main className="container mx-auto px-4 md:px-8 py-16 max-w-5xl flex flex-col gap-16">
+
+                {/* ── Animated Marquee ── */}
+                <section className="w-full overflow-hidden py-12 flex flex-col items-center">
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-theme-text tracking-tight">
+                        Trusted by the best companies
+                    </h2>
+                    <p className="text-theme-text-muted text-center mb-14 max-w-lg">
+                        Companies that have been using our product from the very start.
+                    </p>
+
+                    <div className="relative w-full overflow-hidden">
+                        {/* fade masks */}
+                        <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
+                        <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-[var(--bg-primary)] to-transparent z-10 pointer-events-none" />
+
+                        {/* scrolling track */}
+                        <div
+                            className="flex w-max items-center gap-16 md:gap-24 py-4"
+                            style={{
+                                animation: 'marquee 25s linear infinite',
+                            }}
+                        >
+                            {[...MARQUEE_PARTNERS, ...MARQUEE_PARTNERS].map((p, i) => {
+                                const Icon = p.icon;
+                                return (
+                                    <div
+                                        key={`${p.name}-${i}`}
+                                        className="flex items-center gap-3 opacity-50 hover:opacity-100 transition-opacity duration-300 cursor-default select-none"
+                                    >
+                                        <Icon size={30} className={p.color} strokeWidth={1.5} />
+                                        <span className="text-xl md:text-2xl font-bold text-theme-text whitespace-nowrap">
+                                            {p.name}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
 
                 {/* Partner Grid */}
                 <section>
