@@ -91,7 +91,7 @@ export default function RetailStoresPage() {
                             '@context': 'https://schema.org',
                             '@type': 'LocalBusiness',
                             name: 'Tasman Star Seafoods - Labrador',
-                            description: 'Flagship seafood retail store on the Gold Coast',
+                            description: 'Local branch  retail store on the Gold Coast',
                             telephone: '(07) 5555 1234',
                             address: {
                                 '@type': 'PostalAddress',
@@ -107,7 +107,7 @@ export default function RetailStoresPage() {
                             '@context': 'https://schema.org',
                             '@type': 'LocalBusiness',
                             name: 'Tasman Star Seafoods - Varsity Lakes',
-                            description: 'Local branch seafood retail store',
+                            description: 'Flagship seafood retail store',
                             telephone: '(07) 5555 9876',
                             address: {
                                 '@type': 'PostalAddress',

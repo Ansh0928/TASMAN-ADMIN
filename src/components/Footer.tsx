@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Instagram, Twitter, MapPin, Mail, Phone } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, Phone } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -38,10 +38,6 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Contact Us</h3>
                         <ul className="space-y-4 text-sm">
-                            <li className="flex gap-3">
-                                <MapPin className="text-[#FF8543] shrink-0" size={18} />
-                                <span>213 Brisbane Rd, Labrador QLD<br />201 Varsity Parade, Varsity Lakes QLD</span>
-                            </li>
                             <li className="flex gap-3 items-center">
                                 <Phone className="text-[#FF8543] shrink-0" size={18} />
                                 <span>+61 7 5529 0844</span>
