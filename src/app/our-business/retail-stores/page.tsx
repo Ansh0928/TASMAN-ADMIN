@@ -34,7 +34,7 @@ export default function RetailStoresPage() {
                         <img src="/assets/retail-store.jpeg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                        <div className="inline-block bg-[#FF8543] text-white text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Flagship Store</div>
+                        <div className="inline-block bg-[#FF8543]/10 text-[#FF8543] border border-[#FF8543]/20 text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Local Branch</div>
                         <h2 className="font-serif text-4xl font-bold text-theme-text mb-6">Labrador Market</h2>
 
                         <div className="flex flex-col gap-4 text-theme-text-muted">
@@ -60,7 +60,7 @@ export default function RetailStoresPage() {
                         <img src="/assets/retail-store.jpeg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Store Fresh Shellfish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">
-                        <div className="inline-block bg-[#FF8543]/10 text-[#FF8543] border border-[#FF8543]/20 text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Local Branch</div>
+                        <div className="inline-block bg-[#FF8543] text-white text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Flagship Store</div>
                         <h2 className="font-serif text-4xl font-bold text-theme-text mb-6">Varsity Lakes</h2>
 
                         <div className="flex flex-col gap-4 text-theme-text-muted">
@@ -91,7 +91,7 @@ export default function RetailStoresPage() {
                             '@context': 'https://schema.org',
                             '@type': 'LocalBusiness',
                             name: 'Tasman Star Seafoods - Labrador',
-                            description: 'Local branch  retail store on the Gold Coast',
+                            description: 'Local branch retail store on the Gold Coast',
                             telephone: '(07) 5555 1234',
                             address: {
                                 '@type': 'PostalAddress',
