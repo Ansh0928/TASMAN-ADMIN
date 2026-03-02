@@ -4,11 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft, ShieldAlert, ClipboardList, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft, ShieldAlert, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
 
 const adminNav = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/products', label: 'Products', icon: Package },
+    { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/admin/customers', label: 'Customers', icon: Users },
     { href: '/admin/wholesale', label: 'Wholesale', icon: DollarSign },
@@ -29,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // Loading state
     if (status === 'loading') {
         return (
-            <div className="min-h-screen bg-theme-primary flex items-center justify-center">
+            <div className="min-h-[100dvh] bg-theme-primary flex items-center justify-center">
                 <p className="text-theme-text-muted">Loading...</p>
             </div>
         );
@@ -45,7 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const userRole = (session?.user as any)?.role;
     if (userRole !== 'ADMIN') {
         return (
-            <div className="min-h-screen bg-theme-primary flex items-center justify-center px-4">
+            <div className="min-h-[100dvh] bg-theme-primary flex items-center justify-center px-4">
                 <div className="bg-theme-secondary border border-theme-border rounded-lg p-8 text-center space-y-6 max-w-md">
                     <div className="flex justify-center">
                         <ShieldAlert size={64} className="text-red-500" />

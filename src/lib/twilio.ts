@@ -44,3 +44,23 @@ export function wholesaleRejectedSMS(name: string): string {
 export function wholesalePriceListUpdatedSMS(): string {
     return `Tasman Star Seafoods: Our wholesale price list has been updated. Sign in to view the latest prices and today's specials.`;
 }
+
+// ── Order Status SMS Templates ──
+
+export function sendOrderStatusSMS(orderId: string, status: string, fulfillment: string): string {
+    const orderRef = orderId.slice(-8).toUpperCase();
+    switch (status) {
+        case 'PREPARING':
+            return `Tasman Star: Your order #${orderRef} is being prepared!`;
+        case 'READY':
+            return fulfillment === 'PICKUP'
+                ? `Tasman Star: Order #${orderRef} ready for pickup at 213 Brisbane Rd, Labrador QLD 4215`
+                : `Tasman Star: Order #${orderRef} is out for delivery!`;
+        case 'DELIVERED':
+            return `Tasman Star: Order #${orderRef} delivered. Enjoy your fresh seafood!`;
+        case 'CANCELLED':
+            return `Tasman Star: Order #${orderRef} has been cancelled. Contact us at info@tasmanstar.com.au for questions.`;
+        default:
+            return `Tasman Star: Your order #${orderRef} status updated to ${status}.`;
+    }
+}

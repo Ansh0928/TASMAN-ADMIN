@@ -117,15 +117,15 @@ export default function AdminProducts() {
             ) : (
                 <>
                     {/* Products Table */}
-                    <div className="bg-theme-secondary border border-theme-border rounded-lg overflow-hidden">
+                    <div className="bg-theme-secondary border border-theme-border rounded-lg overflow-hidden relative">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-theme-border">
                                         <th className="text-left p-4 text-theme-text-muted text-sm font-medium">Product</th>
-                                        <th className="text-left p-4 text-theme-text-muted text-sm font-medium">Category</th>
+                                        <th className="text-left p-4 text-theme-text-muted text-sm font-medium hidden sm:table-cell">Category</th>
                                         <th className="text-left p-4 text-theme-text-muted text-sm font-medium">Price</th>
-                                        <th className="text-left p-4 text-theme-text-muted text-sm font-medium">Stock</th>
+                                        <th className="text-left p-4 text-theme-text-muted text-sm font-medium hidden sm:table-cell">Stock</th>
                                         <th className="text-center p-4 text-theme-text-muted text-sm font-medium">Status</th>
                                         <th className="text-right p-4 text-theme-text-muted text-sm font-medium">Actions</th>
                                     </tr>
@@ -141,9 +141,9 @@ export default function AdminProducts() {
                                                     <span className="text-theme-text font-medium">{product.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-theme-text-muted">{product.category.name}</td>
+                                            <td className="p-4 text-theme-text-muted hidden sm:table-cell">{product.category.name}</td>
                                             <td className="p-4 text-theme-text">${parseFloat(product.price).toFixed(2)}</td>
-                                            <td className="p-4">
+                                            <td className="p-4 hidden sm:table-cell">
                                                 <span className={product.stockQuantity < 5 ? 'text-red-400' : 'text-theme-text'}>
                                                     {product.stockQuantity}
                                                 </span>
@@ -177,13 +177,13 @@ export default function AdminProducts() {
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Link
                                                         href={`/admin/products/${product.id}/edit`}
-                                                        className="p-2 text-theme-text-muted hover:text-theme-accent transition-colors"
+                                                        className="p-2.5 text-theme-text-muted hover:text-theme-accent active:text-theme-accent transition-colors"
                                                     >
                                                         <Edit size={16} />
                                                     </Link>
                                                     <button
                                                         onClick={() => handleDelete(product.id, product.name)}
-                                                        className="p-2 text-theme-text-muted hover:text-red-400 transition-colors"
+                                                        className="p-2.5 text-theme-text-muted hover:text-red-400 active:text-red-400 transition-colors"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>

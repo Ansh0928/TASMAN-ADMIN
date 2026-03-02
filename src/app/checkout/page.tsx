@@ -4,7 +4,7 @@ import { useCart } from '@/components/CartProvider';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, Tag, X } from 'lucide-react';
 
 interface RecommendedProduct {
     id: string;
@@ -101,6 +101,17 @@ export default function CheckoutPage() {
     const [error, setError] = useState('');
     const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([]);
 
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+    const [couponError, setCouponError] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<{
+        couponId: string;
+        name: string;
+        percentOff: number | null;
+        amountOff: number | null;
+    } | null>(null);
+
     // Form state
     const [formData, setFormData] = useState({
         email: '',
@@ -111,6 +122,7 @@ export default function CheckoutPage() {
         state: '',
         postcode: '',
         pickupTime: '',
+        notes: '',
     });
 
     // Fetch cart-based recommendations
@@ -157,12 +169,55 @@ export default function CheckoutPage() {
     }
 
     const deliveryFee = fulfillment === 'DELIVERY' ? 10 : 0;
-    const tax = (subtotal + deliveryFee) * 0.1; // 10% tax
-    const total = subtotal + deliveryFee + tax;
+    const discount = appliedCoupon
+        ? appliedCoupon.percentOff
+            ? subtotal * (appliedCoupon.percentOff / 100)
+            : appliedCoupon.amountOff
+                ? Math.min(appliedCoupon.amountOff, subtotal)
+                : 0
+        : 0;
+    const tax = (subtotal + deliveryFee - discount) * 0.1;
+    const total = subtotal + deliveryFee - discount + tax;
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setCouponLoading(true);
+        setCouponError('');
+        try {
+            const res = await fetch('/api/checkout/validate-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: couponCode.trim() }),
+            });
+            const data = await res.json();
+            if (data.valid) {
+                setAppliedCoupon({
+                    couponId: data.couponId,
+                    name: data.name,
+                    percentOff: data.percentOff,
+                    amountOff: data.amountOff,
+                });
+                setCouponError('');
+            } else {
+                setCouponError(data.message || 'Invalid code');
+                setAppliedCoupon(null);
+            }
+        } catch {
+            setCouponError('Failed to validate code');
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError('');
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -209,6 +264,8 @@ export default function CheckoutPage() {
                     deliveryState: fulfillment === 'DELIVERY' ? formData.state : null,
                     deliveryPostcode: fulfillment === 'DELIVERY' ? formData.postcode : null,
                     pickupTime: fulfillment === 'PICKUP' ? new Date(formData.pickupTime).toISOString() : null,
+                    discountCode: appliedCoupon ? couponCode.trim() : null,
+                    notes: formData.notes.trim() || null,
                 }),
             });
 
@@ -286,6 +343,9 @@ export default function CheckoutPage() {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             required
+                                            pattern="^(\+?61|0)[2-478]\d{8}$"
+                                            title="Australian phone number (e.g. 0412345678 or +61412345678)"
+                                            placeholder="0412 345 678"
                                             className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
                                         />
                                     </div>
@@ -369,9 +429,26 @@ export default function CheckoutPage() {
                                                 value={formData.postcode}
                                                 onChange={handleInputChange}
                                                 required
+                                                maxLength={4}
+                                                pattern="[0-9]{4}"
+                                                title="4-digit Australian postcode"
+                                                placeholder="4215"
                                                 className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
                                             />
                                         </div>
+                                    </div>
+
+                                    {/* Delivery Notes */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-theme-text mb-1">Delivery Notes (optional)</label>
+                                        <textarea
+                                            name="notes"
+                                            value={formData.notes}
+                                            onChange={handleInputChange}
+                                            rows={2}
+                                            placeholder="E.g., Leave at front door, ring bell, gate code..."
+                                            className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent resize-none"
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -421,17 +498,61 @@ export default function CheckoutPage() {
                                 ))}
                             </div>
 
+                            {/* Coupon Code */}
+                            <div className="mb-4 pb-4 border-b border-theme-border">
+                                {appliedCoupon ? (
+                                    <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+                                        <div className="flex items-center gap-2">
+                                            <Tag size={14} className="text-emerald-400" />
+                                            <span className="text-emerald-400 text-sm font-medium">{appliedCoupon.name}</span>
+                                        </div>
+                                        <button onClick={removeCoupon} className="text-theme-text-muted hover:text-red-400 transition-colors">
+                                            <X size={14} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value)}
+                                                placeholder="Discount code"
+                                                className="flex-1 px-3 py-1.5 text-sm border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
+                                            />
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                disabled={couponLoading || !couponCode.trim()}
+                                                className="px-3 py-1.5 text-sm bg-theme-accent text-white rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                            >
+                                                {couponLoading ? '...' : 'Apply'}
+                                            </button>
+                                        </div>
+                                        {couponError && (
+                                            <p className="text-red-400 text-xs mt-1">{couponError}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-theme-text-muted">Subtotal</span>
                                     <span className="text-theme-text">${subtotal.toFixed(2)}</span>
                                 </div>
+                                {discount > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-emerald-400">Discount</span>
+                                        <span className="text-emerald-400">-${discount.toFixed(2)}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between">
                                     <span className="text-theme-text-muted">Delivery</span>
                                     <span className="text-theme-text">${deliveryFee.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-theme-text-muted">Tax</span>
+                                    <span className="text-theme-text-muted">GST (10%)</span>
                                     <span className="text-theme-text">${tax.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t border-theme-border">

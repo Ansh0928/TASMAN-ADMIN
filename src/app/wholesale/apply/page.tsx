@@ -71,7 +71,7 @@ export default function WholesaleApplyPage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-theme-primary flex items-center justify-center px-4">
+            <div className="min-h-[100dvh] bg-theme-primary flex items-center justify-center px-4">
                 <div className="bg-theme-secondary border border-theme-border rounded-lg p-8 text-center space-y-6 max-w-2xl">
                     <div className="flex justify-center">
                         <CheckCircle size={64} className="text-green-500" />

@@ -27,7 +27,7 @@ const BUSINESS_CARDS = [
         icon: Globe,
         title: 'Online & Delivery',
         description: 'Order premium seafood online and get it delivered fresh to your door on the Gold Coast.',
-        image: '/assets/fresh.webp',
+        image: '/assets/retail-store.jpeg',
     },
     {
         href: '/our-business/transport',

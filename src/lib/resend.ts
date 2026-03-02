@@ -42,6 +42,9 @@ interface OrderEmailData {
     deliveryPostcode?: string | null;
     pickupTime?: string | null;
     invoiceUrl?: string;
+    deliveryNotes?: string | null;
+    discountCode?: string | null;
+    discountAmount?: string | null;
 }
 
 export async function sendOrderConfirmationEmail(data: OrderEmailData) {
@@ -130,6 +133,12 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
                     ${fulfillmentInfo}
                 </div>
 
+                ${data.deliveryNotes ? `
+                <div style="margin-top: 12px; padding: 12px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
+                    <p style="color: #92400e; font-size: 13px; margin: 0;"><strong>Delivery Notes:</strong> ${data.deliveryNotes}</p>
+                </div>
+                ` : ''}
+
                 ${data.invoiceUrl ? `
                 <!-- Invoice Button -->
                 <div style="text-align: center; margin: 24px 0;">
@@ -163,6 +172,248 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         return { success: true, id: result.data?.id };
     } catch (error) {
         console.error('Failed to send order confirmation email:', error);
+        return { success: false, error };
+    }
+}
+
+// ── Order Status Update Email ──
+
+interface OrderStatusEmailData {
+    orderId: string;
+    customerName: string;
+    customerEmail: string;
+    status: 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+    fulfillment: string;
+    deliveryNotes?: string | null;
+}
+
+const ORDER_STATUS_CONTENT: Record<string, { emoji: string; heading: string; message: string; color: string; bgColor: string; borderColor: string }> = {
+    PREPARING: {
+        emoji: '👨‍🍳',
+        heading: "We're preparing your order!",
+        message: 'Our team is carefully selecting and packing your fresh seafood. We\'ll notify you when it\'s ready.',
+        color: '#7c3aed', bgColor: '#f5f3ff', borderColor: '#c4b5fd',
+    },
+    READY: {
+        emoji: '✅',
+        heading: 'Your order is ready!',
+        message: '',
+        color: '#059669', bgColor: '#f0fdf4', borderColor: '#86efac',
+    },
+    DELIVERED: {
+        emoji: '🎉',
+        heading: 'Your order has been delivered!',
+        message: 'Enjoy your fresh seafood! We hope you love it.',
+        color: '#059669', bgColor: '#f0fdf4', borderColor: '#86efac',
+    },
+    CANCELLED: {
+        emoji: '❌',
+        heading: 'Your order has been cancelled',
+        message: 'If you have any questions or believe this was a mistake, please contact us.',
+        color: '#dc2626', bgColor: '#fef2f2', borderColor: '#fecaca',
+    },
+};
+
+export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
+    const content = ORDER_STATUS_CONTENT[data.status];
+    if (!content) return { success: false, error: 'Unknown status' };
+
+    let statusMessage = content.message;
+    if (data.status === 'READY') {
+        statusMessage = data.fulfillment === 'PICKUP'
+            ? 'Your order is ready for pickup at our store: 213 Brisbane Rd, Labrador QLD 4215.'
+            : 'Your order is out for delivery! Keep an eye out for our driver.';
+    }
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
+                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
+                <p style="color: #ccc; margin: 8px 0 0;">Order Update</p>
+            </div>
+            <div style="padding: 30px;">
+                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+
+                <div style="background: ${content.bgColor}; border: 1px solid ${content.borderColor}; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <p style="font-size: 36px; margin: 0 0 8px;">${content.emoji}</p>
+                    <p style="color: ${content.color}; font-size: 20px; font-weight: bold; margin: 0 0 8px;">${content.heading}</p>
+                    <p style="color: #555; margin: 0;">${statusMessage}</p>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin: 20px 0;">
+                    <p style="color: #666; font-size: 14px; margin: 0;">
+                        <strong>Order #:</strong> ${data.orderId.slice(-8).toUpperCase()}
+                    </p>
+                </div>
+
+                ${data.deliveryNotes ? `
+                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin: 20px 0;">
+                    <p style="color: #92400e; font-size: 13px; margin: 0;">
+                        <strong>Delivery Notes:</strong> ${data.deliveryNotes}
+                    </p>
+                </div>
+                ` : ''}
+
+                <p style="color: #555; margin-top: 24px;">
+                    Questions? Contact us at <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a>
+                    or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
+                </p>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
+                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            to: data.customerEmail,
+            subject: `Order Update #${data.orderId.slice(-8).toUpperCase()} - ${content.heading}`,
+            html,
+        });
+        return { success: true, id: result.data?.id };
+    } catch (error) {
+        console.error('Failed to send order status email:', error);
+        return { success: false, error };
+    }
+}
+
+// ── Refund Notification Email ──
+
+export async function sendRefundNotificationEmail(data: {
+    orderId: string;
+    customerName: string;
+    customerEmail: string;
+    refundAmount: string;
+    isFullRefund: boolean;
+}) {
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
+                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
+                <p style="color: #ccc; margin: 8px 0 0;">Refund Notification</p>
+            </div>
+            <div style="padding: 30px;">
+                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <p style="font-size: 36px; margin: 0 0 8px;">💰</p>
+                    <p style="color: #0369a1; font-size: 20px; font-weight: bold; margin: 0 0 8px;">
+                        ${data.isFullRefund ? 'Full Refund Processed' : 'Partial Refund Processed'}
+                    </p>
+                    <p style="color: #555; margin: 0;">
+                        A refund of <strong>$${parseFloat(data.refundAmount).toFixed(2)} AUD</strong> has been issued for your order.
+                    </p>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 12px 16px; margin: 20px 0;">
+                    <p style="color: #666; font-size: 14px; margin: 0;">
+                        <strong>Order #:</strong> ${data.orderId.slice(-8).toUpperCase()}
+                    </p>
+                </div>
+
+                <p style="color: #555;">The refund will be credited to your original payment method within <strong>5-10 business days</strong>.</p>
+
+                <p style="color: #555; margin-top: 24px;">
+                    Questions? Contact us at <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a>
+                    or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
+                </p>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
+                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            to: data.customerEmail,
+            subject: `Refund Processed - Order #${data.orderId.slice(-8).toUpperCase()}`,
+            html,
+        });
+        return { success: true, id: result.data?.id };
+    } catch (error) {
+        console.error('Failed to send refund notification email:', error);
+        return { success: false, error };
+    }
+}
+
+// ── Payment Failure Recovery Email ──
+
+export async function sendPaymentFailureEmail(data: {
+    orderId: string;
+    customerName: string;
+    customerEmail: string;
+}) {
+    const checkoutUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/checkout`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
+                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
+                <p style="color: #ccc; margin: 8px 0 0;">Payment Issue</p>
+            </div>
+            <div style="padding: 30px;">
+                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                    <p style="font-size: 36px; margin: 0 0 8px;">⚠️</p>
+                    <p style="color: #dc2626; font-size: 20px; font-weight: bold; margin: 0 0 8px;">Payment didn't go through</p>
+                    <p style="color: #555; margin: 0;">Unfortunately, we couldn't process your payment for order #${data.orderId.slice(-8).toUpperCase()}.</p>
+                </div>
+
+                <p style="color: #555;">This can happen for several reasons — expired card, insufficient funds, or a temporary bank issue. You can try again:</p>
+
+                <div style="text-align: center; margin: 24px 0;">
+                    <a href="${checkoutUrl}" style="display: inline-block; background: #FF8543; color: white; font-weight: bold; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px;">
+                        Try Again
+                    </a>
+                </div>
+
+                <p style="color: #555; margin-top: 24px;">
+                    Need help? Contact us at <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a>
+                    or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
+                </p>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
+                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            to: data.customerEmail,
+            subject: `Payment Issue - Order #${data.orderId.slice(-8).toUpperCase()}`,
+            html,
+        });
+        return { success: true, id: result.data?.id };
+    } catch (error) {
+        console.error('Failed to send payment failure email:', error);
         return { success: false, error };
     }
 }
@@ -289,7 +540,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
     try {
         const result = await resend.emails.send({
             from: 'Tasman Star Seafoods <onboarding@resend.dev>',
-            to: 'anshumaansaraf24@gmail.com',
+            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
             subject: `New Wholesale Application - ${data.companyName}`,
             html,
         });

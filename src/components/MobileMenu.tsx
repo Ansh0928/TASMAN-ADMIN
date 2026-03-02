@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut, Building2 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut, Building2, Search } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
 import { logout } from '@/app/actions/auth';
 
@@ -26,7 +26,9 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ user }: MobileMenuProps) {
     const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const pathname = usePathname();
+    const router = useRouter();
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
@@ -42,7 +44,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="lg:hidden fixed top-5 right-4 z-[60] flex items-center justify-center w-10 h-10 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
+                className="lg:hidden fixed top-5 right-4 z-[62] flex items-center justify-center w-10 h-10 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
                 aria-label="Open menu"
                 style={{ display: open ? 'none' : undefined }}
             >
@@ -51,13 +53,13 @@ export default function MobileMenu({ user }: MobileMenuProps) {
 
             {open && (
                 <div
-                    className="fixed inset-0 z-[9998] bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-[70] bg-black/50 lg:hidden"
                     onClick={() => setOpen(false)}
                 />
             )}
 
             <div
-                className={`fixed top-0 right-0 h-full w-72 bg-[#0A192F] z-[9999] transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+                className={`fixed top-0 right-0 h-full w-72 bg-theme-header z-[71] transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
                     open ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
@@ -73,6 +75,30 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                     </button>
                 </div>
 
+                {/* Search */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        const trimmed = searchQuery.trim();
+                        if (!trimmed) return;
+                        router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+                        setSearchQuery('');
+                        setOpen(false);
+                    }}
+                    className="px-6 pt-4"
+                >
+                    <div className="relative">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search seafood..."
+                            className="w-full bg-white/10 text-white placeholder-slate-400 text-sm rounded-xl py-3 pl-10 pr-4 border border-white/10 focus:outline-none focus:border-theme-accent"
+                        />
+                    </div>
+                </form>
+
                 {/* Navigation Links */}
                 <nav className="flex flex-col p-6 gap-1">
                     {NAV_LINKS.map((link) => {
@@ -83,13 +109,13 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                                 href={link.href}
                                 className={`py-3 px-4 rounded-xl text-base font-medium transition-colors ${
                                     isActive
-                                        ? 'bg-[#FF8543]/10 text-[#FF8543]'
+                                        ? 'bg-theme-accent/10 text-theme-accent'
                                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                                 }`}
                             >
                                 {link.label}
                                 {link.label === 'Deals' && (
-                                    <span className="ml-2 w-2 h-2 rounded-full bg-[#FF7F50] animate-pulse inline-block" />
+                                    <span className="ml-2 w-2 h-2 rounded-full bg-theme-accent animate-pulse inline-block" />
                                 )}
                             </a>
                         );
@@ -133,7 +159,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                                 </a>
                                 <a
                                     href="/auth/register"
-                                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#FF8543] text-white font-semibold hover:bg-[#E2743A] transition-colors"
+                                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-theme-accent text-white font-semibold hover:bg-theme-accent/90 active:bg-theme-accent/80 transition-colors"
                                 >
                                     <UserPlus size={18} />
                                     Sign Up

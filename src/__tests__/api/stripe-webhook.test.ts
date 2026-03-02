@@ -4,6 +4,12 @@ import { prismaMock, stripeMock, factories } from '../helpers/mocks';
 const mockSendOrderConfirmationEmail = vi.hoisted(() =>
     vi.fn().mockResolvedValue({ success: true, id: 'email-123' })
 );
+const mockSendPaymentFailureEmail = vi.hoisted(() =>
+    vi.fn().mockResolvedValue({ success: true, id: 'email-456' })
+);
+const mockSendRefundNotificationEmail = vi.hoisted(() =>
+    vi.fn().mockResolvedValue({ success: true, id: 'email-789' })
+);
 
 vi.mock('@/lib/prisma', () => ({
     prisma: prismaMock,
@@ -15,6 +21,8 @@ vi.mock('@/lib/stripe', () => ({
 
 vi.mock('@/lib/resend', () => ({
     sendOrderConfirmationEmail: mockSendOrderConfirmationEmail,
+    sendPaymentFailureEmail: mockSendPaymentFailureEmail,
+    sendRefundNotificationEmail: mockSendRefundNotificationEmail,
 }));
 
 import { POST } from '@/app/api/stripe/webhook/route';
@@ -50,6 +58,9 @@ const mockOrderWithItems = {
         deliveryState: 'QLD',
         deliveryPostcode: '4217',
         pickupTime: null,
+        notes: null,
+        discountCode: null,
+        discountAmount: '0',
     }),
     user: null,
     items: [
@@ -176,6 +187,9 @@ describe('POST /api/stripe/webhook', () => {
             deliveryPostcode: '4217',
             pickupTime: undefined,
             invoiceUrl: undefined,
+            deliveryNotes: null,
+            discountCode: null,
+            discountAmount: '0',
         });
 
         // Verify notification was logged
@@ -304,8 +318,14 @@ describe('POST /api/stripe/webhook', () => {
             },
         };
 
+        const failedOrder = {
+            ...factories.order({ id: 'order-2', status: 'CANCELLED', guestEmail: 'customer@example.com', guestName: 'John Doe' }),
+            user: null,
+        };
+
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
-        prismaMock.order.update.mockResolvedValue({});
+        prismaMock.order.update.mockResolvedValue(failedOrder);
+        prismaMock.notification.create.mockResolvedValue({});
 
         const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
         const data = await response.json();
@@ -315,6 +335,7 @@ describe('POST /api/stripe/webhook', () => {
         expect(prismaMock.order.update).toHaveBeenCalledWith({
             where: { id: 'order-2' },
             data: { status: 'CANCELLED' },
+            include: { user: { select: { name: true, email: true } } },
         });
     });
 
@@ -360,6 +381,96 @@ describe('POST /api/stripe/webhook', () => {
                 type: 'EMAIL',
                 recipient: 'customer@example.com',
                 status: 'FAILED',
+            },
+        });
+    });
+
+    it('handles charge.refunded event', async () => {
+        const stripeEvent = {
+            type: 'charge.refunded',
+            data: {
+                object: {
+                    payment_intent: 'pi_test_123',
+                    amount_refunded: 7698, // $76.98 in cents — full refund
+                },
+            },
+        };
+
+        const orderWithUser = {
+            ...factories.order({
+                id: 'order-1',
+                stripePaymentIntent: 'pi_test_123',
+                total: '76.98',
+                guestEmail: 'customer@example.com',
+                guestName: 'John Doe',
+            }),
+            user: null,
+        };
+
+        stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+        prismaMock.order.findFirst.mockResolvedValue(orderWithUser);
+        prismaMock.order.update.mockResolvedValue({});
+        prismaMock.notification.create.mockResolvedValue({});
+
+        const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.received).toBe(true);
+
+        expect(prismaMock.order.findFirst).toHaveBeenCalledWith({
+            where: { stripePaymentIntent: 'pi_test_123' },
+            include: { user: { select: { name: true, email: true } } },
+        });
+
+        expect(prismaMock.order.update).toHaveBeenCalledWith({
+            where: { id: 'order-1' },
+            data: {
+                refundedAmount: 76.98,
+                refundStatus: 'FULL',
+                status: 'CANCELLED',
+            },
+        });
+    });
+
+    it('handles partial charge.refunded event', async () => {
+        const stripeEvent = {
+            type: 'charge.refunded',
+            data: {
+                object: {
+                    payment_intent: 'pi_test_123',
+                    amount_refunded: 2000, // $20 in cents — partial
+                },
+            },
+        };
+
+        const orderWithUser = {
+            ...factories.order({
+                id: 'order-1',
+                stripePaymentIntent: 'pi_test_123',
+                total: '76.98',
+                guestEmail: 'customer@example.com',
+                guestName: 'John Doe',
+            }),
+            user: null,
+        };
+
+        stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+        prismaMock.order.findFirst.mockResolvedValue(orderWithUser);
+        prismaMock.order.update.mockResolvedValue({});
+        prismaMock.notification.create.mockResolvedValue({});
+
+        const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.received).toBe(true);
+
+        expect(prismaMock.order.update).toHaveBeenCalledWith({
+            where: { id: 'order-1' },
+            data: {
+                refundedAmount: 20,
+                refundStatus: 'PARTIAL',
             },
         });
     });

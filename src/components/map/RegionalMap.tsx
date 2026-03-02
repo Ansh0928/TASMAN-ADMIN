@@ -15,6 +15,7 @@ const regionMapping: Record<string, string> = {
     "Western Australia": "WA",
     "Northern Territory": "NT",
     "Australian Capital Territory": "ACT",
+    "New Zealand": "NZ",
 };
 
 // Regional species data
@@ -93,6 +94,16 @@ const REGIONAL_DATA: Record<string, {
             { name: "Mud Crab", desc: "Massive claws with incredibly sweet, rich meat.", emoji: "🦀" }
         ],
         categorySlug: "whole-fish",
+    },
+    "NZ": {
+        name: "New Zealand",
+        description: "Crystal-clear waters surrounding the islands produce world-class seafood.",
+        species: [
+            { name: "Green-lipped Mussels", desc: "Plump, sweet, and uniquely New Zealand.", emoji: "🦪" },
+            { name: "Hoki", desc: "Mild, white-fleshed deep-sea fish, sustainably caught.", emoji: "🐟" },
+            { name: "Crayfish", desc: "Sweet, succulent rock lobster from pristine waters.", emoji: "🦞" }
+        ],
+        categorySlug: "shellfish",
     }
 };
 
@@ -117,15 +128,15 @@ export default function RegionalMap() {
     }, []);
 
     const regionData = activeRegion ? REGIONAL_DATA[activeRegion] : null;
-    const mapScale = isMobile ? 480 : 800;
-    const projConfig = { scale: mapScale, center: createCoordinates(135, -28) };
+    const mapScale = isMobile ? 380 : 650;
+    const projConfig = { scale: mapScale, center: createCoordinates(150, -30) };
 
     if (!geoData) {
         return (
-            <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
-                <div className="relative w-full h-[400px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
+            <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-theme-accent/20 shadow-2xl">
+                <div className="relative w-full h-[500px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
                     <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-[#FF8543]/30 border-t-[#FF8543] rounded-full animate-spin mx-auto mb-4" />
+                        <div className="w-16 h-16 border-4 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin mx-auto mb-4" />
                         <p className="text-slate-400 text-sm">Loading map...</p>
                     </div>
                 </div>
@@ -134,21 +145,22 @@ export default function RegionalMap() {
     }
 
     return (
-        <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-[#FF8543]/20 shadow-2xl">
+        <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-theme-accent/20 shadow-2xl">
 
             {/* Map Section */}
-            <div className={`relative w-full h-[400px] md:h-[600px] lg:h-[800px] flex items-center justify-center ${!isMobile ? 'perspective-[1000px]' : ''}`}>
+            <div className={`relative w-full h-[500px] md:h-[600px] lg:h-[800px] flex items-center justify-center ${!isMobile ? 'perspective-[1000px]' : ''}`}>
 
                 {/* Hero Text Overlay */}
                 <div className="absolute top-6 md:top-10 left-0 w-full z-20 pointer-events-none text-center flex flex-col items-center px-4">
-                    <p className="text-[#FF8543] text-xs font-bold tracking-[0.3em] uppercase mb-2">Sourcing Map</p>
+                    <p className="text-theme-accent text-xs font-bold tracking-[0.3em] uppercase mb-2">Sourcing Map</p>
                     <h2 className="text-2xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-2 md:mb-4">
                         Explore Our Waters
                     </h2>
                     <p className="hidden sm:block text-slate-300 max-w-lg mx-auto text-xs md:text-sm leading-relaxed backdrop-blur-sm bg-[#0A192F]/50 p-2 md:p-3 rounded-xl border border-white/5">
-                        Discover the premium seafood species we source from the pristine waters around Australia.
+                        Discover the premium seafood species we source from the pristine waters around Australia &amp; New Zealand.
                         <span className="text-white font-semibold"> Tap a region to see what we catch.</span>
                     </p>
+                    <p className="sm:hidden text-slate-400 text-xs mt-1">Tap a region to explore</p>
                 </div>
 
                 {/* Map Container — flat on mobile, oversized isometric on desktop */}
@@ -261,7 +273,7 @@ export default function RegionalMap() {
                             <div className="max-w-4xl mx-auto">
                                 <div className="flex justify-between items-start mb-4 md:mb-6">
                                     <div>
-                                        <p className="text-[#FF8543] text-xs font-bold tracking-[0.3em] uppercase mb-1">Regional Seafood</p>
+                                        <p className="text-theme-accent text-xs font-bold tracking-[0.3em] uppercase mb-1">Regional Seafood</p>
                                         <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-white drop-shadow-md">
                                             {regionData.name}
                                         </h3>
@@ -280,11 +292,11 @@ export default function RegionalMap() {
 
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
                                     {regionData.species.map((sp, idx) => (
-                                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 group hover:border-[#FF8543]/30 transition-all">
-                                            <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center text-2xl md:text-3xl shadow-inner border border-white/5 mb-3 md:mb-4 group-hover:scale-110 group-hover:border-[#FF8543]/50 transition-all">
+                                        <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 group hover:border-theme-accent/30 transition-all">
+                                            <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center text-2xl md:text-3xl shadow-inner border border-white/5 mb-3 md:mb-4 group-hover:scale-110 group-hover:border-theme-accent/50 transition-all">
                                                 {sp.emoji}
                                             </div>
-                                            <h4 className="text-white font-bold text-sm md:text-base tracking-wide mb-1 group-hover:text-[#FF8543] transition-colors">{sp.name}</h4>
+                                            <h4 className="text-white font-bold text-sm md:text-base tracking-wide mb-1 group-hover:text-theme-accent transition-colors">{sp.name}</h4>
                                             <p className="text-slate-400 text-xs md:text-sm leading-snug">{sp.desc}</p>
                                         </div>
                                     ))}
@@ -292,7 +304,7 @@ export default function RegionalMap() {
 
                                 <a
                                     href={regionData.categorySlug ? `/our-business/online-delivery?category=${regionData.categorySlug}` : "/our-business/online-delivery"}
-                                    className="inline-block bg-gradient-to-r from-[#FF8543] to-[#E2743A] hover:to-[#c45e2e] text-white font-bold py-3 md:py-3.5 px-6 md:px-8 rounded-xl shadow-[0_4px_14px_rgba(255,133,67,0.4)] hover:shadow-[0_6px_20px_rgba(255,133,67,0.6)] transition-all uppercase tracking-wider text-xs md:text-sm"
+                                    className="inline-block bg-theme-accent hover:brightness-110 text-white font-bold py-3 md:py-3.5 px-6 md:px-8 rounded-xl shadow-[0_4px_14px_rgba(255,133,67,0.4)] hover:shadow-[0_6px_20px_rgba(255,133,67,0.6)] transition-all uppercase tracking-wider text-xs md:text-sm"
                                 >
                                     Shop {regionData.name} Products
                                 </a>

@@ -4,6 +4,9 @@ import { prismaMock, factories, createMockRequest } from '../../helpers/mocks';
 
 const mockRequireAdmin = vi.hoisted(() => vi.fn());
 const mockSendPushNotification = vi.hoisted(() => vi.fn());
+const mockSendOrderStatusEmail = vi.hoisted(() => vi.fn().mockResolvedValue({ success: true }));
+const mockSendSMS = vi.hoisted(() => vi.fn().mockResolvedValue({ success: true }));
+const mockSendOrderStatusSMS = vi.hoisted(() => vi.fn().mockReturnValue('Status SMS body'));
 
 vi.mock('@/lib/prisma', () => ({
     prisma: prismaMock,
@@ -15,6 +18,15 @@ vi.mock('@/lib/admin-auth', () => ({
 
 vi.mock('@/lib/web-push', () => ({
     sendPushNotification: mockSendPushNotification,
+}));
+
+vi.mock('@/lib/resend', () => ({
+    sendOrderStatusEmail: mockSendOrderStatusEmail,
+}));
+
+vi.mock('@/lib/twilio', () => ({
+    sendSMS: mockSendSMS,
+    sendOrderStatusSMS: mockSendOrderStatusSMS,
 }));
 
 import { GET } from '@/app/api/admin/orders/route';
@@ -195,7 +207,7 @@ describe('Admin Orders API', () => {
     describe('PATCH /api/admin/orders/[id]', () => {
         it('updates order status', async () => {
             adminOk();
-            const updatedOrder = factories.order({ status: 'CONFIRMED', userId: null });
+            const updatedOrder = { ...factories.order({ status: 'CONFIRMED', userId: null }), user: null };
             prismaMock.order.update.mockResolvedValue(updatedOrder);
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
@@ -207,6 +219,9 @@ describe('Admin Orders API', () => {
             expect(prismaMock.order.update).toHaveBeenCalledWith({
                 where: { id: 'order-1' },
                 data: { status: 'CONFIRMED' },
+                include: {
+                    user: { select: { name: true, email: true, phone: true } },
+                },
             });
         });
 
@@ -221,8 +236,12 @@ describe('Admin Orders API', () => {
 
         it('sends push notification on status change when user has subscriptions', async () => {
             adminOk();
-            const updatedOrder = factories.order({ status: 'PREPARING', userId: 'user-1' });
+            const updatedOrder = {
+                ...factories.order({ status: 'PREPARING', userId: 'user-1', guestEmail: 'test@example.com', guestPhone: '+61400000000' }),
+                user: { name: 'Test User', email: 'test@example.com', phone: '+61400000000' },
+            };
             prismaMock.order.update.mockResolvedValue(updatedOrder);
+            prismaMock.notification.create.mockResolvedValue({});
 
             const subscription = {
                 endpoint: 'https://fcm.googleapis.com/fcm/send/test',
@@ -254,7 +273,7 @@ describe('Admin Orders API', () => {
 
         it('does not send push notification when order has no userId', async () => {
             adminOk();
-            const updatedOrder = factories.order({ status: 'CONFIRMED', userId: null });
+            const updatedOrder = { ...factories.order({ status: 'CONFIRMED', userId: null }), user: null };
             prismaMock.order.update.mockResolvedValue(updatedOrder);
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
@@ -262,6 +281,59 @@ describe('Admin Orders API', () => {
 
             expect(prismaMock.pushSubscription.findMany).not.toHaveBeenCalled();
             expect(mockSendPushNotification).not.toHaveBeenCalled();
+        });
+
+        it('sends email and SMS on PREPARING status change', async () => {
+            adminOk();
+            const updatedOrder = {
+                ...factories.order({
+                    status: 'PREPARING',
+                    userId: null,
+                    guestEmail: 'guest@example.com',
+                    guestName: 'Guest User',
+                    guestPhone: '+61400111222',
+                    notes: 'Handle with care',
+                }),
+                user: null,
+            };
+            prismaMock.order.update.mockResolvedValue(updatedOrder);
+            prismaMock.notification.create.mockResolvedValue({});
+
+            const req = createMockRequest('PATCH', { status: 'PREPARING' });
+            const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+
+            expect(res.status).toBe(200);
+
+            // Email should be sent for PREPARING (in notifyStatuses)
+            expect(mockSendOrderStatusEmail).toHaveBeenCalledWith({
+                orderId: 'order-1',
+                customerName: 'Guest User',
+                customerEmail: 'guest@example.com',
+                status: 'PREPARING',
+                fulfillment: 'DELIVERY',
+                deliveryNotes: 'Handle with care',
+            });
+
+            // SMS should be sent
+            expect(mockSendOrderStatusSMS).toHaveBeenCalledWith('order-1', 'PREPARING', 'DELIVERY');
+            expect(mockSendSMS).toHaveBeenCalledWith('+61400111222', 'Status SMS body');
+        });
+
+        it('does not send email/SMS for CONFIRMED status', async () => {
+            adminOk();
+            const updatedOrder = {
+                ...factories.order({ status: 'CONFIRMED', userId: null, guestEmail: 'guest@example.com', guestPhone: '+61400111222' }),
+                user: null,
+            };
+            prismaMock.order.update.mockResolvedValue(updatedOrder);
+
+            const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
+            const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+
+            expect(res.status).toBe(200);
+            // CONFIRMED is NOT in notifyStatuses, so no email/SMS
+            expect(mockSendOrderStatusEmail).not.toHaveBeenCalled();
+            expect(mockSendSMS).not.toHaveBeenCalled();
         });
 
         it('returns 500 on database error', async () => {

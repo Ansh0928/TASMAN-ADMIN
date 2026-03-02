@@ -54,7 +54,7 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
         <div className="snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]">
             <Link
                 href={`/product/${product.slug}`}
-                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent transition-all group h-full flex flex-col"
+                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent active:border-theme-accent transition-all group h-full flex flex-col"
             >
                 {/* Image container */}
                 <div className="relative aspect-square bg-theme-tertiary overflow-hidden">
@@ -83,7 +83,7 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
                     {!isOutOfStock && (
                         <button
                             onClick={handleAddToCart}
-                            className={`absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all z-10 ${
+                            className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all z-10 ${
                                 added
                                     ? 'bg-emerald-500 scale-110'
                                     : 'bg-theme-accent hover:scale-110'

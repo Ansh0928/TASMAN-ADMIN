@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
-import { sendOrderConfirmationEmail } from '@/lib/resend';
+import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendRefundNotificationEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -115,6 +115,9 @@ export async function POST(request: NextRequest) {
                                 deliveryPostcode: order.deliveryPostcode,
                                 pickupTime: order.pickupTime?.toISOString(),
                                 invoiceUrl,
+                                deliveryNotes: order.notes,
+                                discountCode: order.discountCode,
+                                discountAmount: order.discountAmount.toString(),
                             });
 
                             // Log notification
@@ -135,17 +138,93 @@ export async function POST(request: NextRequest) {
                 }
                 break;
 
-            case 'checkout.session.async_payment_failed':
+            case 'checkout.session.async_payment_failed': {
                 const failedSession = event.data.object as any;
                 const failedOrderId = failedSession.metadata?.orderId;
                 if (failedOrderId) {
-                    await prisma.order.update({
+                    const failedOrder = await prisma.order.update({
                         where: { id: failedOrderId },
                         data: { status: 'CANCELLED' },
+                        include: { user: { select: { name: true, email: true } } },
                     });
+
+                    const failedEmail = failedOrder.user?.email || failedOrder.guestEmail;
+                    const failedName = failedOrder.user?.name || failedOrder.guestName || 'Customer';
+
+                    if (failedEmail) {
+                        sendPaymentFailureEmail({
+                            orderId: failedOrder.id,
+                            customerName: failedName,
+                            customerEmail: failedEmail,
+                        }).then(async (result) => {
+                            await prisma.notification.create({
+                                data: {
+                                    orderId: failedOrder.id,
+                                    type: 'EMAIL',
+                                    recipient: failedEmail,
+                                    category: 'payment_failure',
+                                    status: result.success ? 'SENT' : 'FAILED',
+                                },
+                            });
+                        }).catch((err) => console.error('Payment failure email error:', err));
+                    }
+
                     console.log(`Order ${failedOrderId} payment failed`);
                 }
                 break;
+            }
+
+            case 'charge.refunded': {
+                const charge = event.data.object as any;
+                const paymentIntent = charge.payment_intent;
+                if (paymentIntent) {
+                    const order = await prisma.order.findFirst({
+                        where: { stripePaymentIntent: paymentIntent },
+                        include: { user: { select: { name: true, email: true } } },
+                    });
+
+                    if (order) {
+                        const refundedAmountAud = (charge.amount_refunded / 100);
+                        const totalAud = parseFloat(order.total.toString());
+                        const isFullRefund = refundedAmountAud >= totalAud;
+
+                        await prisma.order.update({
+                            where: { id: order.id },
+                            data: {
+                                refundedAmount: refundedAmountAud,
+                                refundStatus: isFullRefund ? 'FULL' : 'PARTIAL',
+                                ...(isFullRefund ? { status: 'CANCELLED' } : {}),
+                            },
+                        });
+
+                        // Send refund notification email
+                        const refundEmail = order.user?.email || order.guestEmail;
+                        const refundName = order.user?.name || order.guestName || 'Customer';
+                        if (refundEmail) {
+                            sendRefundNotificationEmail({
+                                orderId: order.id,
+                                customerName: refundName,
+                                customerEmail: refundEmail,
+                                refundAmount: refundedAmountAud.toFixed(2),
+                                isFullRefund,
+                            }).then(async (result) => {
+                                await prisma.notification.create({
+                                    data: {
+                                        orderId: order.id,
+                                        type: 'EMAIL',
+                                        recipient: refundEmail,
+                                        category: 'refund',
+                                        status: result.success ? 'SENT' : 'FAILED',
+                                    },
+                                });
+                            }).catch((err) => console.error('Refund notification email error:', err));
+                        }
+
+                        console.log(`Order ${order.id}: Refund synced from Stripe ($${refundedAmountAud})`);
+                    }
+                }
+                break;
+            }
         }
 
         return NextResponse.json({ received: true }, { status: 200 });

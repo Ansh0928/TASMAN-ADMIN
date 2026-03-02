@@ -21,12 +21,12 @@ export default function CartSidebar() {
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
                 onClick={() => setCartSideBarOpen(false)}
             />
 
             {/* Sidebar */}
-            <div className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-white text-black z-[101] shadow-2xl flex flex-col transform transition-transform duration-300">
+            <div className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-white text-black z-[61] shadow-2xl flex flex-col transform transition-transform duration-300">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-100">
@@ -42,7 +42,7 @@ export default function CartSidebar() {
                 {/* Loading State */}
                 {isCartLoading && (
                     <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-10 flex items-center justify-center">
-                        <div className="w-8 h-8 border-4 border-[#FF8543] border-t-transparent rounded-full animate-spin" />
+                        <div className="w-8 h-8 border-4 border-theme-accent border-t-transparent rounded-full animate-spin" />
                     </div>
                 )}
 
@@ -56,7 +56,7 @@ export default function CartSidebar() {
                             <p className="text-lg">Your cart is empty.</p>
                             <button
                                 onClick={() => setCartSideBarOpen(false)}
-                                className="text-[#FF8543] font-bold hover:underline"
+                                className="text-theme-accent font-bold hover:underline"
                             >
                                 Continue Shopping
                             </button>
@@ -90,21 +90,21 @@ export default function CartSidebar() {
                                         <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-2 py-1">
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                className="p-1 hover:text-[#FF8543] transition-colors"
+                                                className="p-2 hover:text-theme-accent active:text-theme-accent transition-colors"
                                             >
-                                                <Minus size={14} />
+                                                <Minus size={16} />
                                             </button>
                                             <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="p-1 hover:text-[#FF8543] transition-colors"
+                                                className="p-2 hover:text-theme-accent active:text-theme-accent transition-colors"
                                             >
-                                                <Plus size={14} />
+                                                <Plus size={16} />
                                             </button>
                                         </div>
                                         <button
                                             onClick={() => removeItem(item.id)}
-                                            className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                            className="p-2.5 text-slate-400 hover:text-red-500 active:text-red-500 transition-colors"
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -125,7 +125,7 @@ export default function CartSidebar() {
                         <p className="text-sm text-slate-500 pb-2">Shipping and taxes calculated at checkout.</p>
                         <a
                             href="/checkout"
-                            className="bg-[#FF8543] hover:bg-[#E2743A] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-colors shadow-md text-lg w-full"
+                            className="bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-colors shadow-md text-lg w-full"
                         >
                             Proceed to Checkout
                         </a>
