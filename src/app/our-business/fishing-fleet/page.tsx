@@ -21,19 +21,19 @@ const FLEET_GALLERY = [
         name: 'Harbour Offload',
         designation: 'Daily Fresh Catch',
         quote: 'Every morning our catch is offloaded dockside, iced immediately, and transported in cold-chain vehicles to our processing facility and retail stores.',
-        src: '/assets/products/tasman-star-unload.webp',
+        src: '/assets/products/tasman-star-unload-hq.jpg',
     },
     {
         name: 'Peter K at Sea',
         designation: 'Deep Water Operations',
         quote: 'Operating in the rich fishing grounds off the Gold Coast, the Peter K brings in premium catches of prawns, snapper, and other east coast species.',
-        src: '/assets/products/peter-k.webp',
+        src: '/assets/products/peter-k-hq.jpg',
     },
     {
         name: 'Dockside Operations',
         designation: 'Quality from Boat to Market',
         quote: 'Our experienced crew handles every catch with care. Fish is sorted, graded, and iced on board to maintain peak freshness from the moment it leaves the water.',
-        src: '/assets/products/peter-k-unload.webp',
+        src: '/assets/products/peter-k-unload-hq.jpg',
     },
 ];
 

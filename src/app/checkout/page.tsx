@@ -5,8 +5,11 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Check, Tag, X } from 'lucide-react';
+import { ChevronLeft, Check, Tag, X, CalendarIcon, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface RecommendedProduct {
     id: string;
@@ -130,6 +133,9 @@ export default function CheckoutPage() {
 
     const [savedAddresses, setSavedAddresses] = useState<Array<{ id: string; street: string; city: string; state: string; postcode: string; isDefault: boolean }>>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+
+    const [pickupDate, setPickupDate] = useState<Date | undefined>();
+    const [pickupTime, setPickupTime] = useState('10:00');
 
     useEffect(() => {
         if (session?.user) {
@@ -275,8 +281,9 @@ export default function CheckoutPage() {
                 return;
             }
 
-            if (fulfillment === 'PICKUP' && !formData.pickupTime) {
-                setError('Please select a pickup time');
+            if (fulfillment === 'PICKUP' && !pickupDate) {
+                setError('Please select a pickup date');
+                toast.error('Please select a pickup date');
                 setIsLoading(false);
                 return;
             }
@@ -299,7 +306,9 @@ export default function CheckoutPage() {
                     deliveryCity: fulfillment === 'DELIVERY' ? formData.city : null,
                     deliveryState: fulfillment === 'DELIVERY' ? formData.state : null,
                     deliveryPostcode: fulfillment === 'DELIVERY' ? formData.postcode : null,
-                    pickupTime: fulfillment === 'PICKUP' ? new Date(formData.pickupTime).toISOString() : null,
+                    pickupTime: fulfillment === 'PICKUP' && pickupDate
+                        ? (() => { const [h, m] = pickupTime.split(':').map(Number); const d = new Date(pickupDate); d.setHours(h, m, 0, 0); return d.toISOString(); })()
+                        : null,
                     discountCode: appliedCoupon ? couponCode.trim() : null,
                     notes: formData.notes.trim() || null,
                 }),
@@ -524,20 +533,56 @@ export default function CheckoutPage() {
                                 </div>
                             )}
 
-                            {/* Pickup Time */}
+                            {/* Pickup Date & Time */}
                             {fulfillment === 'PICKUP' && (
                                 <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
-                                    <h2 className="text-xl font-bold text-theme-text mb-4">Pickup Time</h2>
-                                    <div>
-                                        <label className="block text-sm font-medium text-theme-text mb-1">Select pickup time *</label>
-                                        <input
-                                            type="datetime-local"
-                                            name="pickupTime"
-                                            value={formData.pickupTime}
-                                            onChange={handleInputChange}
-                                            required
-                                            className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
-                                        />
+                                    <h2 className="text-xl font-bold text-theme-text mb-4">Pickup Date & Time</h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-theme-text mb-2">Select date *</label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <button
+                                                        type="button"
+                                                        className={`w-full flex items-center gap-2 px-4 py-2.5 border border-theme-border rounded-lg bg-theme-primary text-left transition-colors hover:border-theme-accent focus:outline-none focus:border-theme-accent ${
+                                                            pickupDate ? 'text-theme-text' : 'text-theme-text-muted'
+                                                        }`}
+                                                    >
+                                                        <CalendarIcon size={16} className="text-theme-accent shrink-0" />
+                                                        {pickupDate ? format(pickupDate, 'EEEE, d MMMM yyyy') : 'Pick a date'}
+                                                    </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={pickupDate}
+                                                        onSelect={setPickupDate}
+                                                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-theme-text mb-2">Select time *</label>
+                                            <div className="relative">
+                                                <Clock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-theme-accent" />
+                                                <select
+                                                    value={pickupTime}
+                                                    onChange={(e) => setPickupTime(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-2.5 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent appearance-none cursor-pointer"
+                                                >
+                                                    {Array.from({ length: 19 }, (_, i) => {
+                                                        const hour = Math.floor(i / 2) + 7;
+                                                        const min = i % 2 === 0 ? '00' : '30';
+                                                        const val = `${hour.toString().padStart(2, '0')}:${min}`;
+                                                        const label = `${hour > 12 ? hour - 12 : hour}:${min} ${hour >= 12 ? 'PM' : 'AM'}`;
+                                                        return <option key={val} value={val}>{label}</option>;
+                                                    })}
+                                                </select>
+                                            </div>
+                                            <p className="text-xs text-theme-text-muted mt-1">Store hours: 7:00 AM – 4:00 PM</p>
+                                        </div>
                                     </div>
                                 </div>
                             )}
