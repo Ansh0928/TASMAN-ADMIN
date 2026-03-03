@@ -1,10 +1,12 @@
 'use client';
 
 import { useCart } from '@/components/CartProvider';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Check, Tag, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface RecommendedProduct {
     id: string;
@@ -95,6 +97,7 @@ function CheckoutRecommendationCard({ product }: { product: RecommendedProduct }
 
 export default function CheckoutPage() {
     const router = useRouter();
+    const { data: session } = useSession();
     const { items, subtotal, clearCart } = useCart();
     const [fulfillment, setFulfillment] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [isLoading, setIsLoading] = useState(false);
@@ -124,6 +127,39 @@ export default function CheckoutPage() {
         pickupTime: '',
         notes: '',
     });
+
+    const [savedAddresses, setSavedAddresses] = useState<Array<{ id: string; street: string; city: string; state: string; postcode: string; isDefault: boolean }>>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+
+    useEffect(() => {
+        if (session?.user) {
+            setFormData(prev => ({
+                ...prev,
+                name: prev.name || session.user.name || '',
+                email: prev.email || session.user.email || '',
+            }));
+
+            fetch('/api/addresses')
+                .then(res => res.json())
+                .then((addresses) => {
+                    if (Array.isArray(addresses) && addresses.length > 0) {
+                        setSavedAddresses(addresses);
+                        const defaultAddr = addresses.find((a: { isDefault: boolean }) => a.isDefault) || addresses[0];
+                        if (defaultAddr) {
+                            setSelectedAddressId(defaultAddr.id);
+                            setFormData(prev => ({
+                                ...prev,
+                                street: prev.street || defaultAddr.street,
+                                city: prev.city || defaultAddr.city,
+                                state: prev.state || defaultAddr.state,
+                                postcode: prev.postcode || defaultAddr.postcode,
+                            }));
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+    }, [session]);
 
     // Fetch cart-based recommendations
     useEffect(() => {
@@ -272,7 +308,9 @@ export default function CheckoutPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.message || 'Failed to create checkout session');
+                const msg = data.message || 'Failed to create checkout session';
+                setError(msg);
+                toast.error(msg);
                 return;
             }
 
@@ -282,6 +320,7 @@ export default function CheckoutPage() {
             }
         } catch (err) {
             setError('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.');
             console.error(err);
         } finally {
             setIsLoading(false);
@@ -386,6 +425,38 @@ export default function CheckoutPage() {
                                 <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
                                     <h2 className="text-xl font-bold text-theme-text mb-4">Delivery Address</h2>
                                     <div className="space-y-4">
+                                        {savedAddresses.length > 0 && (
+                                            <div className="mb-4">
+                                                <label className="block text-sm font-medium text-theme-text mb-1">Saved Addresses</label>
+                                                <select
+                                                    value={selectedAddressId}
+                                                    onChange={(e) => {
+                                                        const addr = savedAddresses.find(a => a.id === e.target.value);
+                                                        if (addr) {
+                                                            setSelectedAddressId(addr.id);
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                street: addr.street,
+                                                                city: addr.city,
+                                                                state: addr.state,
+                                                                postcode: addr.postcode,
+                                                            }));
+                                                        } else {
+                                                            setSelectedAddressId('');
+                                                        }
+                                                    }}
+                                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                >
+                                                    {savedAddresses.map(addr => (
+                                                        <option key={addr.id} value={addr.id}>
+                                                            {addr.street}, {addr.city} {addr.state} {addr.postcode}
+                                                            {addr.isDefault ? ' (Default)' : ''}
+                                                        </option>
+                                                    ))}
+                                                    <option value="">Enter new address</option>
+                                                </select>
+                                            </div>
+                                        )}
                                         <div>
                                             <label className="block text-sm font-medium text-theme-text mb-1">Street *</label>
                                             <input

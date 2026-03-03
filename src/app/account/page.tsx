@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SignOutButton } from './SignOutButton';
+import ProfileEditor from './ProfileEditor';
 
 export default async function AccountPage() {
     const session = await auth();
@@ -30,40 +31,30 @@ export default async function AccountPage() {
                         <SignOutButton />
                     </div>
 
-                    {/* Account Info Card */}
-                    <div className="bg-theme-secondary border border-theme-border rounded-xl p-6">
-                        <h2 className="text-xl font-semibold text-theme-text mb-4">Account Information</h2>
-                        <div className="space-y-3 text-theme-text-muted">
-                            <div className="flex justify-between items-center">
-                                <span>Name:</span>
-                                <span className="text-theme-text font-medium">{session.user.name}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Email:</span>
-                                <span className="text-theme-text font-medium">{session.user.email}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span>Account Type:</span>
-                                <span className={`text-xs font-medium px-3 py-1 rounded-full border ${badge.color}`}>
-                                    {badge.label}
+                    {/* Account Info & Profile Editor */}
+                    <div className="bg-theme-secondary border border-theme-border rounded-xl p-6 mb-2">
+                        <div className="flex justify-between items-center">
+                            <span className="text-theme-text-muted">Account Type:</span>
+                            <span className={`text-xs font-medium px-3 py-1 rounded-full border ${badge.color}`}>
+                                {badge.label}
+                            </span>
+                        </div>
+                        {role === 'WHOLESALE' && (
+                            <div className="flex justify-between items-center pt-3 mt-3 border-t border-theme-border">
+                                <span className="text-theme-text-muted">Wholesale Status:</span>
+                                <span className={`text-xs font-medium px-3 py-1 rounded-full border ${
+                                    session.user.wholesaleStatus === 'APPROVED'
+                                        ? 'bg-green-500/15 text-green-400 border-green-500/20'
+                                        : session.user.wholesaleStatus === 'PENDING'
+                                        ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20'
+                                        : 'bg-red-500/15 text-red-400 border-red-500/20'
+                                }`}>
+                                    {session.user.wholesaleStatus || 'Not applied'}
                                 </span>
                             </div>
-                            {role === 'WHOLESALE' && (
-                                <div className="flex justify-between items-center pt-2 border-t border-theme-border">
-                                    <span>Wholesale Status:</span>
-                                    <span className={`text-xs font-medium px-3 py-1 rounded-full border ${
-                                        session.user.wholesaleStatus === 'APPROVED'
-                                            ? 'bg-green-500/15 text-green-400 border-green-500/20'
-                                            : session.user.wholesaleStatus === 'PENDING'
-                                            ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/20'
-                                            : 'bg-red-500/15 text-red-400 border-red-500/20'
-                                    }`}>
-                                        {session.user.wholesaleStatus || 'Not applied'}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
+                    <ProfileEditor />
 
                     {/* Quick Links */}
                     <div className="grid md:grid-cols-2 gap-6">

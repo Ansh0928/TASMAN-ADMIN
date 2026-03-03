@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { toast } from 'sonner';
 
 export type CartItem = {
     id: string;
@@ -67,6 +68,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             }
             return [...prev, { ...item, id: crypto.randomUUID() }];
         });
+        toast.success(`${item.name} added to cart`);
         setCartSideBarOpen(true);
     }, []);
 

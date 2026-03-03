@@ -22,9 +22,10 @@ export interface ProductCardData {
 interface ProductCardProps {
     product: ProductCardData;
     badge?: 'Best Buy' | 'Fresh Pick' | string;
+    gridMode?: boolean;
 }
 
-export default function ProductCard({ product, badge }: ProductCardProps) {
+export default function ProductCard({ product, badge, gridMode }: ProductCardProps) {
     const { addItem } = useCart();
     const [added, setAdded] = useState(false);
 
@@ -51,7 +52,7 @@ export default function ProductCard({ product, badge }: ProductCardProps) {
     const isOutOfStock = product.stockQuantity <= 0;
 
     return (
-        <div className="snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]">
+        <div className={gridMode ? "w-full" : "snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]"}>
             <Link
                 href={`/product/${product.slug}`}
                 className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent active:border-theme-accent transition-all group h-full flex flex-col"

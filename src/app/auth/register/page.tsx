@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { GoogleIcon } from '@/components/GoogleIcon';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -25,8 +26,8 @@ export default function RegisterPage() {
         const confirmPassword = formData.get('confirmPassword') as string;
         const phone = formData.get('phone') as string;
 
-        if (password !== confirmPassword) { setError('Passwords do not match'); setIsLoading(false); return; }
-        if (password.length < 8) { setError('Password must be at least 8 characters'); setIsLoading(false); return; }
+        if (password !== confirmPassword) { setError('Passwords do not match'); toast.error('Passwords do not match'); setIsLoading(false); return; }
+        if (password.length < 8) { setError('Password must be at least 8 characters'); toast.error('Password must be at least 8 characters'); setIsLoading(false); return; }
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -36,15 +37,19 @@ export default function RegisterPage() {
             });
             if (!response.ok) {
                 const data = await response.json();
-                setError(data.message || 'Failed to create account');
+                const msg = data.message || 'Failed to create account';
+                setError(msg);
+                toast.error(msg);
                 return;
             }
             setSuccess(true);
+            toast.success('Account created successfully!');
             const result = await signIn('credentials', { email, password, redirect: false });
             if (result?.ok) { router.push('/'); router.refresh(); }
             else { router.push('/auth/login?message=Account created. Please sign in.'); }
         } catch {
             setError('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }

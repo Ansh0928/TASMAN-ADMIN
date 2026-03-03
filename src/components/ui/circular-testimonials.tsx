@@ -135,7 +135,7 @@ export const CircularTestimonials = ({
                 zIndex: 3,
                 opacity: 1,
                 pointerEvents: "auto",
-                transform: `translateX(0px) translateY(0px) scale(1) rotateY(0deg)`,
+                transform: `translateX(0px) translateY(0px) scale(1)`,
                 transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
             };
         }
@@ -144,7 +144,7 @@ export const CircularTestimonials = ({
                 zIndex: 2,
                 opacity: 1,
                 pointerEvents: "auto",
-                transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(15deg)`,
+                transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85)`,
                 transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
             };
         }
@@ -153,7 +153,7 @@ export const CircularTestimonials = ({
                 zIndex: 2,
                 opacity: 1,
                 pointerEvents: "auto",
-                transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(-15deg)`,
+                transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85)`,
                 transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
             };
         }
@@ -284,7 +284,6 @@ export const CircularTestimonials = ({
           position: relative;
           width: 100%;
           height: 24rem;
-          perspective: 1000px;
         }
         .testimonial-image {
           position: absolute;

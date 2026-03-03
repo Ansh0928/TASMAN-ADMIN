@@ -70,6 +70,8 @@ model User {
   wholesaleStatus WholesaleStatus? @map("wholesale_status")
   companyName     String?          @map("company_name")
   abn             String?
+  passwordResetToken  String?   @unique @map("password_reset_token")
+  passwordResetExpiry DateTime? @map("password_reset_expiry")
   addresses         Address[]
   orders            Order[]
   notifications     Notification[]

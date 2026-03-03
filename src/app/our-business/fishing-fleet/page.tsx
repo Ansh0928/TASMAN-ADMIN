@@ -1,7 +1,41 @@
 'use client';
 
-import { Anchor, Fish, MapPin, Waves, Phone, Mail } from 'lucide-react';
+import { Anchor, Fish, Waves, Phone, Mail } from 'lucide-react';
 import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
+import { CircularTestimonials } from '@/components/ui/circular-testimonials';
+
+const FLEET_GALLERY = [
+    {
+        name: 'Tasman Star Trawlers',
+        designation: 'Commercial Fishing Fleet',
+        quote: 'Our fleet of commercial trawlers operates daily from the Gold Coast, targeting premium species in deep and shallow waters along Australia\'s east coast.',
+        src: '/assets/products/trawlers-hq.jpg',
+    },
+    {
+        name: 'Peter K',
+        designation: 'Prawn Trawler',
+        quote: 'The Peter K is one of our flagship prawn trawlers, purpose-built for harvesting the finest wild-caught prawns from the pristine waters off Queensland.',
+        src: '/assets/products/trawlers-tasman-star-peter-k-hq.jpg',
+    },
+    {
+        name: 'Harbour Offload',
+        designation: 'Daily Fresh Catch',
+        quote: 'Every morning our catch is offloaded dockside, iced immediately, and transported in cold-chain vehicles to our processing facility and retail stores.',
+        src: '/assets/products/tasman-star-unload.webp',
+    },
+    {
+        name: 'Peter K at Sea',
+        designation: 'Deep Water Operations',
+        quote: 'Operating in the rich fishing grounds off the Gold Coast, the Peter K brings in premium catches of prawns, snapper, and other east coast species.',
+        src: '/assets/products/peter-k.webp',
+    },
+    {
+        name: 'Dockside Operations',
+        designation: 'Quality from Boat to Market',
+        quote: 'Our experienced crew handles every catch with care. Fish is sorted, graded, and iced on board to maintain peak freshness from the moment it leaves the water.',
+        src: '/assets/products/peter-k-unload.webp',
+    },
+];
 
 export default function FishingFleetPage() {
     return (
@@ -10,8 +44,8 @@ export default function FishingFleetPage() {
             {/* Scroll Expansion Hero */}
             <ScrollExpandMedia
                 mediaType="image"
-                mediaSrc="/assets/products/trawlers-tasman-star-peter-k.webp"
-                bgImageSrc="/assets/products/peter-k.webp"
+                mediaSrc="/assets/products/vessels-hq.png"
+                bgImageSrc="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop"
                 title="Our Fishing Fleet"
                 date="Boat to Plate"
                 scrollToExpand="Scroll to explore"
@@ -57,75 +91,30 @@ export default function FishingFleetPage() {
                         </div>
                     </section>
 
-                    {/* Where We Fish */}
-                    <section className="bg-theme-secondary rounded-[2.5rem] shadow-sm border border-theme-border overflow-hidden flex flex-col lg:flex-row group transition-all duration-300 hover:shadow-xl">
-                        <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col justify-center">
-                            <div className="inline-flex items-center gap-2 text-[#FF8543] font-semibold tracking-wider uppercase text-sm mb-4">
-                                <Fish size={18} /> Catch Zones
-                            </div>
-                            <h2 className="font-serif text-4xl font-bold text-theme-text mb-6 leading-tight">Where We Fish</h2>
-                            <p className="text-theme-text-muted text-lg leading-relaxed mb-8">
-                                Our vessels fish the rich waters from Moreton Bay down through the Gold Coast Reefs and into the northern Tasman Sea. These cold, nutrient-rich currents produce some of the finest seafood in the world.
-                            </p>
-
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-[#FF8543] shrink-0" />
-                                    <span className="text-theme-text font-medium">Gold Coast Reefs — Prawns, Snapper, Flathead</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-[#FF8543] shrink-0" />
-                                    <span className="text-theme-text font-medium">Moreton Bay — Mud Crab, Bug, Whiting</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-[#FF8543] shrink-0" />
-                                    <span className="text-theme-text font-medium">Tasman Sea — Tuna, Swordfish, Mahi Mahi</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-[#FF8543] shrink-0" />
-                                    <span className="text-theme-text font-medium">Local Harbour — Daily fresh catch offloaded</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-full lg:w-1/2 min-h-[400px] relative">
-                            <img src="/assets/products/peter-k.webp" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Peter K Trawler at Sea" />
-                        </div>
-                    </section>
-
-                    {/* Fleet Gallery */}
+                    {/* Our Fleet in Action — Circular Testimonials Carousel */}
                     <section>
-                        <h2 className="font-serif text-4xl font-bold text-theme-text mb-8 text-center">Our Fleet in Action</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/prawn-trawler-peterk.webp" alt="Prawn Trawler Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Prawn Trawler — Peter K</p>
-                            </div>
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/trawlers.webp" alt="Tasman Star Trawler Fleet" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Our Trawler Fleet</p>
-                            </div>
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/tasman-star-unload.webp" alt="Unloading the Tasman Star" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Unloading the Catch</p>
-                            </div>
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/peter-k-unload.webp" alt="Dockside at Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Dockside Offload</p>
-                            </div>
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/peter-k-unload-2.webp" alt="Fresh Catch from Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Fresh from the Boat</p>
-                            </div>
-                            <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
-                                <img src="/assets/products/peterk-unload.webp" alt="Daily Offload at Harbour" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Daily Harbour Offload</p>
-                            </div>
+                        <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4 text-center" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Our Fleet in Action</h2>
+                        <p className="text-slate-300 text-lg text-center max-w-2xl mx-auto mb-12">
+                            Browse through our fleet — from our trawlers at sea to the daily dockside offload.
+                        </p>
+                        <div className="flex items-center justify-center">
+                            <CircularTestimonials
+                                testimonials={FLEET_GALLERY}
+                                autoplay={true}
+                                colors={{
+                                    name: '#ffffff',
+                                    designation: '#FF8543',
+                                    testimony: '#cbd5e1',
+                                    arrowBackground: '#0A192F',
+                                    arrowForeground: '#f1f1f7',
+                                    arrowHoverBackground: '#FF8543',
+                                }}
+                                fontSizes={{
+                                    name: '28px',
+                                    designation: '16px',
+                                    quote: '18px',
+                                }}
+                            />
                         </div>
                     </section>
 

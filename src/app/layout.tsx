@@ -12,6 +12,7 @@ import MobileMenu from '@/components/MobileMenu';
 import { UserMenu } from '@/components/UserMenu';
 import SessionProvider from '@/components/SessionProvider';
 import { auth } from '@/lib/auth';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -112,6 +113,7 @@ export default async function RootLayout({
               <Footer />
             </div>
             <MobileMenu user={session?.user} />
+            <Toaster theme="dark" position="top-right" richColors closeButton />
           </CartProvider>
         </ThemeProvider>
         </SessionProvider>

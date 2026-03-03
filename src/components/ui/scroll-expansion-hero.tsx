@@ -191,6 +191,7 @@ const ScrollExpandMedia = ({
                                 objectPosition: 'center',
                             }}
                             priority
+                            unoptimized
                         />
                         <div className='absolute inset-0 bg-black/10' />
                     </motion.div>
@@ -272,9 +273,10 @@ const ScrollExpandMedia = ({
                                         <Image
                                             src={mediaSrc}
                                             alt={title || 'Media content'}
-                                            width={1280}
-                                            height={720}
+                                            width={2532}
+                                            height={1170}
                                             className='w-full h-full object-cover rounded-xl'
+                                            unoptimized
                                         />
 
                                         <motion.div
@@ -289,16 +291,16 @@ const ScrollExpandMedia = ({
                                 <div className='flex flex-col items-center text-center relative z-10 mt-4 transition-none'>
                                     {date && (
                                         <p
-                                            className='text-2xl text-blue-200'
-                                            style={{ transform: `translateX(-${textTranslateX}vw)` }}
+                                            className='text-2xl text-white font-light'
+                                            style={{ transform: `translateX(-${textTranslateX}vw)`, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                                         >
                                             {date}
                                         </p>
                                     )}
                                     {scrollToExpand && (
                                         <p
-                                            className='text-blue-200 font-medium text-center'
-                                            style={{ transform: `translateX(${textTranslateX}vw)` }}
+                                            className='text-white/80 font-medium text-center'
+                                            style={{ transform: `translateX(${textTranslateX}vw)`, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
                                         >
                                             {scrollToExpand}
                                         </p>
@@ -311,14 +313,14 @@ const ScrollExpandMedia = ({
                                     }`}
                             >
                                 <motion.h2
-                                    className='text-4xl md:text-5xl lg:text-6xl font-bold text-blue-200 transition-none'
-                                    style={{ transform: `translateX(-${textTranslateX}vw)` }}
+                                    className='text-5xl md:text-6xl lg:text-7xl font-bold text-white transition-none'
+                                    style={{ transform: `translateX(-${textTranslateX}vw)`, textShadow: '0 4px 20px rgba(0,0,0,0.6)' }}
                                 >
                                     {firstWord}
                                 </motion.h2>
                                 <motion.h2
-                                    className='text-4xl md:text-5xl lg:text-6xl font-bold text-center text-blue-200 transition-none'
-                                    style={{ transform: `translateX(${textTranslateX}vw)` }}
+                                    className='text-5xl md:text-6xl lg:text-7xl font-bold text-center text-white transition-none'
+                                    style={{ transform: `translateX(${textTranslateX}vw)`, textShadow: '0 4px 20px rgba(0,0,0,0.6)' }}
                                 >
                                     {restOfTitle}
                                 </motion.h2>

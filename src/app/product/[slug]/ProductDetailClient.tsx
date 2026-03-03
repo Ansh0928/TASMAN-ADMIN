@@ -137,10 +137,10 @@ export default function ProductDetailClient({
                             {product.stockQuantity > 0 ? (
                                 <div className="flex items-center gap-2 text-green-500">
                                     <Check size={16} />
-                                    <span>{product.stockQuantity} in stock</span>
+                                    <span>In Stock</span>
                                 </div>
                             ) : (
-                                <div className="text-red-500 font-medium">Out of stock</div>
+                                <div className="text-red-500 font-medium">Out of Stock</div>
                             )}
                         </div>
 
@@ -215,7 +215,7 @@ export default function ProductDetailClient({
 
                         {!isOutOfStock && product.stockQuantity <= 5 && (
                             <p className="text-yellow-500 text-sm mb-4">
-                                Only {product.stockQuantity} left in stock — order soon!
+                                Low stock — order soon!
                             </p>
                         )}
 

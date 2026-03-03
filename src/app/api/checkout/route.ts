@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
                     {
                         message: product.stockQuantity === 0
                             ? `"${product.name}" is out of stock`
-                            : `Only ${product.stockQuantity} of "${product.name}" available (you requested ${totalQty})`,
+                            : `"${product.name}" doesn't have enough stock for your requested quantity`,
                     },
                     { status: 400 }
                 );

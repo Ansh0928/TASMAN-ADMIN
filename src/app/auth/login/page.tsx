@@ -6,6 +6,7 @@ import { FormEvent, useState } from 'react';
 import Link from 'next/link';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Building2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function CustomerLoginPage() {
     const router = useRouter();
@@ -28,11 +29,13 @@ export default function CustomerLoginPage() {
                 password: formData.get('password') as string,
                 redirect: false,
             });
-            if (!result?.ok) { setFieldError(result?.error || 'Invalid email or password'); return; }
+            if (!result?.ok) { const msg = result?.error || 'Invalid email or password'; setFieldError(msg); toast.error(msg); return; }
+            toast.success('Signed in successfully!');
             router.push(callbackUrl);
             router.refresh();
         } catch {
             setFieldError('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -76,7 +79,10 @@ export default function CustomerLoginPage() {
                             placeholder="you@example.com" />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-theme-text mb-1.5">Password</label>
+                        <div className="flex items-center justify-between mb-1.5">
+                            <label htmlFor="password" className="block text-sm font-medium text-theme-text">Password</label>
+                            <Link href="/auth/forgot-password" className="text-sm text-theme-accent hover:underline">Forgot password?</Link>
+                        </div>
                         <input type="password" id="password" name="password" required disabled={busy}
                             className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
                             placeholder="••••••••" />
