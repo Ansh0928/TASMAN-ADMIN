@@ -1,19 +1,39 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
     try {
-        const { name, email, passwordHash, phone } = await request.json();
+        const { name, email, password, phone } = await request.json();
 
-        // Validation
-        if (!name || !email || !passwordHash) {
+        if (!name || !email || !password) {
             return NextResponse.json(
                 { message: 'Missing required fields' },
                 { status: 400 }
             );
         }
 
-        // Check if email already exists
+        if (typeof password !== 'string' || password.length < 8) {
+            return NextResponse.json(
+                { message: 'Password must be at least 8 characters' },
+                { status: 400 }
+            );
+        }
+
+        if (typeof email !== 'string' || !email.includes('@')) {
+            return NextResponse.json(
+                { message: 'Invalid email address' },
+                { status: 400 }
+            );
+        }
+
+        if (typeof name !== 'string' || name.length > 100) {
+            return NextResponse.json(
+                { message: 'Name must be 100 characters or fewer' },
+                { status: 400 }
+            );
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: { email },
         });
@@ -25,13 +45,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create user
+        const passwordHash = await bcrypt.hash(password, 12);
+
         const user = await prisma.user.create({
             data: {
-                name,
-                email,
+                name: name.trim(),
+                email: email.trim().toLowerCase(),
                 passwordHash,
-                phone: phone || null,
+                phone: (typeof phone === 'string' && phone.trim()) || null,
                 role: 'CUSTOMER',
                 authProvider: 'credentials',
             },

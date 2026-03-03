@@ -46,11 +46,19 @@ export async function POST(req: NextRequest) {
     try {
         const { items, notes } = await req.json();
 
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            return NextResponse.json({ message: 'At least one item is required' }, { status: 400 });
+        if (!items || !Array.isArray(items) || items.length === 0 || items.length > 100) {
+            return NextResponse.json({ message: 'Invalid items list' }, { status: 400 });
         }
 
-        // Validate items and fetch prices
+        for (const item of items) {
+            if (!item.wholesalePriceItemId || typeof item.wholesalePriceItemId !== 'string') {
+                return NextResponse.json({ message: 'Invalid item ID' }, { status: 400 });
+            }
+            if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10000) {
+                return NextResponse.json({ message: 'Quantity must be a positive integer (max 10,000)' }, { status: 400 });
+            }
+        }
+
         const itemIds = items.map((i: any) => i.wholesalePriceItemId);
         const priceItems = await prisma.wholesalePriceItem.findMany({
             where: { id: { in: itemIds }, isAvailable: true },
@@ -87,6 +95,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(order, { status: 201 });
     } catch (err: any) {
         console.error('Create wholesale order error:', err);
-        return NextResponse.json({ message: err.message || 'Failed to create order' }, { status: 500 });
+        return NextResponse.json({ message: 'Failed to create order' }, { status: 500 });
     }
 }

@@ -4,7 +4,6 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import bcrypt from 'bcryptjs';
 import { GoogleIcon } from '@/components/GoogleIcon';
 
 export default function RegisterPage() {
@@ -30,11 +29,10 @@ export default function RegisterPage() {
         if (password.length < 8) { setError('Password must be at least 8 characters'); setIsLoading(false); return; }
 
         try {
-            const hashedPassword = await bcrypt.hash(password, 12);
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, passwordHash: hashedPassword, phone: phone || undefined }),
+                body: JSON.stringify({ name, email, password, phone: phone || undefined }),
             });
             if (!response.ok) {
                 const data = await response.json();

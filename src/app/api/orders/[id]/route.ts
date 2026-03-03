@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -7,6 +8,8 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
+        const stripeSessionId = request.nextUrl.searchParams.get('session_id');
+
         const order = await prisma.order.findUnique({
             where: { id },
             include: {
@@ -22,6 +25,20 @@ export async function GET(
             return NextResponse.json(
                 { message: 'Order not found' },
                 { status: 404 }
+            );
+        }
+
+        const session = await auth();
+
+        // Authorization: must be the order owner OR provide the matching Stripe session ID
+        const isOwner = session?.user?.id && order.userId === session.user.id;
+        const isAdmin = session?.user?.role === 'ADMIN';
+        const hasValidStripeSession = stripeSessionId && order.stripeSessionId && stripeSessionId === order.stripeSessionId;
+
+        if (!isOwner && !isAdmin && !hasValidStripeSession) {
+            return NextResponse.json(
+                { message: 'Unauthorized' },
+                { status: 401 }
             );
         }
 

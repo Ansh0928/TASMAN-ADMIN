@@ -30,7 +30,6 @@ export async function GET() {
         const totalRefunded = orders.reduce((sum, order) => sum + parseFloat(order.refundedAmount.toString()), 0);
         const netRevenue = totalRevenue - totalRefunded;
 
-        // Daily revenue for the last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 

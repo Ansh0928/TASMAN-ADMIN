@@ -10,7 +10,8 @@ import { Building2 } from 'lucide-react';
 export default function CustomerLoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get('callbackUrl') || '/';
+    const rawCallback = searchParams.get('callbackUrl') || '/';
+    const callbackUrl = rawCallback.startsWith('/') && !rawCallback.startsWith('//') ? rawCallback : '/';
     const error = searchParams.get('error');
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);

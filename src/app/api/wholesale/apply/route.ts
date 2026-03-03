@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (password.length < 6) {
+        if (typeof password !== 'string' || password.length < 8) {
             return NextResponse.json(
-                { message: 'Password must be at least 6 characters' },
+                { message: 'Password must be at least 8 characters' },
                 { status: 400 }
             );
         }
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
                 wholesaleStatus: 'PENDING',
                 companyName,
                 abn,
+                authProvider: 'credentials',
             },
         });
 

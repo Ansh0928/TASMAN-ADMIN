@@ -17,21 +17,22 @@ export default function OrderConfirmationPage() {
     const cartCleared = useRef(false);
 
     useEffect(() => {
-        // Clear the cart once when the order confirmation page loads
-        if (!cartCleared.current && orderId) {
-            clearCart();
-            cartCleared.current = true;
-        }
-    }, [orderId, clearCart]);
-
-    useEffect(() => {
         const fetchOrder = async () => {
             if (!orderId) return;
 
             try {
-                const res = await fetch(`/api/orders/${orderId}`);
+                const url = sessionId
+                    ? `/api/orders/${orderId}?session_id=${encodeURIComponent(sessionId)}`
+                    : `/api/orders/${orderId}`;
+                const res = await fetch(url);
                 const data = await res.json();
                 setOrder(data);
+                if (res.ok && data?.id) {
+                    if (!cartCleared.current) {
+                        clearCart();
+                        cartCleared.current = true;
+                    }
+                }
             } catch (error) {
                 console.error('Failed to fetch order:', error);
             } finally {

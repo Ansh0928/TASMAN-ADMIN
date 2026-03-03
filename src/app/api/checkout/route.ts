@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
+import { auth } from '@/lib/auth';
 import Decimal from 'decimal.js';
 
 export async function POST(request: NextRequest) {
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
             discountCode,
             notes,
         } = await request.json();
+
+        const authSession = await auth();
+        const userId = authSession?.user?.id || null;
 
         // Basic validation
         if (!items || items.length === 0) {
@@ -56,19 +60,38 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate stock availability and get server-side prices
-        const productIds = items.map((item: any) => item.productId);
+        // Validate and sanitize items
+        if (!Array.isArray(items) || items.length > 50) {
+            return NextResponse.json({ message: 'Invalid items' }, { status: 400 });
+        }
+
+        for (const item of items) {
+            if (!item.productId || typeof item.productId !== 'string') {
+                return NextResponse.json({ message: 'Invalid product ID' }, { status: 400 });
+            }
+            if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 999) {
+                return NextResponse.json({ message: 'Quantity must be a positive integer (max 999)' }, { status: 400 });
+            }
+        }
+
+        // Aggregate quantities per product to prevent duplicate-entry stock bypass
+        const aggregated = new Map<string, number>();
+        for (const item of items) {
+            aggregated.set(item.productId, (aggregated.get(item.productId) || 0) + item.quantity);
+        }
+
+        const productIds = [...aggregated.keys()];
         const products = await prisma.product.findMany({
             where: { id: { in: productIds } },
         });
 
         const productMap = new Map(products.map(p => [p.id, p]));
 
-        for (const item of items) {
-            const product = productMap.get(item.productId);
+        for (const [productId, totalQty] of aggregated) {
+            const product = productMap.get(productId);
             if (!product) {
                 return NextResponse.json(
-                    { message: `Product "${item.name}" is no longer available` },
+                    { message: `A product is no longer available` },
                     { status: 400 }
                 );
             }
@@ -78,12 +101,12 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 );
             }
-            if (product.stockQuantity < item.quantity) {
+            if (product.stockQuantity < totalQty) {
                 return NextResponse.json(
                     {
                         message: product.stockQuantity === 0
                             ? `"${product.name}" is out of stock`
-                            : `Only ${product.stockQuantity} of "${product.name}" available (you requested ${item.quantity})`,
+                            : `Only ${product.stockQuantity} of "${product.name}" available (you requested ${totalQty})`,
                     },
                     { status: 400 }
                 );
@@ -156,6 +179,7 @@ export async function POST(request: NextRequest) {
         // Create order in database with server-side calculated prices
         const order = await prisma.order.create({
             data: {
+                userId,
                 guestEmail,
                 guestName,
                 guestPhone,

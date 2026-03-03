@@ -13,6 +13,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'filename, contentType, and folder are required' }, { status: 400 });
         }
 
+        const allowedFolders = ['products', 'categories', 'banners'];
+        if (!allowedFolders.includes(folder)) {
+            return NextResponse.json({ message: 'Invalid upload folder' }, { status: 400 });
+        }
+
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!allowedTypes.includes(contentType)) {
             return NextResponse.json({ message: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF' }, { status: 400 });

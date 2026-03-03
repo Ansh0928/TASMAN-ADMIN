@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
 import { deleteObject } from '@/lib/s3';
 
+const ALLOWED_PREFIXES = ['products/', 'categories/', 'banners/'];
+
 export async function POST(req: NextRequest) {
     const { error } = await requireAdmin();
     if (error) return error;
@@ -9,8 +11,12 @@ export async function POST(req: NextRequest) {
     try {
         const { key } = await req.json();
 
-        if (!key) {
+        if (!key || typeof key !== 'string') {
             return NextResponse.json({ message: 'key is required' }, { status: 400 });
+        }
+
+        if (!ALLOWED_PREFIXES.some(prefix => key.startsWith(prefix))) {
+            return NextResponse.json({ message: 'Invalid key prefix' }, { status: 400 });
         }
 
         await deleteObject(key);

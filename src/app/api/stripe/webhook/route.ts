@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
-import { sendOrderConfirmationEmail, sendPaymentFailureEmail, sendRefundNotificationEmail } from '@/lib/resend';
+import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -38,6 +38,11 @@ export async function POST(request: NextRequest) {
                 if (session.payment_status === 'paid') {
                     const orderId = session.metadata?.orderId;
                     if (orderId) {
+                        const existing = await prisma.order.findUnique({ where: { id: orderId } });
+                        if (!existing || existing.status !== 'PENDING') {
+                            return NextResponse.json({ received: true }, { status: 200 });
+                        }
+
                         const order = await prisma.order.update({
                             where: { id: orderId },
                             data: {
@@ -128,6 +133,32 @@ export async function POST(request: NextRequest) {
                             });
 
                         }
+
+                        // Send admin notification (fire-and-forget)
+                        sendNewOrderAdminEmail({
+                            orderId: order.id,
+                            customerName,
+                            customerEmail: customerEmail!,
+                            customerPhone: order.guestPhone || '',
+                            items: order.items,
+                            total: order.total.toString(),
+                            fulfillment: order.fulfillment,
+                            deliveryStreet: order.deliveryStreet,
+                            deliveryCity: order.deliveryCity,
+                            deliveryState: order.deliveryState,
+                            deliveryPostcode: order.deliveryPostcode,
+                            pickupTime: order.pickupTime?.toISOString(),
+                        }).then(async (result) => {
+                            await prisma.notification.create({
+                                data: {
+                                    orderId: order.id,
+                                    type: 'EMAIL',
+                                    recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+                                    category: 'admin_new_order',
+                                    status: result.success ? 'SENT' : 'FAILED',
+                                },
+                            });
+                        }).catch((err) => console.error('Admin new order email error:', err));
                     }
                 }
                 break;
