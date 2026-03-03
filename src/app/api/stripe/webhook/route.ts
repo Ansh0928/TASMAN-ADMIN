@@ -74,7 +74,6 @@ export async function POST(request: NextRequest) {
                                     },
                                 });
 
-                                console.log(`Order ${orderId}: Invoice saved (${invoiceId})`);
                             } catch (invoiceError) {
                                 console.error(`Order ${orderId}: Failed to retrieve invoice:`, invoiceError);
                             }
@@ -91,8 +90,6 @@ export async function POST(request: NextRequest) {
                                 },
                             });
                         }
-
-                        console.log(`Order ${orderId}: Stock updated for ${order.items.length} items`);
 
                         // Send order confirmation email
                         const customerEmail = order.user?.email || order.guestEmail;
@@ -130,10 +127,7 @@ export async function POST(request: NextRequest) {
                                 },
                             });
 
-                            console.log(`Order ${orderId}: Email ${emailResult.success ? 'sent' : 'failed'} to ${customerEmail}`);
                         }
-
-                        console.log(`Order ${orderId} confirmed`);
                     }
                 }
                 break;
@@ -169,7 +163,6 @@ export async function POST(request: NextRequest) {
                         }).catch((err) => console.error('Payment failure email error:', err));
                     }
 
-                    console.log(`Order ${failedOrderId} payment failed`);
                 }
                 break;
             }
@@ -220,7 +213,6 @@ export async function POST(request: NextRequest) {
                             }).catch((err) => console.error('Refund notification email error:', err));
                         }
 
-                        console.log(`Order ${order.id}: Refund synced from Stripe ($${refundedAmountAud})`);
                     }
                 }
                 break;

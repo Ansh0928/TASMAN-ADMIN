@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { resend } from './resend';
+import { resend, EMAIL_FROM } from './resend';
 import { sendSMS, wholesalePriceListUpdatedSMS } from './twilio';
 
 export async function notifyWholesalersOfUpdate() {
@@ -18,7 +18,7 @@ export async function notifyWholesalersOfUpdate() {
             // Send email
             try {
                 await resend.emails.send({
-                    from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+                    from: EMAIL_FROM,
                     to: user.email,
                     subject: 'Wholesale Price List Updated - Tasman Star Seafoods',
                     html: buildPriceListUpdatedEmail(user.name),
@@ -49,7 +49,7 @@ export async function notifyWholesalersOfUpdate() {
             }
         }
 
-        console.log(`Wholesale update notifications: ${emailsSent} emails, ${smsSent} SMS sent to ${wholesalers.length} users`);
+        // Notifications sent: emailsSent emails, smsSent SMS
     } catch (error) {
         console.error('Failed to send wholesale update notifications:', error);
     }
