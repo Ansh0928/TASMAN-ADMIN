@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
-import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail } from '@/lib/resend';
+import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail, sendLowStockAlertEmail } from '@/lib/resend';
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -94,6 +94,32 @@ export async function POST(request: NextRequest) {
                                     },
                                 },
                             });
+                        }
+
+                        // Check for low stock after decrement
+                        const lowStockItems = await prisma.product.findMany({
+                            where: {
+                                id: { in: order.items.map(i => i.productId) },
+                                stockQuantity: { gt: 0, lte: 5 },
+                                isAvailable: true,
+                            },
+                            select: { name: true, stockQuantity: true },
+                        });
+
+                        if (lowStockItems.length > 0) {
+                            sendLowStockAlertEmail({ products: lowStockItems })
+                                .then(async (result) => {
+                                    await prisma.notification.create({
+                                        data: {
+                                            orderId: order.id,
+                                            type: 'EMAIL',
+                                            recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+                                            category: 'low_stock_alert',
+                                            status: result.success ? 'SENT' : 'FAILED',
+                                        },
+                                    });
+                                })
+                                .catch((err) => console.error('Low stock alert email error:', err));
                         }
 
                         // Send order confirmation email

@@ -543,6 +543,80 @@ export async function sendNewOrderAdminEmail(data: {
     }
 }
 
+// ── Low Stock Alert Email (sent to admin) ──
+
+export async function sendLowStockAlertEmail(data: {
+    products: Array<{ name: string; stockQuantity: number }>;
+}) {
+    const adminUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/products`;
+
+    const productRows = data.products
+        .map(
+            (p) =>
+                `<tr>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #333;">${p.name}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center; color: ${p.stockQuantity <= 2 ? '#dc2626' : '#d97706'}; font-weight: bold;">${p.stockQuantity} left</td>
+                </tr>`
+        )
+        .join('');
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
+                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
+                <p style="color: #ccc; margin: 8px 0 0;">Low Stock Alert</p>
+            </div>
+            <div style="padding: 30px;">
+                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 0 0 20px; text-align: center;">
+                    <p style="font-size: 36px; margin: 0 0 8px;">⚠️</p>
+                    <p style="color: #92400e; font-size: 20px; font-weight: bold; margin: 0;">Low Stock Warning</p>
+                    <p style="color: #555; margin: 8px 0 0; font-size: 14px;">The following products are running low after a recent order.</p>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin: 0 0 20px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 10px 12px; text-align: left; font-size: 13px; color: #666;">Product</th>
+                            <th style="padding: 10px 12px; text-align: center; font-size: 13px; color: #666;">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productRows}
+                    </tbody>
+                </table>
+
+                <div style="text-align: center; margin: 24px 0;">
+                    <a href="${adminUrl}" style="display: inline-block; background: #FF8543; color: white; font-weight: bold; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px;">
+                        Manage Products
+                    </a>
+                </div>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods - Admin Notification</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: EMAIL_FROM,
+            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+            subject: `Low Stock Alert - Tasman Star Seafoods`,
+            html,
+        });
+        return { success: true, id: result.data?.id };
+    } catch (error) {
+        console.error('Failed to send low stock alert email:', error);
+        return { success: false, error };
+    }
+}
+
 // ── Wholesale Application Received Email (sent to applicant) ──
 
 export async function sendWholesaleApplicationReceivedEmail(data: {

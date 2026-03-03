@@ -77,6 +77,7 @@ model User {
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
   wholesaleOrders   WholesaleOrder[]
+  reviews           Review[]
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
 
@@ -129,6 +130,7 @@ model Product {
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
   orderItems        OrderItem[]
+  reviews           Review[]
 
   @@map("products")
 }
@@ -270,4 +272,28 @@ model WholesaleOrderItem {
   total                Decimal            @db.Decimal(10, 2)
 
   @@map("wholesale_order_items")
+}
+
+model NewsletterSubscription {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscriptions")
+}
+
+// ── Reviews ──
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
 }

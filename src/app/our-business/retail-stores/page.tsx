@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { MapPin, Clock, Phone } from 'lucide-react';
+import { StaggerTestimonials } from '@/components/ui/stagger-testimonials';
 
 export const metadata: Metadata = {
     title: 'Our Retail Stores | Tasman Star Seafoods',
@@ -60,7 +61,7 @@ export default function RetailStoresPage() {
                 {/* Varsity Lakes Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
                     <div className="w-full md:w-1/2 overflow-hidden order-1 md:order-2">
-                        <img src="/assets/products/store-7.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Store Fresh Shellfish" />
+                        <img src="/assets/products/storefront-flagship.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Flagship Store - Staff with Premium Crab Display" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">
                         <div className="inline-block bg-[#FF8543] text-white text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Flagship Store</div>
@@ -86,44 +87,10 @@ export default function RetailStoresPage() {
                 {/* Store Gallery */}
                 <section>
                     <h2 className="font-serif text-3xl md:text-4xl font-bold text-theme-text mb-8 text-center">Inside Our Stores</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store.webp" alt="Store interior" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-2.webp" alt="Fresh fish display" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-4.webp" alt="Seafood counter" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-5.webp" alt="Store shelves" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-6.webp" alt="Fresh catch display" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-8.webp" alt="Premium seafood selection" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-pic-9.webp" alt="Store atmosphere" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/store-pic-10.webp" alt="Market fresh selection" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/shop-11.webp" alt="Shop front" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
-                            <img src="/assets/products/shop-12.webp" alt="Daily specials board" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group col-span-2">
-                            <img src="/assets/products/christmas-shop.webp" alt="Christmas at Tasman Star" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        </div>
-                    </div>
                 </section>
-
             </main>
+
+            <StaggerTestimonials />
 
             {/* JSON-LD Structured Data */}
             <script

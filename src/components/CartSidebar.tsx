@@ -13,6 +13,7 @@ export default function CartSidebar() {
         removeItem,
         updateQuantity,
         subtotal,
+        stockWarnings,
     } = useCart();
 
     if (!isCartSideBarOpen) return null;
@@ -79,6 +80,15 @@ export default function CartSidebar() {
                                         <div>
                                             <h3 className="font-bold text-black font-sans leading-tight">{item.name}</h3>
                                             <p className="text-xs text-slate-500 mt-1">{item.unit}</p>
+                                            {stockWarnings.get(item.productId) && (
+                                                <p className={`text-xs font-medium mt-1 ${
+                                                    stockWarnings.get(item.productId) === 'Out of stock'
+                                                        ? 'text-red-500'
+                                                        : 'text-yellow-600'
+                                                }`}>
+                                                    {stockWarnings.get(item.productId)}
+                                                </p>
+                                            )}
                                         </div>
                                         <p className="font-bold text-black shrink-0">
                                             ${(item.price * item.quantity).toFixed(2)}

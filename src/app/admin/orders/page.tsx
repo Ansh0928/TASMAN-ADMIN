@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Truck, Store, ExternalLink, AlertTriangle, StickyNote } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { ChevronDown, ChevronUp, Truck, Store, ExternalLink, AlertTriangle, StickyNote, Download } from 'lucide-react';
 
 interface OrderItem {
     productName: string;
@@ -54,6 +54,10 @@ export default function AdminOrders() {
     const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
 
     // Refund UI state
     const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
@@ -63,11 +67,19 @@ export default function AdminOrders() {
     const [refundError, setRefundError] = useState('');
     const [refundSuccess, setRefundSuccess] = useState('');
 
-    const fetchOrders = async () => {
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const fetchOrders = useCallback(async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams({ page: page.toString(), limit: '20' });
             if (statusFilter !== 'ALL') params.set('status', statusFilter);
+            if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+            if (dateFrom) params.set('dateFrom', dateFrom);
+            if (dateTo) params.set('dateTo', dateTo);
             const res = await fetch(`/api/admin/orders?${params}`);
             if (res.ok) {
                 const data = await res.json();
@@ -79,9 +91,9 @@ export default function AdminOrders() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, statusFilter, debouncedSearch, dateFrom, dateTo]);
 
-    useEffect(() => { fetchOrders(); }, [page, statusFilter]);
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
     const updateStatus = async (orderId: string, newStatus: string) => {
         try {
@@ -146,6 +158,40 @@ export default function AdminOrders() {
         <>
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-3xl font-bold text-theme-text">Orders</h2>
+                <button
+                    onClick={() => {
+                        const params = new URLSearchParams();
+                        if (statusFilter !== 'ALL') params.set('status', statusFilter);
+                        if (debouncedSearch.trim()) params.set('search', debouncedSearch.trim());
+                        if (dateFrom) params.set('dateFrom', dateFrom);
+                        if (dateTo) params.set('dateTo', dateTo);
+                        window.open(`/api/admin/orders/export?${params}`, '_blank');
+                    }}
+                    className="px-3 py-1.5 text-sm bg-theme-secondary border border-theme-border rounded-lg text-theme-text hover:border-theme-accent transition-colors flex items-center gap-1.5"
+                >
+                    <Download size={14} />
+                    Export CSV
+                </button>
+            </div>
+
+            {/* Search & Date Filters */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                <div className="flex-1">
+                    <input
+                        type="text"
+                        placeholder="Search by order ID, name, or email..."
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                        className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent text-sm"
+                    />
+                </div>
+                <div className="flex gap-2">
+                    <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+                        className="px-3 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-sm focus:outline-none focus:border-theme-accent" />
+                    <span className="text-theme-text-muted self-center text-sm">to</span>
+                    <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+                        className="px-3 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-sm focus:outline-none focus:border-theme-accent" />
+                </div>
             </div>
 
             {/* Status Filter */}

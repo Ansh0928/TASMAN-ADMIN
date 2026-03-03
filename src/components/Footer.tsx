@@ -1,7 +1,44 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { Facebook, Instagram, Twitter, Mail, Phone } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Footer() {
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [isError, setIsError] = useState(false);
+
+    async function handleSubscribe(e: React.FormEvent) {
+        e.preventDefault();
+        setMessage('');
+        setIsError(false);
+        setLoading(true);
+        try {
+            const res = await fetch('/api/newsletter', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = (await res.json()) as { message: string };
+            if (!res.ok) {
+                setIsError(true);
+                setMessage(data.message || 'Something went wrong.');
+                return;
+            }
+            setMessage(data.message);
+            if (res.status === 201) {
+                toast.success(data.message);
+                setEmail('');
+            }
+        } catch {
+            setIsError(true);
+            setMessage('Something went wrong. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    }
     return (
         <footer className="bg-[#0A192F] text-slate-300 border-t border-theme-accent/20 pt-16 pb-8 z-10 relative">
             <div className="container mx-auto px-6">
@@ -55,16 +92,28 @@ export default function Footer() {
                         <p className="text-sm text-slate-400 mb-4">
                             Subscribe to get special offers, free giveaways, and fresh catch alerts.
                         </p>
-                        <div className="flex">
+                        <form onSubmit={handleSubscribe} className="flex">
                             <input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
                                 placeholder="Your email"
                                 className="bg-[#112240] text-sm w-full px-4 py-2.5 rounded-l-lg border border-white/10 focus:outline-none focus:border-theme-accent text-white"
                             />
-                            <button className="bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 text-[#020C1B] font-bold px-4 py-2.5 rounded-r-lg transition-colors">
-                                Subscribe
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 disabled:opacity-50 disabled:cursor-not-allowed text-[#020C1B] font-bold px-4 py-2.5 rounded-r-lg transition-colors"
+                            >
+                                {loading ? '...' : 'Subscribe'}
                             </button>
-                        </div>
+                        </form>
+                        {message && (
+                            <p className={`text-xs mt-2 ${isError ? 'text-red-400' : 'text-emerald-400'}`}>
+                                {message}
+                            </p>
+                        )}
                     </div>
                 </div>
 

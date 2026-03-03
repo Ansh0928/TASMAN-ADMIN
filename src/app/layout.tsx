@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/components/CartProvider';
+import { WishlistProvider } from '@/components/WishlistProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import CartIcon from '@/components/CartIcon';
 import CartSidebar from '@/components/CartSidebar';
@@ -41,6 +42,7 @@ export default async function RootLayout({
         <SessionProvider>
         <ThemeProvider>
           <CartProvider>
+          <WishlistProvider>
             <div className="w-full bg-theme-primary min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-300">
 
               {/* Header */}
@@ -114,6 +116,7 @@ export default async function RootLayout({
             </div>
             <MobileMenu user={session?.user} />
             <Toaster theme="dark" position="top-right" richColors closeButton />
+          </WishlistProvider>
           </CartProvider>
         </ThemeProvider>
         </SessionProvider>

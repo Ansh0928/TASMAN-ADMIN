@@ -25,6 +25,7 @@ interface CartContextType {
     clearCart: () => void;
     itemCount: number;
     subtotal: number;
+    stockWarnings: Map<string, string>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,18 +36,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isCartLoading, setIsCartLoading] = useState(true);
     const [isCartSideBarOpen, setCartSideBarOpen] = useState(false);
+    const [stockWarnings, setStockWarnings] = useState<Map<string, string>>(new Map());
 
     // Load cart from localStorage on mount
     useEffect(() => {
+        let loadedItems: CartItem[] = [];
         try {
             const stored = localStorage.getItem(CART_STORAGE_KEY);
             if (stored) {
-                setItems(JSON.parse(stored));
+                loadedItems = JSON.parse(stored);
+                setItems(loadedItems);
             }
         } catch {
             // ignore parse errors
         }
         setIsCartLoading(false);
+
+        if (loadedItems.length > 0) {
+            const ids = loadedItems.map(i => i.productId).join(',');
+            fetch(`/api/products/stock?ids=${ids}`)
+                .then(res => res.json())
+                .then((data: Record<string, { stockQuantity: number; isAvailable: boolean }>) => {
+                    const warnings = new Map<string, string>();
+                    for (const item of loadedItems) {
+                        const stock = data[item.productId];
+                        if (!stock || !stock.isAvailable || stock.stockQuantity <= 0) {
+                            warnings.set(item.productId, 'Out of stock');
+                        } else if (stock.stockQuantity < item.quantity) {
+                            warnings.set(item.productId, 'Only limited stock available');
+                        }
+                    }
+                    setStockWarnings(warnings);
+                })
+                .catch(() => {});
+        }
     }, []);
 
     // Persist cart to localStorage on change
@@ -103,6 +126,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             clearCart,
             itemCount,
             subtotal,
+            stockWarnings,
         }}>
             {children}
         </CartContext.Provider>

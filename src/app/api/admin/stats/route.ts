@@ -7,7 +7,7 @@ export async function GET() {
     if (error) return error;
 
     try {
-        const [totalOrders, confirmedOrders, totalProducts, pendingWholesaleUsers, totalCustomers] = await Promise.all([
+        const [totalOrders, confirmedOrders, totalProducts, pendingWholesaleUsers, totalCustomers, lowStockProducts, lowStockList] = await Promise.all([
             prisma.order.count(),
             prisma.order.count({ where: { status: { not: 'CANCELLED' } } }),
             prisma.product.count(),
@@ -19,6 +19,15 @@ export async function GET() {
             }),
             prisma.user.count({
                 where: { role: 'CUSTOMER' },
+            }),
+            prisma.product.count({
+                where: { stockQuantity: { gt: 0, lte: 5 }, isAvailable: true },
+            }),
+            prisma.product.findMany({
+                where: { stockQuantity: { gt: 0, lte: 5 }, isAvailable: true },
+                select: { id: true, name: true, stockQuantity: true, slug: true },
+                orderBy: { stockQuantity: 'asc' },
+                take: 10,
             }),
         ]);
 
@@ -62,6 +71,8 @@ export async function GET() {
             totalCustomers,
             pendingWholesaleApplications: pendingWholesaleUsers,
             dailyRevenue,
+            lowStockProducts,
+            lowStockList,
         });
     } catch (error) {
         console.error('Admin stats error:', error);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft, ShieldAlert, ClipboardList, Menu, X, FolderOpen } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Users, DollarSign, ArrowLeft, ShieldAlert, ClipboardList, Menu, X, FolderOpen, Bell, Tag } from 'lucide-react';
 
 const adminNav = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -14,6 +14,8 @@ const adminNav = [
     { href: '/admin/customers', label: 'Customers', icon: Users },
     { href: '/admin/wholesale', label: 'Wholesale', icon: DollarSign },
     { href: '/admin/wholesale-orders', label: 'WS Orders', icon: ClipboardList },
+    { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+    { href: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

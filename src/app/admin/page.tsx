@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, ShoppingCart, Users, TrendingUp, RotateCcw } from 'lucide-react';
+import { Package, ShoppingCart, Users, TrendingUp, RotateCcw, AlertTriangle } from 'lucide-react';
 
 interface DailyRevenue {
     date: string;
@@ -19,6 +19,8 @@ interface Stats {
     totalCustomers: number;
     pendingWholesaleApplications: number;
     dailyRevenue: DailyRevenue[];
+    lowStockProducts: number;
+    lowStockList: Array<{ id: string; name: string; stockQuantity: number; slug: string }>;
 }
 
 export default function AdminDashboard() {
@@ -80,6 +82,25 @@ export default function AdminDashboard() {
                         highlight={stats.pendingWholesaleApplications > 0} />
                 )}
             </div>
+
+            {/* Low Stock Alert */}
+            {stats.lowStockProducts > 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6 mb-8">
+                    <h3 className="text-lg font-bold text-yellow-400 mb-3 flex items-center gap-2">
+                        <AlertTriangle size={20} />
+                        Low Stock Alert ({stats.lowStockProducts} product{stats.lowStockProducts !== 1 ? 's' : ''})
+                    </h3>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {stats.lowStockList.map(p => (
+                            <Link key={p.id} href={`/admin/products/${p.id}/edit`}
+                                className="flex justify-between items-center bg-theme-primary rounded-lg px-3 py-2 hover:border-yellow-500 border border-theme-border transition-colors">
+                                <span className="text-theme-text text-sm truncate">{p.name}</span>
+                                <span className="text-yellow-400 font-bold text-sm shrink-0 ml-2">{p.stockQuantity} left</span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Daily Revenue Chart */}
             {stats.dailyRevenue && stats.dailyRevenue.length > 0 && (

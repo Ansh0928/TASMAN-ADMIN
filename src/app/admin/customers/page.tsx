@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, CheckCircle, XCircle, Clock, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Pencil, Trash2, X, Save, Download } from 'lucide-react';
 
 interface Customer {
     id: string;
@@ -180,7 +180,21 @@ export default function AdminCustomers() {
 
     return (
         <>
-            <h2 className="text-3xl font-bold text-theme-text mb-6">Customers</h2>
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-3xl font-bold text-theme-text">Customers</h2>
+                <button
+                    onClick={() => {
+                        const params = new URLSearchParams();
+                        if (search) params.set('search', search);
+                        if (roleFilter) params.set('role', roleFilter);
+                        window.open(`/api/admin/customers/export?${params}`, '_blank');
+                    }}
+                    className="px-3 py-1.5 text-sm bg-theme-secondary border border-theme-border rounded-lg text-theme-text hover:border-theme-accent transition-colors flex items-center gap-1.5"
+                >
+                    <Download size={14} />
+                    Export CSV
+                </button>
+            </div>
 
             {/* Pending Wholesale Applications */}
             {pendingWholesale.length > 0 && (

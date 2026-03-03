@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
+        const search = searchParams.get('search');
+        const dateFrom = searchParams.get('dateFrom');
+        const dateTo = searchParams.get('dateTo');
         const page = parseInt(searchParams.get('page') || '1', 10);
         const limit = parseInt(searchParams.get('limit') || '20', 10);
         const skip = (page - 1) * limit;
@@ -16,6 +19,20 @@ export async function GET(request: NextRequest) {
         const where: any = {};
         if (status && status !== 'ALL') {
             where.status = status;
+        }
+        if (search) {
+            where.OR = [
+                { id: { contains: search, mode: 'insensitive' } },
+                { guestName: { contains: search, mode: 'insensitive' } },
+                { guestEmail: { contains: search, mode: 'insensitive' } },
+                { user: { name: { contains: search, mode: 'insensitive' } } },
+                { user: { email: { contains: search, mode: 'insensitive' } } },
+            ];
+        }
+        if (dateFrom || dateTo) {
+            where.createdAt = {};
+            if (dateFrom) where.createdAt.gte = new Date(dateFrom);
+            if (dateTo) where.createdAt.lte = new Date(dateTo + 'T23:59:59.999Z');
         }
 
         const [orders, total] = await Promise.all([
