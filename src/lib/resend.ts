@@ -19,6 +19,9 @@ export const resend = new Proxy({} as Resend, {
     },
 });
 
+/** Centralized email sender — update this when moving off the Resend free tier */
+export const EMAIL_FROM = 'Tasman Star Seafoods <onboarding@resend.dev>';
+
 interface OrderItem {
     product: { name: string };
     quantity: number;
@@ -163,7 +166,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.customerEmail,
             subject: `Order Confirmation #${data.orderId.slice(-8).toUpperCase()} - Tasman Star Seafoods`,
             html,
@@ -274,7 +277,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.customerEmail,
             subject: `Order Update #${data.orderId.slice(-8).toUpperCase()} - ${content.heading}`,
             html,
@@ -342,7 +345,7 @@ export async function sendRefundNotificationEmail(data: {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.customerEmail,
             subject: `Refund Processed - Order #${data.orderId.slice(-8).toUpperCase()}`,
             html,
@@ -406,7 +409,7 @@ export async function sendPaymentFailureEmail(data: {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.customerEmail,
             subject: `Payment Issue - Order #${data.orderId.slice(-8).toUpperCase()}`,
             html,
@@ -472,7 +475,7 @@ export async function sendWholesaleApplicationReceivedEmail(data: {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.email,
             subject: 'Application Received - Tasman Star Seafoods',
             html,
@@ -539,7 +542,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
             subject: `New Wholesale Application - ${data.companyName}`,
             html,
@@ -607,7 +610,7 @@ export async function sendWholesaleStatusEmail(data: {
 
     try {
         const result = await resend.emails.send({
-            from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+            from: EMAIL_FROM,
             to: data.email,
             subject: isApproved
                 ? 'Wholesale Access Approved - Tasman Star Seafoods'

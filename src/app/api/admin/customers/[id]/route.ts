@@ -92,15 +92,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                 status: wholesaleStatus,
                 companyName: user.companyName,
             });
-            console.log(`Wholesale ${wholesaleStatus} email to ${user.email}: ${emailResult.success ? 'sent' : 'failed'}`);
-
             // Send SMS notification (fire-and-forget)
             if (user.phone) {
                 const smsBody = wholesaleStatus === 'APPROVED'
                     ? wholesaleApprovedSMS(user.name)
                     : wholesaleRejectedSMS(user.name);
                 sendSMS(user.phone, smsBody)
-                    .then((r) => console.log(`Wholesale ${wholesaleStatus} SMS to ${user.phone}: ${r.success ? 'sent' : 'failed'}`))
                     .catch((e) => console.error('Wholesale status SMS error:', e));
             }
         }

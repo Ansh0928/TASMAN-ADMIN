@@ -55,17 +55,14 @@ export async function POST(request: NextRequest) {
         const emailData = { name: contactName, email, companyName, abn, phone };
 
         sendWholesaleApplicationReceivedEmail(emailData)
-            .then((r) => console.log(`Wholesale application received email to ${email}: ${r.success ? 'sent' : 'failed'}`))
             .catch((e) => console.error('Wholesale application email error:', e));
 
         sendWholesaleNewApplicationAdminEmail(emailData)
-            .then((r) => console.log(`Wholesale admin notification for ${companyName}: ${r.success ? 'sent' : 'failed'}`))
             .catch((e) => console.error('Wholesale admin notification error:', e));
 
         // Send SMS to applicant (fire-and-forget)
         if (phone) {
             sendSMS(phone, wholesaleApplicationReceivedSMS(contactName))
-                .then((r) => console.log(`Wholesale application SMS to ${phone}: ${r.success ? 'sent' : 'failed'}`))
                 .catch((e) => console.error('Wholesale application SMS error:', e));
         }
 

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
-import { resend } from '@/lib/resend';
+import { resend, EMAIL_FROM } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
             if (channels.includes('email')) {
                 try {
                     await resend.emails.send({
-                        from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+                        from: EMAIL_FROM,
                         to: user.email,
                         subject: `${subject} - Tasman Star Seafoods`,
                         html: buildBroadcastEmail(user.name, subject, message),

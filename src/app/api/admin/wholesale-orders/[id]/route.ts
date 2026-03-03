@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
-import { resend } from '@/lib/resend';
+import { resend, EMAIL_FROM } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             if (label) {
                 // Email notification
                 resend.emails.send({
-                    from: 'Tasman Star Seafoods <onboarding@resend.dev>',
+                    from: EMAIL_FROM,
                     to: order.user.email,
                     subject: `Wholesale Order ${label.charAt(0).toUpperCase() + label.slice(1)} - Tasman Star Seafoods`,
                     html: `<p>Hi ${order.user.name},</p><p>Your wholesale order #${id.slice(-8).toUpperCase()} has been <strong>${label}</strong>.</p>${adminNotes ? `<p><strong>Notes:</strong> ${adminNotes}</p>` : ''}<p>Contact us at info@tasmanstar.com.au with any questions.</p>`,
