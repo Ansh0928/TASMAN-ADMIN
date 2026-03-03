@@ -9,13 +9,13 @@ const FLEET_GALLERY = [
         name: 'Tasman Star Trawlers',
         designation: 'Commercial Fishing Fleet',
         quote: 'Our fleet of commercial trawlers operates daily from the Gold Coast, targeting premium species in deep and shallow waters along Australia\'s east coast.',
-        src: '/assets/products/trawlers-hq.jpg',
+        src: '/assets/products/trawlers-tasman-star-peter-k-hq.jpg',
     },
     {
         name: 'Peter K',
         designation: 'Prawn Trawler',
         quote: 'The Peter K is one of our flagship prawn trawlers, purpose-built for harvesting the finest wild-caught prawns from the pristine waters off Queensland.',
-        src: '/assets/products/trawlers-tasman-star-peter-k-hq.jpg',
+        src: '/assets/products/peter-k-hq.jpg',
     },
     {
         name: 'Harbour Offload',
@@ -27,7 +27,7 @@ const FLEET_GALLERY = [
         name: 'Peter K at Sea',
         designation: 'Deep Water Operations',
         quote: 'Operating in the rich fishing grounds off the Gold Coast, the Peter K brings in premium catches of prawns, snapper, and other east coast species.',
-        src: '/assets/products/peter-k-hq.jpg',
+        src: '/assets/products/trawlers-hq.jpg',
     },
     {
         name: 'Dockside Operations',
@@ -93,8 +93,8 @@ export default function FishingFleetPage() {
 
                     {/* Our Fleet in Action — Circular Testimonials Carousel */}
                     <section>
-                        <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4 text-center" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Our Fleet in Action</h2>
-                        <p className="text-slate-300 text-lg text-center max-w-2xl mx-auto mb-12">
+                        <h2 className="font-serif text-4xl md:text-5xl font-bold text-theme-text mb-4 text-center">Our Fleet in Action</h2>
+                        <p className="text-theme-text-muted text-lg text-center max-w-2xl mx-auto mb-12">
                             Browse through our fleet — from our trawlers at sea to the daily dockside offload.
                         </p>
                         <div className="flex items-center justify-center">
@@ -102,12 +102,12 @@ export default function FishingFleetPage() {
                                 testimonials={FLEET_GALLERY}
                                 autoplay={true}
                                 colors={{
-                                    name: '#ffffff',
-                                    designation: '#FF8543',
-                                    testimony: '#cbd5e1',
-                                    arrowBackground: '#0A192F',
-                                    arrowForeground: '#f1f1f7',
-                                    arrowHoverBackground: '#FF8543',
+                                    name: 'var(--text-primary)',
+                                    designation: 'var(--text-accent)',
+                                    testimony: 'var(--text-secondary)',
+                                    arrowBackground: 'var(--bg-secondary)',
+                                    arrowForeground: 'var(--text-primary)',
+                                    arrowHoverBackground: 'var(--accent)',
                                 }}
                                 fontSizes={{
                                     name: '28px',
