@@ -42,6 +42,7 @@ public/assets/*.HEIC
 public/assets/*.heic
 public/assets/*.JPEG
 public/assets/*.JPG
+!public/assets/storefront.jpg
 public/assets/*.MOV
 public/assets/*.mov
 public/assets/*.PNG
