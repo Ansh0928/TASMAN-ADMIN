@@ -16,13 +16,16 @@ export default function RetailStoresPage() {
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
             {/* Header Banner */}
-            <div className="w-full bg-[#0A192F] py-20 relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-[#FF8543]/10 blur-[100px] rounded-full"></div>
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-4">Our Retail Stores</h1>
-                    <p className="text-xl text-slate-300 font-light max-w-xl mx-auto">
-                        Visit our direct-to-public markets to pick your own fresh catch.
-                    </p>
+            <div className="w-full h-[50vh] relative overflow-hidden bg-[#0A192F]">
+                <img src="/assets/products/retail-store.webp" alt="Tasman Star Retail Store" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full p-10 z-10">
+                    <div className="container mx-auto px-6 text-center">
+                        <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-4">Our Retail Stores</h1>
+                        <p className="text-xl text-slate-300 font-light max-w-xl mx-auto">
+                            Visit our direct-to-public markets to pick your own fresh catch.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -31,7 +34,7 @@ export default function RetailStoresPage() {
                 {/* Labrador Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
                     <div className="w-full md:w-1/2 overflow-hidden">
-                        <img src="/assets/retail-store.jpeg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
+                        <img src="/assets/products/store-3.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                         <div className="inline-block bg-[#FF8543]/10 text-[#FF8543] border border-[#FF8543]/20 text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Local Branch</div>
@@ -57,7 +60,7 @@ export default function RetailStoresPage() {
                 {/* Varsity Lakes Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
                     <div className="w-full md:w-1/2 overflow-hidden order-1 md:order-2">
-                        <img src="/assets/retail-store.jpeg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Store Fresh Shellfish" />
+                        <img src="/assets/products/store-7.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Store Fresh Shellfish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">
                         <div className="inline-block bg-[#FF8543] text-white text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Flagship Store</div>
@@ -76,6 +79,46 @@ export default function RetailStoresPage() {
                                 <Phone size={20} className="text-[#FF8543] shrink-0" />
                                 <p>(07) 5555 9876</p>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Store Gallery */}
+                <section>
+                    <h2 className="font-serif text-3xl md:text-4xl font-bold text-theme-text mb-8 text-center">Inside Our Stores</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store.webp" alt="Store interior" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-2.webp" alt="Fresh fish display" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-4.webp" alt="Seafood counter" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-5.webp" alt="Store shelves" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-6.webp" alt="Fresh catch display" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-8.webp" alt="Premium seafood selection" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-pic-9.webp" alt="Store atmosphere" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/store-pic-10.webp" alt="Market fresh selection" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/shop-11.webp" alt="Shop front" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                            <img src="/assets/products/shop-12.webp" alt="Daily specials board" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group col-span-2">
+                            <img src="/assets/products/christmas-shop.webp" alt="Christmas at Tasman Star" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         </div>
                     </div>
                 </section>

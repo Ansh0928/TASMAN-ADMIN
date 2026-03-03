@@ -19,7 +19,7 @@ export default function WholesalePage() {
             {/* Hero */}
             <div className="w-full h-[40vh] relative overflow-hidden flex items-center justify-center">
                 <div className="absolute inset-0 bg-black/50 z-10" />
-                <img src="/assets/wholesale.png" className="absolute inset-0 w-full h-full object-cover" alt="Wholesale Fish Market" />
+                <img src="/assets/products/wholesale.webp" className="absolute inset-0 w-full h-full object-cover" alt="Wholesale Fish Market" />
                 <div className="relative z-20 text-center px-6">
                     <span className="text-[#FF8543] font-bold tracking-widest uppercase text-sm mb-2 block">Our Business</span>
                     <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-4">Wholesale Supply</h1>
@@ -51,6 +51,30 @@ export default function WholesalePage() {
                         </div>
                         <h3 className="font-serif text-lg font-bold text-theme-text mb-2">Exclusive Access</h3>
                         <p className="text-theme-text-muted text-sm">First pick of limited and rare species.</p>
+                    </div>
+                </div>
+
+                {/* Product Gallery */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                        <img src="/assets/products/mixed-bin-reef-fish.webp" alt="Mixed Bin of Reef Fish" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <p className="absolute bottom-3 left-3 text-white font-bold text-sm">Mixed Reef Fish</p>
+                    </div>
+                    <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                        <img src="/assets/products/pearl-perch-bin.webp" alt="Pearl Perch Bin" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <p className="absolute bottom-3 left-3 text-white font-bold text-sm">Pearl Perch</p>
+                    </div>
+                    <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                        <img src="/assets/products/fillets.webp" alt="Fresh Fish Fillets" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <p className="absolute bottom-3 left-3 text-white font-bold text-sm">Premium Fillets</p>
+                    </div>
+                    <div className="rounded-2xl overflow-hidden h-48 md:h-56 relative group">
+                        <img src="/assets/products/pearl-perch-whole.webp" alt="Whole Pearl Perch" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <p className="absolute bottom-3 left-3 text-white font-bold text-sm">Whole Pearl Perch</p>
                     </div>
                 </div>
 

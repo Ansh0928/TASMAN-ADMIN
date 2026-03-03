@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Anchor, Handshake, Globe, Truck, Phone, Mail, Fish, MapPin, Waves } from 'lucide-react';
+import { Anchor, Handshake, Globe, Truck, Phone, Mail, Fish, MapPin, Waves, Package, Shell } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Our Partners | Tasman Star Seafoods',
@@ -14,33 +14,57 @@ export const metadata: Metadata = {
 
 const PARTNERS = [
     {
-        icon: Anchor,
-        title: 'Sydney Fish Market',
-        description: 'Direct access to the largest commercial fish market in the southern hemisphere, ensuring the widest range of premium Australian seafood.',
+        icon: Fish,
+        title: 'HUON Aquaculture Pty Ltd',
+        description: 'Tasmania\'s premier salmon and ocean trout producer, delivering sustainably farmed fish renowned for quality and freshness.',
+    },
+    {
+        icon: Waves,
+        title: 'KB Seafood Co',
+        description: 'Specialist seafood supplier providing a wide range of premium fresh and frozen products to the Australian market.',
+    },
+    {
+        icon: Package,
+        title: 'Markwell Foods',
+        description: 'Leading food distributor supplying quality seafood and specialty products with reliable cold-chain logistics.',
+    },
+    {
+        icon: Shell,
+        title: 'Coral Coast',
+        description: 'Sourcing the finest wild-caught seafood from Australia\'s pristine coral coast waters for retail and wholesale.',
     },
     {
         icon: Fish,
-        title: 'Commercial Fishers',
-        description: 'Long-standing relationships with independent fishers across Queensland and New South Wales, supporting local communities and sustainable practices.',
+        title: 'Minastream Aquaculture QLD Pty Ltd',
+        description: 'Queensland-based aquaculture specialists farming sustainable prawns and barramundi for the domestic market.',
+    },
+    {
+        icon: Anchor,
+        title: 'Poulos Bros Seafood',
+        description: 'One of Australia\'s largest family-owned seafood wholesalers, operating from the Sydney Fish Market since 1985.',
+    },
+    {
+        icon: Shell,
+        title: 'Sea Pearl Pty Ltd',
+        description: 'Premium shellfish and mollusc supplier, delivering oysters, mussels, and specialty shell products Australia-wide.',
     },
     {
         icon: Globe,
-        title: 'International Suppliers',
-        description: 'Carefully selected global suppliers for premium imported species — always meeting our strict quality and freshness standards.',
-    },
-    {
-        icon: Truck,
-        title: 'Logistics Partners',
-        description: 'Trusted cold-chain logistics providers helping us deliver fresh seafood across 5 states, 6 days a week.',
+        title: 'Australia Bay Seafood',
+        description: 'National seafood supplier connecting coastal fisheries with retailers and restaurants across every state.',
     },
 ];
 
 const MARQUEE_PARTNERS = [
     { name: 'Sydney Fish Market', icon: Anchor, color: 'text-blue-400' },
-    { name: 'Brisbane City', icon: MapPin, color: 'text-orange-400' },
-    { name: 'Salmon Kings', icon: Fish, color: 'text-pink-400' },
-    { name: 'Gold Coast Trawlers', icon: Waves, color: 'text-teal-400' },
-    { name: 'Pacific Seafoods', icon: Globe, color: 'text-indigo-400' },
+    { name: 'HUON Aquaculture', icon: Fish, color: 'text-teal-400' },
+    { name: 'KB Seafood Co', icon: Waves, color: 'text-blue-400' },
+    { name: 'Markwell Foods', icon: Package, color: 'text-orange-400' },
+    { name: 'Coral Coast', icon: Shell, color: 'text-pink-400' },
+    { name: 'Minastream Aquaculture', icon: Fish, color: 'text-green-400' },
+    { name: 'Poulos Bros Seafood', icon: Anchor, color: 'text-indigo-400' },
+    { name: 'Sea Pearl', icon: Shell, color: 'text-purple-400' },
+    { name: 'Australia Bay Seafood', icon: Globe, color: 'text-cyan-400' },
 ];
 
 export default function OurPartnerPage() {
@@ -66,10 +90,10 @@ export default function OurPartnerPage() {
                 {/* ── Animated Marquee ── */}
                 <section className="w-full overflow-hidden py-12 flex flex-col items-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-theme-text tracking-tight">
-                        Trusted by the best companies
+                        Our Supply Partners
                     </h2>
                     <p className="text-theme-text-muted text-center mb-14 max-w-lg">
-                        Companies that have been using our product from the very start.
+                        The trusted partners powering our seafood supply chain.
                     </p>
 
                     <div className="relative w-full overflow-hidden">
@@ -108,7 +132,7 @@ export default function OurPartnerPage() {
                     <p className="text-theme-text-muted text-center mb-12 max-w-2xl mx-auto">
                         Tasman Star works with a carefully selected network of partners who share our commitment to quality, freshness, and sustainability.
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                         {PARTNERS.map((partner) => {
                             const Icon = partner.icon;
                             return (
@@ -138,7 +162,7 @@ export default function OurPartnerPage() {
                     </div>
                     <div className="w-full md:w-1/2 min-h-[300px] overflow-hidden">
                         <img
-                            src="/assets/wholesale.png"
+                            src="/assets/products/trucks-sydney-fish-market.webp"
                             alt="Fresh seafood at market"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />

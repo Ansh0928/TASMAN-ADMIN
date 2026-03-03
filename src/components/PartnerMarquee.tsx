@@ -1,12 +1,16 @@
 import React from 'react';
-import { Anchor, Fish, MapPin, Ship, Waves } from 'lucide-react';
+import { Anchor, Fish, Waves, Package, Shell, Globe } from 'lucide-react';
 
 const PARTNERS = [
     { name: 'Sydney Fish Market', icon: Anchor, color: 'text-blue-400' },
-    { name: 'Brisbane City', icon: MapPin, color: 'text-orange-400' },
-    { name: 'Salmon Kings', icon: Fish, color: 'text-pink-400' },
-    { name: 'Gold Coast Trawlers', icon: Ship, color: 'text-teal-400' },
-    { name: 'Pacific Catch', icon: Waves, color: 'text-indigo-400' },
+    { name: 'HUON Aquaculture', icon: Fish, color: 'text-teal-400' },
+    { name: 'KB Seafood Co', icon: Waves, color: 'text-blue-400' },
+    { name: 'Markwell Foods', icon: Package, color: 'text-orange-400' },
+    { name: 'Coral Coast', icon: Shell, color: 'text-pink-400' },
+    { name: 'Minastream Aquaculture', icon: Fish, color: 'text-green-400' },
+    { name: 'Poulos Bros Seafood', icon: Anchor, color: 'text-indigo-400' },
+    { name: 'Sea Pearl', icon: Shell, color: 'text-purple-400' },
+    { name: 'Australia Bay Seafood', icon: Globe, color: 'text-cyan-400' },
 ];
 
 export function PartnerMarquee() {

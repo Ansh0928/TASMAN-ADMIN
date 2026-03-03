@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ComposableMap, Geographies, Geography, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
+import React, { useState, useEffect, useCallback } from "react";
+import { ComposableMap, Geographies, Geography, ZoomableGroup, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
+import type { Position } from "@vnedyalk0v/react19-simple-maps";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Plus, Minus, RotateCcw } from "lucide-react";
+import Image from "next/image";
 
 // Map region IDs from the JSON to standard state abbreviations
 const regionMapping: Record<string, string> = {
@@ -24,94 +26,106 @@ const REGIONAL_DATA: Record<string, {
     description: string;
     species: Array<{ name: string, desc: string, emoji: string }>;
     categorySlug?: string;
+    images: string[];
 }> = {
     "QLD": {
         name: "Queensland",
         description: "The Great Barrier Reef and tropical currents provide sweet, unique seafood.",
         species: [
-            { name: "Barramundi", desc: "Iconic Australian sportfish, mild flavor.", emoji: "🐟" },
-            { name: "Mud Crab", desc: "Sweet, moist meat packed with flavor.", emoji: "🦀" },
-            { name: "Tiger Prawn", desc: "Crisp texture, sweet taste, bold stripes.", emoji: "🦐" }
+            { name: "Barramundi", desc: "Iconic Australian sportfish, mild flavor.", emoji: "\u{1F41F}" },
+            { name: "Mud Crab", desc: "Sweet, moist meat packed with flavor.", emoji: "\u{1F980}" },
+            { name: "Tiger Prawn", desc: "Crisp texture, sweet taste, bold stripes.", emoji: "\u{1F990}" }
         ],
         categorySlug: "prawns",
+        images: ["mud-crab-cooked", "jumbo-raw-tiger-prawns", "cooked-tiger-prawns-2"],
     },
     "NSW": {
         name: "New South Wales",
         description: "Pristine estuaries and deep off-shore canyons.",
         species: [
-            { name: "Sydney Rock Oyster", desc: "Rich, creamy, with a lasting mineral tang.", emoji: "🦪" },
-            { name: "Yellowtail Kingfish", desc: "Firm, white flesh ideal for sashimi.", emoji: "🐟" },
-            { name: "Snapper", desc: "Delicate, sweet flavor with medium texture.", emoji: "🐠" }
+            { name: "Sydney Rock Oyster", desc: "Rich, creamy, with a lasting mineral tang.", emoji: "\u{1F9AA}" },
+            { name: "Yellowtail Kingfish", desc: "Firm, white flesh ideal for sashimi.", emoji: "\u{1F41F}" },
+            { name: "Snapper", desc: "Delicate, sweet flavor with medium texture.", emoji: "\u{1F420}" }
         ],
         categorySlug: "oyster",
+        images: ["pacific-plate-oysters", "local-snapper-whole", "hira-masa-king-fish-whole"],
     },
     "SA": {
         name: "South Australia",
         description: "Cold, clean waters of the Great Australian Bight.",
         species: [
-            { name: "Southern Rock Lobster", desc: "Premium, firm, sweet white meat.", emoji: "🦞" },
-            { name: "King George Whiting", desc: "Delicate, sweet flavor. A national treasure.", emoji: "🐟" },
-            { name: "Blue Swimmer Crab", desc: "Sweet, nutty flavor with delicate meat.", emoji: "🦀" }
+            { name: "Southern Rock Lobster", desc: "Premium, firm, sweet white meat.", emoji: "\u{1F99E}" },
+            { name: "King George Whiting", desc: "Delicate, sweet flavor. A national treasure.", emoji: "\u{1F41F}" },
+            { name: "Blue Swimmer Crab", desc: "Sweet, nutty flavor with delicate meat.", emoji: "\u{1F980}" }
         ],
         categorySlug: "crabs-lobsters-bugs",
+        images: ["king-george-whitining-whole", "wa-cray-fish-cooked", "cooked-sand-crab"],
     },
     "TAS": {
         name: "Tasmania",
         description: "The coldest, purest waters in the world.",
         species: [
-            { name: "Atlantic Salmon", desc: "Rich in Omega-3, buttery texture.", emoji: "🍣" },
-            { name: "Pacific Oysters", desc: "Plump, salty, and incredibly fresh.", emoji: "🦪" },
-            { name: "Ocean Trout", desc: "Vibrant color and a luxurious melt-in-the-mouth feel.", emoji: "🐟" }
+            { name: "Atlantic Salmon", desc: "Rich in Omega-3, buttery texture.", emoji: "\u{1F363}" },
+            { name: "Pacific Oysters", desc: "Plump, salty, and incredibly fresh.", emoji: "\u{1F9AA}" },
+            { name: "Ocean Trout", desc: "Vibrant color and a luxurious melt-in-the-mouth feel.", emoji: "\u{1F41F}" }
         ],
         categorySlug: "fish-fillet",
+        images: ["king-ora-salmon-whole", "ocean-trout-fillets", "tasmania-scallops-meat"],
     },
     "WA": {
         name: "Western Australia",
         description: "Wild, rugged coastlines spanning thousands of kilometers.",
         species: [
-            { name: "Western Rock Lobster", desc: "Highly sought after for its rich, sweet flavor.", emoji: "🦞" },
-            { name: "Pearl Meat", desc: "A rare delicacy, sweet and firm like abalone.", emoji: "🐚" },
-            { name: "Dhufish", desc: "The ultimate WA table fish, superb thick white fillets.", emoji: "🐟" }
+            { name: "Western Rock Lobster", desc: "Highly sought after for its rich, sweet flavor.", emoji: "\u{1F99E}" },
+            { name: "Pearl Meat", desc: "A rare delicacy, sweet and firm like abalone.", emoji: "\u{1F41A}" },
+            { name: "Dhufish", desc: "The ultimate WA table fish, superb thick white fillets.", emoji: "\u{1F41F}" }
         ],
         categorySlug: "shellfish",
+        images: ["wa-cray-fish-live", "wa-cray-fish-cooked", "local-lobster-ckd"],
     },
     "VIC": {
         name: "Victoria",
         description: "Stormy southern seas producing resilient, deep-flavored seafood.",
         species: [
-            { name: "Abalone", desc: "Highly prized, sweet buttery flavor and firm texture.", emoji: "🐚" },
-            { name: "Scallops", desc: "Plump, sweet, and perfect for a quick sear.", emoji: "🦪" },
-            { name: "Gummy Shark", desc: "Boneless, sweet white fillets. Classic 'flake'.", emoji: "🦈" }
+            { name: "Abalone", desc: "Highly prized, sweet buttery flavor and firm texture.", emoji: "\u{1F41A}" },
+            { name: "Scallops", desc: "Plump, sweet, and perfect for a quick sear.", emoji: "\u{1F9AA}" },
+            { name: "Gummy Shark", desc: "Boneless, sweet white fillets. Classic 'flake'.", emoji: "\u{1F988}" }
         ],
         categorySlug: "shellfish",
+        images: ["tasmania-scallops-meat", "tassie-scollop-meats", "fillets"],
     },
     "NT": {
         name: "Northern Territory",
         description: "Vast tidal rivers and warm Arafura Sea waters.",
         species: [
-            { name: "Spanish Mackerel", desc: "Thick, meaty steaks perfect for the BBQ.", emoji: "🐟" },
-            { name: "Goldband Snapper", desc: "Exceptional eating with a firm, flaky texture.", emoji: "🐠" },
-            { name: "Mud Crab", desc: "Massive claws with incredibly sweet, rich meat.", emoji: "🦀" }
+            { name: "Spanish Mackerel", desc: "Thick, meaty steaks perfect for the BBQ.", emoji: "\u{1F41F}" },
+            { name: "Goldband Snapper", desc: "Exceptional eating with a firm, flaky texture.", emoji: "\u{1F420}" },
+            { name: "Mud Crab", desc: "Massive claws with incredibly sweet, rich meat.", emoji: "\u{1F980}" }
         ],
         categorySlug: "whole-fish",
+        images: ["gold-band-snapper-whole", "spanish-mackerel-fillet", "live-mud-crabs"],
     },
     "NZ": {
         name: "New Zealand",
         description: "Crystal-clear waters surrounding the islands produce world-class seafood.",
         species: [
-            { name: "Green-lipped Mussels", desc: "Plump, sweet, and uniquely New Zealand.", emoji: "🦪" },
-            { name: "Hoki", desc: "Mild, white-fleshed deep-sea fish, sustainably caught.", emoji: "🐟" },
-            { name: "Crayfish", desc: "Sweet, succulent rock lobster from pristine waters.", emoji: "🦞" }
+            { name: "Green-lipped Mussels", desc: "Plump, sweet, and uniquely New Zealand.", emoji: "\u{1F9AA}" },
+            { name: "Hoki", desc: "Mild, white-fleshed deep-sea fish, sustainably caught.", emoji: "\u{1F41F}" },
+            { name: "Crayfish", desc: "Sweet, succulent rock lobster from pristine waters.", emoji: "\u{1F99E}" }
         ],
         categorySlug: "shellfish",
+        images: ["fresh-black-mussels", "wa-cray-fish-live-2", "scampi"],
     }
 };
+
+const DEFAULT_CENTER = createCoordinates(150, -30);
 
 export default function RegionalMap() {
     const [activeRegion, setActiveRegion] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [geoData, setGeoData] = useState<any>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [zoom, setZoom] = useState(1);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -127,9 +141,25 @@ export default function RegionalMap() {
             .catch((err) => console.error("Failed to load geojson:", err));
     }, []);
 
+    const handleMoveEnd = useCallback((position: Position) => {
+        setZoom(position.zoom);
+    }, []);
+
+    const handleZoomIn = useCallback(() => {
+        setZoom(prev => Math.min(prev * 1.5, 5));
+    }, []);
+
+    const handleZoomOut = useCallback(() => {
+        setZoom(prev => Math.max(prev / 1.5, 1));
+    }, []);
+
+    const handleReset = useCallback(() => {
+        setZoom(1);
+    }, []);
+
     const regionData = activeRegion ? REGIONAL_DATA[activeRegion] : null;
-    const mapScale = isMobile ? 380 : 650;
-    const projConfig = { scale: mapScale, center: createCoordinates(150, -30) };
+    const mapScale = isMobile ? 380 : 750;
+    const projConfig = { scale: mapScale, center: DEFAULT_CENTER };
 
     if (!geoData) {
         return (
@@ -160,11 +190,11 @@ export default function RegionalMap() {
                         Discover the premium seafood species we source from the pristine waters around Australia &amp; New Zealand.
                         <span className="text-white font-semibold"> Tap a region to see what we catch.</span>
                     </p>
-                    <p className="sm:hidden text-slate-400 text-xs mt-1">Tap a region to explore</p>
+                    <p className="sm:hidden text-slate-400 text-xs mt-1">Pinch to zoom, drag to pan</p>
                 </div>
 
-                {/* Map Container — flat on mobile, oversized isometric on desktop */}
-                <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${isMobile ? 'w-full h-full' : 'w-[120%] h-[120%] -mt-20'}`}>
+                {/* Map Container */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
 
                     {/* 3D Transform Wrapper — flat on mobile, isometric on desktop */}
                     <div
@@ -179,13 +209,15 @@ export default function RegionalMap() {
                         {!isMobile && (
                             <div className="absolute inset-0 translate-y-8 translate-x-4 mix-blend-multiply opacity-50 blur-md pointer-events-none">
                                 <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                    <Geographies geography={geoData}>
-                                        {({ geographies }) =>
-                                            geographies.map((geo, idx) => (
-                                                <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
-                                            ))
-                                        }
-                                    </Geographies>
+                                    <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
+                                        <Geographies geography={geoData}>
+                                            {({ geographies }) =>
+                                                geographies.map((geo, idx) => (
+                                                    <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
+                                                ))
+                                            }
+                                        </Geographies>
+                                    </ZoomableGroup>
                                 </ComposableMap>
                             </div>
                         )}
@@ -194,13 +226,15 @@ export default function RegionalMap() {
                         {!isMobile && (
                             <div className="absolute inset-0 translate-y-3 translate-x-1.5 pointer-events-none">
                                 <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                    <Geographies geography={geoData}>
-                                        {({ geographies }) =>
-                                            geographies.map((geo, idx) => (
-                                                <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
-                                            ))
-                                        }
-                                    </Geographies>
+                                    <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
+                                        <Geographies geography={geoData}>
+                                            {({ geographies }) =>
+                                                geographies.map((geo, idx) => (
+                                                    <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
+                                                ))
+                                            }
+                                        </Geographies>
+                                    </ZoomableGroup>
                                 </ComposableMap>
                             </div>
                         )}
@@ -208,53 +242,83 @@ export default function RegionalMap() {
                         {/* Interactive Top Layer */}
                         <div className="absolute inset-0 pointer-events-auto">
                             <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                <Geographies geography={geoData}>
-                                    {({ geographies }) =>
-                                        geographies.map((geo, idx) => {
-                                            const regionName = geo.properties.STATE_NAME;
-                                            const regionCode = regionMapping[regionName] || null;
-                                            const isActive = activeRegion === regionCode;
-                                            const isSupported = !!regionCode && !!REGIONAL_DATA[regionCode];
+                                <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
+                                    <Geographies geography={geoData}>
+                                        {({ geographies }) =>
+                                            geographies.map((geo, idx) => {
+                                                const regionName = geo.properties.STATE_NAME;
+                                                const regionCode = regionMapping[regionName] || null;
+                                                const isActive = activeRegion === regionCode;
+                                                const isSupported = !!regionCode && !!REGIONAL_DATA[regionCode];
 
-                                            return (
-                                                <Geography
-                                                    key={`top-${geo.rsmKey || idx}`}
-                                                    geography={geo}
-                                                    onClick={() => {
-                                                        if (isSupported) setActiveRegion(isActive ? null : regionCode);
-                                                    }}
-                                                    style={{
-                                                        default: {
-                                                            fill: isActive ? "#FF8543" : "#d1d5db",
-                                                            stroke: "#0A192F",
-                                                            strokeWidth: 0.5,
-                                                            outline: "none",
-                                                            transform: isActive ? "translateZ(20px)" : "translateZ(0px)",
-                                                            transition: "all 0.3s ease"
-                                                        },
-                                                        hover: {
-                                                            fill: isActive ? "#FF8543" : "#e5e7eb",
-                                                            stroke: "#0A192F",
-                                                            strokeWidth: 0.5,
-                                                            outline: "none",
-                                                            cursor: isSupported ? "pointer" : "default",
-                                                            transform: isActive ? "translateZ(20px)" : "translateZ(10px)",
-                                                            transition: "all 0.3s ease"
-                                                        },
-                                                        pressed: {
-                                                            outline: "none",
-                                                            transform: "translateZ(5px)"
-                                                        },
-                                                    }}
-                                                />
-                                            );
-                                        })
-                                    }
-                                </Geographies>
+                                                return (
+                                                    <Geography
+                                                        key={`top-${geo.rsmKey || idx}`}
+                                                        geography={geo}
+                                                        onClick={() => {
+                                                            if (isSupported) setActiveRegion(isActive ? null : regionCode);
+                                                        }}
+                                                        style={{
+                                                            default: {
+                                                                fill: isActive ? "#FF8543" : "#d1d5db",
+                                                                stroke: "#0A192F",
+                                                                strokeWidth: 0.5,
+                                                                outline: "none",
+                                                                transform: isActive ? "translateZ(20px)" : "translateZ(0px)",
+                                                                transition: "all 0.3s ease"
+                                                            },
+                                                            hover: {
+                                                                fill: isActive ? "#FF8543" : "#e5e7eb",
+                                                                stroke: "#0A192F",
+                                                                strokeWidth: 0.5,
+                                                                outline: "none",
+                                                                cursor: isSupported ? "pointer" : "default",
+                                                                transform: isActive ? "translateZ(20px)" : "translateZ(10px)",
+                                                                transition: "all 0.3s ease"
+                                                            },
+                                                            pressed: {
+                                                                outline: "none",
+                                                                transform: "translateZ(5px)"
+                                                            },
+                                                        }}
+                                                    />
+                                                );
+                                            })
+                                        }
+                                    </Geographies>
+                                </ZoomableGroup>
                             </ComposableMap>
                         </div>
 
                     </div>
+                </div>
+
+                {/* Zoom Controls */}
+                <div className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
+                    <button
+                        onClick={handleZoomIn}
+                        className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
+                        aria-label="Zoom in"
+                    >
+                        <Plus size={16} />
+                    </button>
+                    <button
+                        onClick={handleZoomOut}
+                        className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
+                        aria-label="Zoom out"
+                    >
+                        <Minus size={16} />
+                    </button>
+                    <button
+                        onClick={handleReset}
+                        className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
+                        aria-label="Reset zoom"
+                    >
+                        <RotateCcw size={14} />
+                    </button>
+                    <p className="hidden md:block text-slate-500 text-[10px] text-center mt-1 leading-tight max-w-[72px]">
+                        Scroll to zoom<br />Drag to pan
+                    </p>
                 </div>
 
             </div>
@@ -284,6 +348,21 @@ export default function RegionalMap() {
                                     >
                                         <X size={20} />
                                     </button>
+                                </div>
+
+                                {/* Product Image Strip */}
+                                <div className="flex gap-3 overflow-x-auto pb-2 mb-6 md:mb-8 scrollbar-hide">
+                                    {regionData.images.map((img, idx) => (
+                                        <div key={idx} className="relative w-36 h-[120px] md:w-44 md:h-[130px] flex-shrink-0 rounded-xl overflow-hidden border border-white/10">
+                                            <Image
+                                                src={`/assets/products/${img}.webp`}
+                                                alt={`${regionData.name} seafood`}
+                                                fill
+                                                className="object-cover"
+                                                sizes="(max-width: 768px) 144px, 176px"
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <p className="text-slate-300 font-sans mb-6 md:mb-8 leading-relaxed max-w-2xl text-sm md:text-base">

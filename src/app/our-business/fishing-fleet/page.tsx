@@ -16,7 +16,7 @@ export default function FishingFleetPage() {
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
             <div className="w-full h-[60vh] relative overflow-hidden bg-[#0A192F]">
-                <img src="/vessels.jpeg" alt="Tasman Star Fishing Vessels" className="w-full h-full object-cover" />
+                <img src="/assets/products/trawlers-tasman-star-peter-k.webp" alt="Tasman Star Fishing Vessels" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-10 z-10 lg:bottom-10 lg:left-10">
                     <div className="container mx-auto px-6 max-w-6xl">
@@ -102,7 +102,44 @@ export default function FishingFleetPage() {
                         </div>
                     </div>
                     <div className="w-full lg:w-1/2 min-h-[400px] relative">
-                        <img src="/vessels.jpeg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Fishing Vessels at Sea" />
+                        <img src="/assets/products/peter-k.webp" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Peter K Trawler at Sea" />
+                    </div>
+                </section>
+
+                {/* Fleet Gallery */}
+                <section>
+                    <h2 className="font-serif text-4xl font-bold text-theme-text mb-8 text-center">Our Fleet in Action</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/prawn-trawler-peterk.webp" alt="Prawn Trawler Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Prawn Trawler — Peter K</p>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/trawlers.webp" alt="Tasman Star Trawler Fleet" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Our Trawler Fleet</p>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/tasman-star-unload.webp" alt="Unloading the Tasman Star" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Unloading the Catch</p>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/peter-k-unload.webp" alt="Dockside at Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Dockside Offload</p>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/peter-k-unload-2.webp" alt="Fresh Catch from Peter K" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Fresh from the Boat</p>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden h-56 md:h-64 relative group">
+                            <img src="/assets/products/peterk-unload.webp" alt="Daily Offload at Harbour" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-4 left-4 text-white font-bold text-sm">Daily Harbour Offload</p>
+                        </div>
                     </div>
                 </section>
 

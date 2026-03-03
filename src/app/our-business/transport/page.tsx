@@ -16,7 +16,7 @@ export default function TransportPage() {
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
             <div className="w-full h-[60vh] relative overflow-hidden bg-[#0A192F]">
-                <img src="/tasman-star-fleet1.jpeg" alt="Tasman Star Transport Fleet" className="w-full h-full object-cover" />
+                <img src="/assets/products/trucks-sydney-fish-market.webp" alt="Tasman Star Transport Fleet" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-10 z-10 lg:bottom-10 lg:left-10">
                     <div className="container mx-auto px-6 max-w-6xl">
@@ -78,7 +78,7 @@ export default function TransportPage() {
                         </div>
                     </div>
                     <div className="w-full lg:w-1/2 min-h-[400px]">
-                        <img src="/tasman-star-fleet2.jpeg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Refrigerated Transport Vehicles" />
+                        <img src="/assets/products/sydney-fish-market-truck.webp" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Refrigerated Transport Vehicles" />
                     </div>
                 </section>
 
