@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail, sendLowStockAlertEmail } from '@/lib/resend';
+import { sendSMS } from '@/lib/twilio';
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -160,6 +161,25 @@ export async function POST(request: NextRequest) {
 
                         }
 
+                        // Send order confirmation SMS (fire-and-forget)
+                        const customerPhone = order.user?.phone || order.guestPhone;
+                        if (customerPhone) {
+                            const orderRef = order.id.slice(-8).toUpperCase();
+                            sendSMS(customerPhone, `Tasman Star Seafoods: Payment confirmed! Your order #${orderRef} has been received. We'll notify you when it's being prepared.`)
+                                .then(async (result) => {
+                                    await prisma.notification.create({
+                                        data: {
+                                            orderId: order.id,
+                                            type: 'SMS',
+                                            recipient: customerPhone,
+                                            category: 'order_confirmation',
+                                            status: result.success ? 'SENT' : 'FAILED',
+                                        },
+                                    });
+                                })
+                                .catch((err) => console.error('Order confirmation SMS error:', err));
+                        }
+
                         // Send admin notification (fire-and-forget)
                         sendNewOrderAdminEmail({
                             orderId: order.id,
@@ -196,8 +216,27 @@ export async function POST(request: NextRequest) {
                     const failedOrder = await prisma.order.update({
                         where: { id: failedOrderId },
                         data: { status: 'CANCELLED' },
-                        include: { user: { select: { name: true, email: true } } },
+                        include: { user: { select: { name: true, email: true, phone: true } } },
                     });
+
+                    // Send payment failure SMS
+                    const failedPhone = failedOrder.user?.phone || failedOrder.guestPhone;
+                    if (failedPhone) {
+                        const orderRef = failedOrder.id.slice(-8).toUpperCase();
+                        sendSMS(failedPhone, `Tasman Star Seafoods: Payment for order #${orderRef} could not be processed. Please try again or contact us at info@tasmanstar.com.au`)
+                            .then(async (result) => {
+                                await prisma.notification.create({
+                                    data: {
+                                        orderId: failedOrder.id,
+                                        type: 'SMS',
+                                        recipient: failedPhone,
+                                        category: 'payment_failure',
+                                        status: result.success ? 'SENT' : 'FAILED',
+                                    },
+                                });
+                            })
+                            .catch((err) => console.error('Payment failure SMS error:', err));
+                    }
 
                     const failedEmail = failedOrder.user?.email || failedOrder.guestEmail;
                     const failedName = failedOrder.user?.name || failedOrder.guestName || 'Customer';
@@ -230,7 +269,7 @@ export async function POST(request: NextRequest) {
                 if (paymentIntent) {
                     const order = await prisma.order.findFirst({
                         where: { stripePaymentIntent: paymentIntent },
-                        include: { user: { select: { name: true, email: true } } },
+                        include: { user: { select: { name: true, email: true, phone: true } } },
                     });
 
                     if (order) {
@@ -246,6 +285,25 @@ export async function POST(request: NextRequest) {
                                 ...(isFullRefund ? { status: 'CANCELLED' } : {}),
                             },
                         });
+
+                        // Send refund SMS
+                        const refundPhone = order.user?.phone || order.guestPhone;
+                        if (refundPhone) {
+                            const orderRef = order.id.slice(-8).toUpperCase();
+                            sendSMS(refundPhone, `Tasman Star Seafoods: A $${refundedAmountAud.toFixed(2)} refund for order #${orderRef} has been processed. It may take 5-10 business days to appear.`)
+                                .then(async (result) => {
+                                    await prisma.notification.create({
+                                        data: {
+                                            orderId: order.id,
+                                            type: 'SMS',
+                                            recipient: refundPhone,
+                                            category: 'refund',
+                                            status: result.success ? 'SENT' : 'FAILED',
+                                        },
+                                    });
+                                })
+                                .catch((err) => console.error('Refund SMS error:', err));
+                        }
 
                         // Send refund notification email
                         const refundEmail = order.user?.email || order.guestEmail;

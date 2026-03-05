@@ -98,6 +98,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                     ? wholesaleApprovedSMS(user.name)
                     : wholesaleRejectedSMS(user.name);
                 sendSMS(user.phone, smsBody)
+                    .then(async (result) => {
+                        await prisma.notification.create({
+                            data: {
+                                userId: user.id,
+                                type: 'SMS',
+                                recipient: user.phone!,
+                                category: 'wholesale_status',
+                                status: result.success ? 'SENT' : 'FAILED',
+                            },
+                        });
+                    })
                     .catch((e) => console.error('Wholesale status SMS error:', e));
             }
         }

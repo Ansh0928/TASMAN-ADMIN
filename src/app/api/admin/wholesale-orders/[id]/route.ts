@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 ...(adminNotes !== undefined && { adminNotes }),
             },
             include: {
-                user: { select: { name: true, email: true, phone: true } },
+                user: { select: { id: true, name: true, email: true, phone: true } },
                 items: { include: { wholesalePriceItem: true } },
             },
         });
@@ -49,7 +49,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
                 // SMS notification
                 if (order.user.phone) {
-                    sendSMS(order.user.phone, `Tasman Star Seafoods: Your wholesale order #${id.slice(-8).toUpperCase()} has been ${label}.`).catch(console.error);
+                    sendSMS(order.user.phone, `Tasman Star Seafoods: Your wholesale order #${id.slice(-8).toUpperCase()} has been ${label}.`)
+                        .then(async (result) => {
+                            await prisma.notification.create({
+                                data: {
+                                    userId: order.user!.id,
+                                    type: 'SMS',
+                                    recipient: order.user!.phone!,
+                                    category: 'wholesale_order_status',
+                                    status: result.success ? 'SENT' : 'FAILED',
+                                },
+                            });
+                        })
+                        .catch(console.error);
                 }
             }
         }

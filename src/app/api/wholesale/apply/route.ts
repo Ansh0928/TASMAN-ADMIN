@@ -64,6 +64,17 @@ export async function POST(request: NextRequest) {
         // Send SMS to applicant (fire-and-forget)
         if (phone) {
             sendSMS(phone, wholesaleApplicationReceivedSMS(contactName))
+                .then(async (result) => {
+                    await prisma.notification.create({
+                        data: {
+                            userId: user.id,
+                            type: 'SMS',
+                            recipient: phone,
+                            category: 'wholesale_application',
+                            status: result.success ? 'SENT' : 'FAILED',
+                        },
+                    });
+                })
                 .catch((e) => console.error('Wholesale application SMS error:', e));
         }
 
