@@ -12,19 +12,22 @@ export async function GET() {
             expand: ['data.coupon'],
         });
 
-        const coupons = promos.data.map((p) => ({
-            id: p.id,
-            code: p.code,
-            couponId: p.coupon && typeof p.coupon !== 'string' ? p.coupon.id : p.coupon,
-            percentOff: p.coupon && typeof p.coupon !== 'string' ? p.coupon.percent_off : null,
-            amountOff: p.coupon && typeof p.coupon !== 'string' ? p.coupon.amount_off : null,
-            currency: p.coupon && typeof p.coupon !== 'string' ? p.coupon.currency : null,
-            active: p.active,
-            timesRedeemed: p.times_redeemed,
-            maxRedemptions: p.max_redemptions,
-            expiresAt: p.expires_at,
-            created: p.created,
-        }));
+        const coupons = promos.data.map((p: any) => {
+            const coupon = p.coupon;
+            return {
+                id: p.id,
+                code: p.code,
+                couponId: coupon && typeof coupon !== 'string' ? coupon.id : coupon,
+                percentOff: coupon && typeof coupon !== 'string' ? coupon.percent_off : null,
+                amountOff: coupon && typeof coupon !== 'string' ? coupon.amount_off : null,
+                currency: coupon && typeof coupon !== 'string' ? coupon.currency : null,
+                active: p.active,
+                timesRedeemed: p.times_redeemed,
+                maxRedemptions: p.max_redemptions,
+                expiresAt: p.expires_at,
+                created: p.created,
+            };
+        });
 
         return NextResponse.json({ coupons });
     } catch (err) {
