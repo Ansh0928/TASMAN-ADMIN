@@ -44,7 +44,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
         <>
             <button
                 onClick={() => setOpen(true)}
-                className="lg:hidden fixed top-5 right-4 z-[62] flex items-center justify-center w-10 h-10 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
+                className="lg:hidden fixed top-5 right-4 z-[62] flex items-center justify-center w-11 h-11 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
                 aria-label="Open menu"
                 style={{ display: open ? 'none' : undefined }}
             >
@@ -68,7 +68,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                     <span className="text-white font-serif font-bold text-lg">Menu</span>
                     <button
                         onClick={() => setOpen(false)}
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white"
+                        className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white"
                         aria-label="Close menu"
                     >
                         <X size={20} />

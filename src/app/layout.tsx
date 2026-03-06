@@ -91,11 +91,11 @@ export default async function RootLayout({
               {/* Mobile Nav */}
               <nav className="lg:hidden w-full bg-theme-header border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-1 px-4 py-1.5 min-w-max">
-                  <a href="/" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-2.5 rounded-full whitespace-nowrap">Our Business</a>
-                  <a href="/about" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-2.5 rounded-full whitespace-nowrap">About Us</a>
-                  <a href="/our-partner" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-2.5 rounded-full whitespace-nowrap">Our Partner</a>
-                  <a href="/our-products" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-2.5 rounded-full whitespace-nowrap">Our Products</a>
-                  <a href="/deals" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-2.5 rounded-full whitespace-nowrap flex items-center gap-1">
+                  <a href="/" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-3 rounded-full whitespace-nowrap">Our Business</a>
+                  <a href="/about" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-3 rounded-full whitespace-nowrap">About Us</a>
+                  <a href="/our-partner" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-3 rounded-full whitespace-nowrap">Our Partner</a>
+                  <a href="/our-products" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-3 rounded-full whitespace-nowrap">Our Products</a>
+                  <a href="/deals" className="text-theme-secondary hover:text-theme-accent active:text-theme-accent transition-colors text-sm font-medium px-3 py-3 rounded-full whitespace-nowrap flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-theme-accent animate-pulse"></span>
                     Deals
                   </a>
