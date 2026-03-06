@@ -3,20 +3,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Use vi.hoisted() for mock references consistent with project patterns
 const mockLimit = vi.hoisted(() => vi.fn());
 const mockSlidingWindow = vi.hoisted(() => vi.fn());
-const mockRatelimitConstructor = vi.hoisted(() =>
-    vi.fn().mockImplementation(() => ({ limit: mockLimit }))
-);
-const mockRedisConstructor = vi.hoisted(() => vi.fn().mockImplementation(() => ({})));
+const mockRatelimitConstructor = vi.hoisted(() => vi.fn());
+const mockRedisConstructor = vi.hoisted(() => vi.fn());
 
-vi.mock('@upstash/ratelimit', () => ({
-    Ratelimit: Object.assign(mockRatelimitConstructor, {
-        slidingWindow: mockSlidingWindow,
-    }),
-}));
+vi.mock('@upstash/ratelimit', () => {
+    class MockRatelimit {
+        limit: typeof mockLimit;
+        constructor(...args: any[]) {
+            mockRatelimitConstructor(...args);
+            this.limit = mockLimit;
+        }
+        static slidingWindow = mockSlidingWindow;
+    }
+    return { Ratelimit: MockRatelimit };
+});
 
-vi.mock('@upstash/redis', () => ({
-    Redis: mockRedisConstructor,
-}));
+vi.mock('@upstash/redis', () => {
+    class MockRedis {
+        constructor(...args: any[]) {
+            mockRedisConstructor(...args);
+        }
+    }
+    return { Redis: MockRedis };
+});
 
 // Helper to create mock NextRequest objects
 function createMockRequest(options: {
@@ -51,12 +60,22 @@ function createMockRequest(options: {
 
 describe('Middleware', () => {
     beforeEach(() => {
+        vi.resetModules();
         vi.clearAllMocks();
+        // Set Upstash env vars so rate limiters initialize
+        process.env.UPSTASH_REDIS_REST_URL = 'https://fake.upstash.io';
+        process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
+        // Default: allow rate limit
+        mockLimit.mockResolvedValue({
+            success: true,
+            limit: 100,
+            remaining: 99,
+            reset: Date.now() + 60000,
+        });
     });
 
     describe('CSRF Origin validation (SEC-10)', () => {
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('rejects POST with mismatched Origin header', async () => {
+        it('rejects POST with mismatched Origin header', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -72,8 +91,7 @@ describe('Middleware', () => {
             expect(response.status).toBe(403);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('allows POST with matching Origin header', async () => {
+        it('allows POST with matching Origin header', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -89,8 +107,7 @@ describe('Middleware', () => {
             expect(response.status).not.toBe(403);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('allows POST with no Origin header (same-origin assumption)', async () => {
+        it('allows POST with no Origin header (same-origin assumption)', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -105,8 +122,7 @@ describe('Middleware', () => {
             expect(response.status).not.toBe(403);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('allows GET requests even with mismatched Origin', async () => {
+        it('allows GET requests even with mismatched Origin', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -122,8 +138,7 @@ describe('Middleware', () => {
             expect(response.status).not.toBe(403);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('exempts /api/stripe/webhook from CSRF check', async () => {
+        it('exempts /api/stripe/webhook from CSRF check', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -139,8 +154,7 @@ describe('Middleware', () => {
             expect(response.status).not.toBe(403);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('exempts /api/auth/callback/google from CSRF check', async () => {
+        it('exempts /api/auth/callback/google from CSRF check', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -158,8 +172,7 @@ describe('Middleware', () => {
     });
 
     describe('Global rate limiting (SEC-09)', () => {
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('returns 429 when global rate limit is exceeded', async () => {
+        it('returns 429 when global rate limit is exceeded', async () => {
             mockLimit.mockResolvedValueOnce({
                 success: false,
                 limit: 100,
@@ -181,8 +194,7 @@ describe('Middleware', () => {
             expect(response.headers.get('Retry-After')).toBeTruthy();
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('passes through when under global rate limit', async () => {
+        it('passes through when under global rate limit', async () => {
             mockLimit.mockResolvedValueOnce({
                 success: true,
                 limit: 100,
@@ -206,8 +218,7 @@ describe('Middleware', () => {
             expect(response.status).not.toBe(429);
         });
 
-        // Unskip after Plan 02 updates middleware.ts
-        it.skip('passes through when UPSTASH_REDIS_REST_URL is not set', async () => {
+        it('passes through when UPSTASH_REDIS_REST_URL is not set', async () => {
             delete process.env.UPSTASH_REDIS_REST_URL;
 
             const { middleware } = await import('@/middleware');
