@@ -105,6 +105,8 @@ export default function CheckoutPage() {
     const [fulfillment, setFulfillment] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [priceMismatchNotice, setPriceMismatchNotice] = useState<string | null>(null);
     const [recommendations, setRecommendations] = useState<RecommendedProduct[]>([]);
 
     // Coupon state
@@ -226,6 +228,14 @@ export default function CheckoutPage() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        // Clear field error when user starts typing
+        if (fieldErrors[name]) {
+            setFieldErrors((prev) => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            });
+        }
     };
 
     const handleApplyCoupon = async () => {
@@ -264,32 +274,57 @@ export default function CheckoutPage() {
         setCouponError('');
     };
 
+    const validateForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!formData.name.trim()) errors.name = 'Name is required';
+        if (!formData.email.trim()) errors.email = 'Email is required';
+        if (!formData.phone.trim()) {
+            errors.phone = 'Phone number is required';
+        } else if (!/^(\+?61|0)[2-478]\d{8}$/.test(formData.phone.replace(/\s/g, ''))) {
+            errors.phone = 'Enter a valid Australian phone number';
+        }
+
+        if (fulfillment === 'DELIVERY') {
+            if (!formData.street.trim()) errors.street = 'Street address is required';
+            if (!formData.city.trim()) errors.city = 'City is required';
+            if (!formData.state.trim()) errors.state = 'State is required';
+            if (!formData.postcode.trim()) {
+                errors.postcode = 'Postcode is required';
+            } else if (!/^[0-9]{4}$/.test(formData.postcode.trim())) {
+                errors.postcode = 'Enter a valid 4-digit postcode';
+            }
+        }
+
+        if (fulfillment === 'PICKUP' && !pickupDate) {
+            errors.pickupDate = 'Please select a pickup date';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
+        setPriceMismatchNotice(null);
+
+        // Field-level validation
+        if (!validateForm()) {
+            setIsLoading(false);
+            toast.error('Please fix the highlighted errors');
+            return;
+        }
+
+        // Block if out-of-stock items exist
+        if (hasOutOfStock) {
+            setError('Please remove out-of-stock items before checking out');
+            setIsLoading(false);
+            return;
+        }
 
         try {
-            // Validate form
-            if (!formData.email || !formData.name || !formData.phone) {
-                setError('Please fill in all required fields');
-                setIsLoading(false);
-                return;
-            }
-
-            if (fulfillment === 'DELIVERY' && (!formData.street || !formData.city || !formData.state || !formData.postcode)) {
-                setError('Please provide a delivery address');
-                setIsLoading(false);
-                return;
-            }
-
-            if (fulfillment === 'PICKUP' && !pickupDate) {
-                setError('Please select a pickup date');
-                toast.error('Please select a pickup date');
-                setIsLoading(false);
-                return;
-            }
-
             // Create checkout session
             const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -301,13 +336,13 @@ export default function CheckoutPage() {
                     deliveryFee,
                     tax,
                     total,
-                    guestEmail: formData.email,
-                    guestName: formData.name,
-                    guestPhone: formData.phone,
-                    deliveryStreet: fulfillment === 'DELIVERY' ? formData.street : null,
-                    deliveryCity: fulfillment === 'DELIVERY' ? formData.city : null,
-                    deliveryState: fulfillment === 'DELIVERY' ? formData.state : null,
-                    deliveryPostcode: fulfillment === 'DELIVERY' ? formData.postcode : null,
+                    guestEmail: formData.email.trim(),
+                    guestName: formData.name.trim(),
+                    guestPhone: formData.phone.replace(/\s/g, ''),
+                    deliveryStreet: fulfillment === 'DELIVERY' ? formData.street.trim() : null,
+                    deliveryCity: fulfillment === 'DELIVERY' ? formData.city.trim() : null,
+                    deliveryState: fulfillment === 'DELIVERY' ? formData.state.trim() : null,
+                    deliveryPostcode: fulfillment === 'DELIVERY' ? formData.postcode.trim() : null,
                     pickupTime: fulfillment === 'PICKUP' && pickupDate
                         ? (() => { const [h, m] = pickupTime.split(':').map(Number); const d = new Date(pickupDate); d.setHours(h, m, 0, 0); return d.toISOString(); })()
                         : null,
@@ -323,6 +358,20 @@ export default function CheckoutPage() {
                 setError(msg);
                 toast.error(msg);
                 return;
+            }
+
+            // CHK-07: Check for price mismatch between client and server
+            if (data.serverSubtotal !== undefined) {
+                const serverSub = parseFloat(data.serverSubtotal);
+                const clientSub = parseFloat(subtotal.toFixed(2));
+                if (Math.abs(serverSub - clientSub) > 0.01) {
+                    setPriceMismatchNotice(
+                        `Some prices have been updated since you added items to your cart. Your total has been adjusted from $${clientSub.toFixed(2)} to $${serverSub.toFixed(2)}.`
+                    );
+                    toast.warning('Prices have been updated. Please review your order total.');
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Redirect to Stripe
@@ -355,9 +404,26 @@ export default function CheckoutPage() {
                     </div>
                 )}
 
+                {priceMismatchNotice && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6 text-yellow-400">
+                        <p className="font-medium mb-1">Prices Updated</p>
+                        <p className="text-sm">{priceMismatchNotice}</p>
+                        <p className="text-sm mt-2">Please review the updated total and submit again to continue.</p>
+                    </div>
+                )}
+
                 {hasOutOfStock && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6 text-red-500">
-                        Some items in your cart are out of stock. Please remove them before checking out.
+                        <p className="font-medium mb-1">Out of Stock Items</p>
+                        <ul className="text-sm list-disc list-inside">
+                            {items
+                                .filter(item => stockWarnings.get(item.productId) === 'Out of stock')
+                                .map(item => (
+                                    <li key={item.id}>{item.name}</li>
+                                ))
+                            }
+                        </ul>
+                        <p className="text-sm mt-2">Please remove these items from your cart before checking out.</p>
                     </div>
                 )}
 
@@ -377,8 +443,9 @@ export default function CheckoutPage() {
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             required
-                                            className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.name ? 'border-red-500' : 'border-theme-border'}`}
                                         />
+                                        {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-theme-text mb-1">Email *</label>
@@ -388,8 +455,9 @@ export default function CheckoutPage() {
                                             value={formData.email}
                                             onChange={handleInputChange}
                                             required
-                                            className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.email ? 'border-red-500' : 'border-theme-border'}`}
                                         />
+                                        {fieldErrors.email && <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-theme-text mb-1">Phone *</label>
@@ -399,11 +467,10 @@ export default function CheckoutPage() {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             required
-                                            pattern="^(\+?61|0)[2-478]\d{8}$"
-                                            title="Australian phone number (e.g. 0412345678 or +61412345678)"
                                             placeholder="0412 345 678"
-                                            className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.phone ? 'border-red-500' : 'border-theme-border'}`}
                                         />
+                                        {fieldErrors.phone && <p className="text-red-400 text-xs mt-1">{fieldErrors.phone}</p>}
                                     </div>
                                 </div>
                             </div>
@@ -482,8 +549,9 @@ export default function CheckoutPage() {
                                                 value={formData.street}
                                                 onChange={handleInputChange}
                                                 required
-                                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.street ? 'border-red-500' : 'border-theme-border'}`}
                                             />
+                                            {fieldErrors.street && <p className="text-red-400 text-xs mt-1">{fieldErrors.street}</p>}
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
@@ -494,8 +562,9 @@ export default function CheckoutPage() {
                                                     value={formData.city}
                                                     onChange={handleInputChange}
                                                     required
-                                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.city ? 'border-red-500' : 'border-theme-border'}`}
                                                 />
+                                                {fieldErrors.city && <p className="text-red-400 text-xs mt-1">{fieldErrors.city}</p>}
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-theme-text mb-1">State *</label>
@@ -505,8 +574,9 @@ export default function CheckoutPage() {
                                                     value={formData.state}
                                                     onChange={handleInputChange}
                                                     required
-                                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.state ? 'border-red-500' : 'border-theme-border'}`}
                                                 />
+                                                {fieldErrors.state && <p className="text-red-400 text-xs mt-1">{fieldErrors.state}</p>}
                                             </div>
                                         </div>
                                         <div>
@@ -518,11 +588,10 @@ export default function CheckoutPage() {
                                                 onChange={handleInputChange}
                                                 required
                                                 maxLength={4}
-                                                pattern="[0-9]{4}"
-                                                title="4-digit Australian postcode"
                                                 placeholder="4215"
-                                                className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.postcode ? 'border-red-500' : 'border-theme-border'}`}
                                             />
+                                            {fieldErrors.postcode && <p className="text-red-400 text-xs mt-1">{fieldErrors.postcode}</p>}
                                         </div>
                                     </div>
 
@@ -589,8 +658,9 @@ export default function CheckoutPage() {
                                                     })}
                                                 </select>
                                             </div>
-                                            <p className="text-xs text-theme-text-muted mt-1">Store hours: 7:00 AM – 4:00 PM</p>
+                                            <p className="text-xs text-theme-text-muted mt-1">Store hours: 7:00 AM - 4:00 PM</p>
                                         </div>
+                                        {fieldErrors.pickupDate && <p className="text-red-400 text-xs mt-1">{fieldErrors.pickupDate}</p>}
                                     </div>
                                 </div>
                             )}
@@ -679,8 +749,12 @@ export default function CheckoutPage() {
                                     </div>
                                 )}
                                 <div className="flex justify-between">
-                                    <span className="text-theme-text-muted">Delivery</span>
-                                    <span className="text-theme-text">${deliveryFee.toFixed(2)}</span>
+                                    <span className="text-theme-text-muted">
+                                        {fulfillment === 'DELIVERY' ? 'Delivery' : 'Pickup'}
+                                    </span>
+                                    <span className={fulfillment === 'PICKUP' ? 'text-emerald-400 font-medium' : 'text-theme-text'}>
+                                        {fulfillment === 'PICKUP' ? 'Free' : `$${deliveryFee.toFixed(2)}`}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-theme-text-muted">GST (10%)</span>

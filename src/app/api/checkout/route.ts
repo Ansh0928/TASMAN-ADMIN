@@ -303,7 +303,11 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(
-            { url: session.url },
+            {
+                url: session.url,
+                serverSubtotal: serverSubtotal.toFixed(2),
+                serverTotal: serverTotal.toFixed(2),
+            },
             { status: 200 }
         );
     } catch (error: any) {
