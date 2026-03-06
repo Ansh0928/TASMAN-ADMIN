@@ -1,5 +1,5 @@
 import { prisma } from './prisma';
-import { resend, EMAIL_FROM } from './resend';
+import { resend, EMAIL_FROM, emailHeaderHtml, emailFooterHtml } from './resend';
 import { sendSMS, wholesalePriceListUpdatedSMS } from './twilio';
 
 export async function notifyWholesalersOfUpdate() {
@@ -63,10 +63,7 @@ function buildPriceListUpdatedEmail(name: string): string {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Wholesale Price Update</p>
-            </div>
+            ${emailHeaderHtml('Wholesale Price Update')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${name},</p>
                 <p style="color: #555;">Our wholesale price list has been updated. Sign in to view the latest prices and today's specials.</p>
@@ -80,10 +77,7 @@ function buildPriceListUpdatedEmail(name: string): string {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooterHtml()}
         </div>
     </body>
     </html>`;

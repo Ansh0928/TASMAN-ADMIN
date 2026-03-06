@@ -19,8 +19,36 @@ export const resend = new Proxy({} as Resend, {
     },
 });
 
-/** Centralized email sender — update this when moving off the Resend free tier */
-export const EMAIL_FROM = 'Tasman Star Seafoods <onboarding@resend.dev>';
+/** Centralized email sender */
+export const EMAIL_FROM = 'Tasman Star Seafoods <orders@tasmanstarseafoodmarket.com.au>';
+
+/** Logo URL for email templates */
+const LOGO_URL = 'https://tasman-admin.vercel.app/assets/tasman-star-logo.png';
+
+/** Shared email header with logo */
+export function emailHeaderHtml(subtitle: string) { return emailHeader(subtitle); }
+export function emailFooterHtml(isAdmin = false) { return emailFooter(isAdmin); }
+
+function emailHeader(subtitle: string) {
+    return `
+        <div style="background-color: #0A192F; padding: 30px; text-align: center;">
+            <img src="${LOGO_URL}" alt="Tasman Star Seafoods" width="120" height="120" style="display: block; margin: 0 auto 16px; border-radius: 50%;" />
+            <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
+            <p style="color: #ccc; margin: 8px 0 0;">${subtitle}</p>
+        </div>`;
+}
+
+/** Shared email footer */
+function emailFooter(isAdmin = false) {
+    return `
+        <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
+            <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods${isAdmin ? ' - Admin Notification' : ''}</p>
+            ${isAdmin ? '' : '<p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>'}
+            <p style="color: #bbb; font-size: 11px; margin: 8px 0 0;">
+                <a href="https://tasmanstarseafoodmarket.com.au" style="color: #FF8543; text-decoration: none;">tasmanstarseafoodmarket.com.au</a>
+            </p>
+        </div>`;
+}
 
 interface OrderItem {
     product: { name: string };
@@ -78,10 +106,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <!-- Header -->
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Order Confirmation</p>
-            </div>
+            ${emailHeader('Order Confirmation')}
 
             <!-- Content -->
             <div style="padding: 30px;">
@@ -161,10 +186,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
             </div>
 
             <!-- Footer -->
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>
@@ -240,10 +262,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Order Update</p>
-            </div>
+            ${emailHeader('Order Update')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
 
@@ -272,10 +291,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>
@@ -310,10 +326,7 @@ export async function sendRefundNotificationEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Refund Notification</p>
-            </div>
+            ${emailHeader('Refund Notification')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
 
@@ -340,10 +353,7 @@ export async function sendRefundNotificationEmail(data: {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>
@@ -378,10 +388,7 @@ export async function sendPaymentFailureEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Payment Issue</p>
-            </div>
+            ${emailHeader('Payment Issue')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
 
@@ -404,10 +411,7 @@ export async function sendPaymentFailureEmail(data: {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>
@@ -469,10 +473,7 @@ export async function sendNewOrderAdminEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Admin Notification</p>
-            </div>
+            ${emailHeader('Admin Notification')}
             <div style="padding: 30px;">
                 <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px; margin: 0 0 20px; text-align: center;">
                     <p style="color: #059669; font-size: 20px; font-weight: bold; margin: 0;">New Order!</p>
@@ -521,9 +522,7 @@ export async function sendNewOrderAdminEmail(data: {
                     </a>
                 </div>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods - Admin Notification</p>
-            </div>
+            ${emailFooter(true)}
         </div>
     </body>
     </html>
@@ -566,10 +565,7 @@ export async function sendLowStockAlertEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Low Stock Alert</p>
-            </div>
+            ${emailHeader('Low Stock Alert')}
             <div style="padding: 30px;">
                 <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 0 0 20px; text-align: center;">
                     <p style="font-size: 36px; margin: 0 0 8px;">⚠️</p>
@@ -595,9 +591,7 @@ export async function sendLowStockAlertEmail(data: {
                     </a>
                 </div>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods - Admin Notification</p>
-            </div>
+            ${emailFooter(true)}
         </div>
     </body>
     </html>
@@ -631,10 +625,7 @@ export async function sendWholesaleApplicationReceivedEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Wholesale Application</p>
-            </div>
+            ${emailHeader('Wholesale Application')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${data.name},</p>
                 <p style="color: #555;">Thank you for applying for a wholesale account with Tasman Star Seafoods. We've received your application and it's now being reviewed by our team.</p>
@@ -660,10 +651,7 @@ export async function sendWholesaleApplicationReceivedEmail(data: {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>
@@ -700,10 +688,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">New Wholesale Application</p>
-            </div>
+            ${emailHeader('New Wholesale Application')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">A new wholesale application has been submitted and needs your review.</p>
 
@@ -728,9 +713,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
                     Go to Admin Panel &rarr; Customers to approve or reject this application.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods - Admin Notification</p>
-            </div>
+            ${emailFooter(true)}
         </div>
     </body>
     </html>
@@ -766,10 +749,7 @@ export async function sendWholesaleStatusEmail(data: {
     <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
     <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="background-color: #0A192F; padding: 30px; text-align: center;">
-                <h1 style="color: #FF8543; margin: 0; font-size: 24px;">Tasman Star Seafoods</h1>
-                <p style="color: #ccc; margin: 8px 0 0;">Wholesale Application Update</p>
-            </div>
+            ${emailHeader('Wholesale Application Update')}
             <div style="padding: 30px;">
                 <p style="color: #333; font-size: 16px;">Hi ${data.name},</p>
                 ${isApproved ? `
@@ -795,10 +775,7 @@ export async function sendWholesaleStatusEmail(data: {
                     or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
                 </p>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;">
-                <p style="color: #999; font-size: 12px; margin: 0;">Tasman Star Seafoods</p>
-                <p style="color: #999; font-size: 12px; margin: 4px 0;">213 Brisbane Rd, Labrador QLD</p>
-            </div>
+            ${emailFooter()}
         </div>
     </body>
     </html>

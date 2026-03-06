@@ -126,21 +126,33 @@ export default function CartSidebar() {
                 </div>
 
                 {/* Footer */}
-                {items.length > 0 && (
+                {items.length > 0 && (() => {
+                    const hasOutOfStock = items.some(item => stockWarnings.get(item.productId) === 'Out of stock');
+                    return (
                     <div className="border-t border-slate-100 p-6 bg-white flex flex-col gap-4">
                         <div className="flex items-center justify-between text-lg font-bold">
                             <span>Subtotal</span>
                             <span>${subtotal.toFixed(2)}</span>
                         </div>
-                        <p className="text-sm text-slate-500 pb-2">Shipping and taxes calculated at checkout.</p>
+                        {hasOutOfStock ? (
+                            <p className="text-sm text-red-500 font-medium pb-2">Remove out-of-stock items to proceed.</p>
+                        ) : (
+                            <p className="text-sm text-slate-500 pb-2">Shipping and taxes calculated at checkout.</p>
+                        )}
                         <a
-                            href="/checkout"
-                            className="bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-colors shadow-md text-lg w-full"
+                            href={hasOutOfStock ? undefined : "/checkout"}
+                            onClick={hasOutOfStock ? (e: React.MouseEvent) => e.preventDefault() : undefined}
+                            className={`font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-colors shadow-md text-lg w-full ${
+                                hasOutOfStock
+                                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                    : 'bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 text-white'
+                            }`}
                         >
                             Proceed to Checkout
                         </a>
                     </div>
-                )}
+                    );
+                })()}
             </div>
         </>
     );

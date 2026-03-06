@@ -295,10 +295,11 @@ export async function POST(request: NextRequest) {
             { url: session.url },
             { status: 200 }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error('Checkout error:', error);
+        const message = error?.raw?.message || error?.message || 'Failed to create checkout session';
         return NextResponse.json(
-            { message: 'Failed to create checkout session' },
+            { message },
             { status: 500 }
         );
     }

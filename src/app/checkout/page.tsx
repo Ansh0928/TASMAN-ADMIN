@@ -101,7 +101,7 @@ function CheckoutRecommendationCard({ product }: { product: RecommendedProduct }
 export default function CheckoutPage() {
     const router = useRouter();
     const { data: session } = useSession();
-    const { items, subtotal, clearCart } = useCart();
+    const { items, subtotal, clearCart, stockWarnings } = useCart();
     const [fulfillment, setFulfillment] = useState<'DELIVERY' | 'PICKUP'>('DELIVERY');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -209,6 +209,8 @@ export default function CheckoutPage() {
             </div>
         );
     }
+
+    const hasOutOfStock = items.some(item => stockWarnings.get(item.productId) === 'Out of stock');
 
     const deliveryFee = fulfillment === 'DELIVERY' ? 10 : 0;
     const discount = appliedCoupon
@@ -350,6 +352,12 @@ export default function CheckoutPage() {
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6 text-red-500">
                         {error}
+                    </div>
+                )}
+
+                {hasOutOfStock && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6 text-red-500">
+                        Some items in your cart are out of stock. Please remove them before checking out.
                     </div>
                 )}
 
@@ -590,10 +598,10 @@ export default function CheckoutPage() {
                             {/* Submit Button */}
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isLoading || hasOutOfStock}
                                 className="w-full bg-theme-accent text-white py-3 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 transition-opacity"
                             >
-                                {isLoading ? 'Processing...' : `Pay $${total.toFixed(2)}`}
+                                {isLoading ? 'Processing...' : hasOutOfStock ? 'Remove out-of-stock items' : `Pay $${total.toFixed(2)}`}
                             </button>
                         </form>
                     </div>
@@ -605,11 +613,18 @@ export default function CheckoutPage() {
 
                             <div className="space-y-3 mb-4 pb-4 border-b border-theme-border">
                                 {items.map((item) => (
-                                    <div key={item.id} className="flex justify-between text-sm">
-                                        <span className="text-theme-text-muted">
-                                            {item.name} x {item.quantity}
-                                        </span>
-                                        <span className="text-theme-text font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                    <div key={item.id}>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-theme-text-muted">
+                                                {item.name} x {item.quantity}
+                                            </span>
+                                            <span className="text-theme-text font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                        </div>
+                                        {stockWarnings.get(item.productId) && (
+                                            <p className={`text-xs font-medium ${stockWarnings.get(item.productId) === 'Out of stock' ? 'text-red-500' : 'text-yellow-500'}`}>
+                                                {stockWarnings.get(item.productId)}
+                                            </p>
+                                        )}
                                     </div>
                                 ))}
                             </div>
