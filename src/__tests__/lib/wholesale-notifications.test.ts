@@ -25,6 +25,8 @@ vi.mock('@/lib/resend', () => ({
         },
     },
     EMAIL_FROM: 'Tasman Star Seafoods <onboarding@resend.dev>',
+    emailHeaderHtml: () => '<div>Header</div>',
+    emailFooterHtml: () => '<div>Footer</div>',
 }));
 
 vi.mock('@/lib/twilio', () => ({

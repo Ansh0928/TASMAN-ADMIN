@@ -77,6 +77,7 @@ export const prismaMock = {
         delete: vi.fn(),
         deleteMany: vi.fn(),
     },
+    $queryRaw: vi.fn().mockResolvedValue([{ id: 'prod-1' }]),
     $transaction: vi.fn((fn: any) => fn(prismaMock)),
 };
 

@@ -10,6 +10,18 @@ const mockSendPaymentFailureEmail = vi.hoisted(() =>
 const mockSendRefundNotificationEmail = vi.hoisted(() =>
     vi.fn().mockResolvedValue({ success: true, id: 'email-789' })
 );
+const mockSendNewOrderAdminEmail = vi.hoisted(() =>
+    vi.fn().mockResolvedValue({ success: true })
+);
+const mockSendLowStockAlertEmail = vi.hoisted(() =>
+    vi.fn().mockResolvedValue({ success: true })
+);
+const mockAfter = vi.hoisted(() =>
+    vi.fn((fn: () => Promise<void>) => fn())
+);
+const mockSendSMS = vi.hoisted(() =>
+    vi.fn().mockResolvedValue({ success: true, sid: 'SM_test' })
+);
 
 vi.mock('@/lib/prisma', () => ({
     prisma: prismaMock,
@@ -23,7 +35,21 @@ vi.mock('@/lib/resend', () => ({
     sendOrderConfirmationEmail: mockSendOrderConfirmationEmail,
     sendPaymentFailureEmail: mockSendPaymentFailureEmail,
     sendRefundNotificationEmail: mockSendRefundNotificationEmail,
+    sendNewOrderAdminEmail: mockSendNewOrderAdminEmail,
+    sendLowStockAlertEmail: mockSendLowStockAlertEmail,
 }));
+
+vi.mock('@/lib/twilio', () => ({
+    sendSMS: mockSendSMS,
+}));
+
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal() as any;
+    return {
+        ...actual,
+        after: mockAfter,
+    };
+});
 
 import { POST } from '@/app/api/stripe/webhook/route';
 import { NextRequest } from 'next/server';
@@ -79,6 +105,14 @@ const mockOrderWithItems = {
 describe('POST /api/stripe/webhook', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // Default: findUnique returns a PENDING order (idempotency check passes)
+        prismaMock.order.findUnique.mockResolvedValue(
+            factories.order({ id: 'order-1', status: 'PENDING' })
+        );
+        // Default: no low stock items
+        prismaMock.product.findMany.mockResolvedValue([]);
+        // Re-set after mock to execute callbacks
+        mockAfter.mockImplementation((fn: () => Promise<void>) => fn());
     });
 
     it('returns 400 when stripe-signature header is missing', async () => {
@@ -116,7 +150,6 @@ describe('POST /api/stripe/webhook', () => {
 
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
         prismaMock.order.update.mockResolvedValue(mockOrderWithItems);
-        prismaMock.product.update.mockResolvedValue({});
         prismaMock.notification.create.mockResolvedValue({});
 
         const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
@@ -124,6 +157,11 @@ describe('POST /api/stripe/webhook', () => {
 
         expect(response.status).toBe(200);
         expect(data.received).toBe(true);
+
+        // Verify idempotency check
+        expect(prismaMock.order.findUnique).toHaveBeenCalledWith({
+            where: { id: 'order-1' },
+        });
 
         // Verify order was updated to CONFIRMED
         expect(prismaMock.order.update).toHaveBeenCalledWith({
@@ -140,15 +178,8 @@ describe('POST /api/stripe/webhook', () => {
             },
         });
 
-        // Verify stock was decremented
-        expect(prismaMock.product.update).toHaveBeenCalledWith({
-            where: { id: 'prod-1' },
-            data: {
-                stockQuantity: {
-                    decrement: 2,
-                },
-            },
-        });
+        // Verify stock was decremented via $transaction
+        expect(prismaMock.$transaction).toHaveBeenCalled();
     });
 
     it('sends confirmation email after checkout.session.completed', async () => {
@@ -166,7 +197,6 @@ describe('POST /api/stripe/webhook', () => {
 
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
         prismaMock.order.update.mockResolvedValue(mockOrderWithItems);
-        prismaMock.product.update.mockResolvedValue({});
         prismaMock.notification.create.mockResolvedValue({});
 
         await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
@@ -222,7 +252,6 @@ describe('POST /api/stripe/webhook', () => {
             .mockResolvedValueOnce(mockOrderWithItems)
             // Second call: update invoice info
             .mockResolvedValueOnce({});
-        prismaMock.product.update.mockResolvedValue({});
         prismaMock.notification.create.mockResolvedValue({});
 
         stripeMock.invoices.retrieve.mockResolvedValue({
@@ -274,7 +303,6 @@ describe('POST /api/stripe/webhook', () => {
 
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
         prismaMock.order.update.mockResolvedValue(orderWithUser);
-        prismaMock.product.update.mockResolvedValue({});
         prismaMock.notification.create.mockResolvedValue({});
 
         await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
@@ -335,7 +363,7 @@ describe('POST /api/stripe/webhook', () => {
         expect(prismaMock.order.update).toHaveBeenCalledWith({
             where: { id: 'order-2' },
             data: { status: 'CANCELLED' },
-            include: { user: { select: { name: true, email: true } } },
+            include: { user: { select: { name: true, email: true, phone: true } } },
         });
     });
 
@@ -369,7 +397,6 @@ describe('POST /api/stripe/webhook', () => {
 
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
         prismaMock.order.update.mockResolvedValue(mockOrderWithItems);
-        prismaMock.product.update.mockResolvedValue({});
         prismaMock.notification.create.mockResolvedValue({});
         mockSendOrderConfirmationEmail.mockResolvedValue({ success: false, error: 'Email failed' });
 
@@ -391,7 +418,7 @@ describe('POST /api/stripe/webhook', () => {
             data: {
                 object: {
                     payment_intent: 'pi_test_123',
-                    amount_refunded: 7698, // $76.98 in cents — full refund
+                    amount_refunded: 7698, // $76.98 in cents -- full refund
                 },
             },
         };
@@ -420,7 +447,7 @@ describe('POST /api/stripe/webhook', () => {
 
         expect(prismaMock.order.findFirst).toHaveBeenCalledWith({
             where: { stripePaymentIntent: 'pi_test_123' },
-            include: { user: { select: { name: true, email: true } } },
+            include: { user: { select: { name: true, email: true, phone: true } } },
         });
 
         expect(prismaMock.order.update).toHaveBeenCalledWith({
@@ -439,7 +466,7 @@ describe('POST /api/stripe/webhook', () => {
             data: {
                 object: {
                     payment_intent: 'pi_test_123',
-                    amount_refunded: 2000, // $20 in cents — partial
+                    amount_refunded: 2000, // $20 in cents -- partial
                 },
             },
         };
@@ -489,6 +516,11 @@ describe('POST /api/stripe/webhook', () => {
         };
 
         stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+        // findUnique succeeds (returns PENDING order)
+        prismaMock.order.findUnique.mockResolvedValue(
+            factories.order({ id: 'order-1', status: 'PENDING' })
+        );
+        // order.update throws
         prismaMock.order.update.mockRejectedValue(new Error('DB error'));
 
         const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));

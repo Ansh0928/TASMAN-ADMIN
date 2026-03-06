@@ -327,7 +327,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(400);
-        expect(body.message).toBe('At least one item is required');
+        expect(body.message).toBe('Invalid items list');
     });
 
     it('rejects when items is an empty array', async () => {
@@ -338,7 +338,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(400);
-        expect(body.message).toBe('At least one item is required');
+        expect(body.message).toBe('Invalid items list');
     });
 
     it('rejects when items is not an array', async () => {
@@ -349,7 +349,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(400);
-        expect(body.message).toBe('At least one item is required');
+        expect(body.message).toBe('Invalid items list');
     });
 
     it('returns 500 when item ID is not found in available price items', async () => {
@@ -363,7 +363,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(500);
-        expect(body.message).toContain('not found or unavailable');
+        expect(body.message).toBe('Failed to create order');
     });
 
     it('returns 500 when some items are unavailable', async () => {
@@ -376,7 +376,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(500);
-        expect(body.message).toContain('not found or unavailable');
+        expect(body.message).toBe('Failed to create order');
     });
 
     // ── Error handling ──
@@ -391,7 +391,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(500);
-        expect(body.message).toBe('DB write error');
+        expect(body.message).toBe('Failed to create order');
     });
 
     it('returns 500 when price item lookup fails', async () => {
@@ -403,7 +403,7 @@ describe('POST /api/wholesale/orders', () => {
         const body = await res.json();
 
         expect(res.status).toBe(500);
-        expect(body.message).toBe('DB read error');
+        expect(body.message).toBe('Failed to create order');
     });
 });
 

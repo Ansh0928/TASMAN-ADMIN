@@ -44,6 +44,12 @@ vi.mock('bcryptjs', () => ({
     },
 }));
 
+vi.mock('@/lib/rate-limit', () => ({
+    rateLimit: vi.fn().mockResolvedValue({ limited: false, headers: {} }),
+    apiLimiter: {},
+    getClientIp: vi.fn().mockReturnValue('127.0.0.1'),
+}));
+
 import { POST } from '@/app/api/wholesale/apply/route';
 import { createMockRequest } from '../helpers/mocks';
 
@@ -53,7 +59,7 @@ const validApplication = {
     contactName: 'John Doe',
     email: 'john@testseafood.com',
     phone: '+61400111222',
-    password: 'securepass123',
+    password: 'securepass123',  // 13 chars, meets 8-char minimum
 };
 
 describe('POST /api/wholesale/apply', () => {
@@ -109,6 +115,7 @@ describe('POST /api/wholesale/apply', () => {
                 wholesaleStatus: 'PENDING',
                 companyName: validApplication.companyName,
                 abn: validApplication.abn,
+                authProvider: 'credentials',
             },
         });
     });
@@ -254,13 +261,13 @@ describe('POST /api/wholesale/apply', () => {
         expect(body.message).toBe('All fields are required');
     });
 
-    it('rejects when password is shorter than 6 characters', async () => {
-        const req = createMockRequest('POST', { ...validApplication, password: '12345' });
+    it('rejects when password is shorter than 8 characters', async () => {
+        const req = createMockRequest('POST', { ...validApplication, password: '1234567' });
         const res = await POST(req as any);
         const body = await res.json();
 
         expect(res.status).toBe(400);
-        expect(body.message).toBe('Password must be at least 6 characters');
+        expect(body.message).toBe('Password must be at least 8 characters');
     });
 
     // ── Duplicate email ──

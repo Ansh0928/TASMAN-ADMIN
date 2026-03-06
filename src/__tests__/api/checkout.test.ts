@@ -9,6 +9,16 @@ vi.mock('@/lib/stripe', () => ({
     stripe: stripeMock,
 }));
 
+vi.mock('@/lib/auth', () => ({
+    auth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock('@/lib/rate-limit', () => ({
+    rateLimit: vi.fn().mockResolvedValue({ limited: false, headers: {} }),
+    apiLimiter: {},
+    getClientIp: vi.fn().mockReturnValue('127.0.0.1'),
+}));
+
 import { POST } from '@/app/api/checkout/route';
 import { NextRequest } from 'next/server';
 
@@ -279,8 +289,7 @@ describe('POST /api/checkout', () => {
         const data = await response.json();
 
         expect(response.status).toBe(400);
-        expect(data.message).toContain('Only 1');
-        expect(data.message).toContain('you requested 5');
+        expect(data.message).toContain("doesn't have enough stock");
     });
 
     it('recalculates prices server-side and creates order with correct totals', async () => {
@@ -317,7 +326,7 @@ describe('POST /api/checkout', () => {
         const data = await response.json();
 
         expect(response.status).toBe(500);
-        expect(data.message).toBe('Failed to create checkout session');
+        expect(data.message).toBe('Stripe error');
     });
 
     it('applies discount code when valid promotion code provided', async () => {
