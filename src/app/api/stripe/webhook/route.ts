@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail, sendLowStockAlertEmail } from '@/lib/resend';
@@ -105,11 +106,9 @@ export async function POST(request: NextRequest) {
                             });
                         } catch (stockError: any) {
                             console.error(`Order ${order.id}: Stock decrement failed - ${stockError.message}`);
-                            // Order remains CONFIRMED but stock was not decremented
-                            // Do not re-throw: return 200 to Stripe to prevent retries
                         }
 
-                        // Check for low stock after decrement
+                        // Check for low stock after decrement — use after() to avoid blocking response
                         const lowStockItems = await prisma.product.findMany({
                             where: {
                                 id: { in: order.items.map(i => i.productId) },
@@ -120,8 +119,9 @@ export async function POST(request: NextRequest) {
                         });
 
                         if (lowStockItems.length > 0) {
-                            sendLowStockAlertEmail({ products: lowStockItems })
-                                .then(async (result) => {
+                            after(async () => {
+                                try {
+                                    const result = await sendLowStockAlertEmail({ products: lowStockItems });
                                     await prisma.notification.create({
                                         data: {
                                             orderId: order.id,
@@ -131,11 +131,13 @@ export async function POST(request: NextRequest) {
                                             status: result.success ? 'SENT' : 'FAILED',
                                         },
                                     });
-                                })
-                                .catch((err) => console.error('Low stock alert email error:', err));
+                                } catch (err) {
+                                    console.error('Low stock alert email error:', err);
+                                }
+                            });
                         }
 
-                        // Send order confirmation email
+                        // Send order confirmation email (critical — awaited before response)
                         const customerEmail = order.user?.email || order.guestEmail;
                         const customerName = order.user?.name || order.guestName || 'Customer';
 
@@ -173,12 +175,13 @@ export async function POST(request: NextRequest) {
 
                         }
 
-                        // Send order confirmation SMS (fire-and-forget)
+                        // Send order confirmation SMS (non-critical — use after())
                         const customerPhone = order.user?.phone || order.guestPhone;
                         if (customerPhone) {
                             const orderRef = order.id.slice(-8).toUpperCase();
-                            sendSMS(customerPhone, `Tasman Star Seafoods: Payment confirmed! Your order #${orderRef} has been received. We'll notify you when it's being prepared.`)
-                                .then(async (result) => {
+                            after(async () => {
+                                try {
+                                    const result = await sendSMS(customerPhone, `Tasman Star Seafoods: Payment confirmed! Your order #${orderRef} has been received. We'll notify you when it's being prepared.`);
                                     await prisma.notification.create({
                                         data: {
                                             orderId: order.id,
@@ -188,35 +191,42 @@ export async function POST(request: NextRequest) {
                                             status: result.success ? 'SENT' : 'FAILED',
                                         },
                                     });
-                                })
-                                .catch((err) => console.error('Order confirmation SMS error:', err));
+                                } catch (err) {
+                                    console.error('Order confirmation SMS error:', err);
+                                }
+                            });
                         }
 
-                        // Send admin notification (fire-and-forget)
-                        sendNewOrderAdminEmail({
-                            orderId: order.id,
-                            customerName,
-                            customerEmail: customerEmail!,
-                            customerPhone: order.guestPhone || '',
-                            items: order.items,
-                            total: order.total.toString(),
-                            fulfillment: order.fulfillment,
-                            deliveryStreet: order.deliveryStreet,
-                            deliveryCity: order.deliveryCity,
-                            deliveryState: order.deliveryState,
-                            deliveryPostcode: order.deliveryPostcode,
-                            pickupTime: order.pickupTime?.toISOString(),
-                        }).then(async (result) => {
-                            await prisma.notification.create({
-                                data: {
+                        // Send admin notification (non-critical — use after())
+                        after(async () => {
+                            try {
+                                const result = await sendNewOrderAdminEmail({
                                     orderId: order.id,
-                                    type: 'EMAIL',
-                                    recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
-                                    category: 'admin_new_order',
-                                    status: result.success ? 'SENT' : 'FAILED',
-                                },
-                            });
-                        }).catch((err) => console.error('Admin new order email error:', err));
+                                    customerName,
+                                    customerEmail: customerEmail!,
+                                    customerPhone: order.guestPhone || '',
+                                    items: order.items,
+                                    total: order.total.toString(),
+                                    fulfillment: order.fulfillment,
+                                    deliveryStreet: order.deliveryStreet,
+                                    deliveryCity: order.deliveryCity,
+                                    deliveryState: order.deliveryState,
+                                    deliveryPostcode: order.deliveryPostcode,
+                                    pickupTime: order.pickupTime?.toISOString(),
+                                });
+                                await prisma.notification.create({
+                                    data: {
+                                        orderId: order.id,
+                                        type: 'EMAIL',
+                                        recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
+                                        category: 'admin_new_order',
+                                        status: result.success ? 'SENT' : 'FAILED',
+                                    },
+                                });
+                            } catch (err) {
+                                console.error('Admin new order email error:', err);
+                            }
+                        });
                     }
                 }
                 break;
@@ -231,12 +241,13 @@ export async function POST(request: NextRequest) {
                         include: { user: { select: { name: true, email: true, phone: true } } },
                     });
 
-                    // Send payment failure SMS
+                    // Send payment failure notifications (use after() for reliability)
                     const failedPhone = failedOrder.user?.phone || failedOrder.guestPhone;
                     if (failedPhone) {
                         const orderRef = failedOrder.id.slice(-8).toUpperCase();
-                        sendSMS(failedPhone, `Tasman Star Seafoods: Payment for order #${orderRef} could not be processed. Please try again or contact us at info@tasmanstar.com.au`)
-                            .then(async (result) => {
+                        after(async () => {
+                            try {
+                                const result = await sendSMS(failedPhone, `Tasman Star Seafoods: Payment for order #${orderRef} could not be processed. Please try again or contact us at info@tasmanstar.com.au`);
                                 await prisma.notification.create({
                                     data: {
                                         orderId: failedOrder.id,
@@ -246,29 +257,36 @@ export async function POST(request: NextRequest) {
                                         status: result.success ? 'SENT' : 'FAILED',
                                     },
                                 });
-                            })
-                            .catch((err) => console.error('Payment failure SMS error:', err));
+                            } catch (err) {
+                                console.error('Payment failure SMS error:', err);
+                            }
+                        });
                     }
 
                     const failedEmail = failedOrder.user?.email || failedOrder.guestEmail;
                     const failedName = failedOrder.user?.name || failedOrder.guestName || 'Customer';
 
                     if (failedEmail) {
-                        sendPaymentFailureEmail({
-                            orderId: failedOrder.id,
-                            customerName: failedName,
-                            customerEmail: failedEmail,
-                        }).then(async (result) => {
-                            await prisma.notification.create({
-                                data: {
+                        after(async () => {
+                            try {
+                                const result = await sendPaymentFailureEmail({
                                     orderId: failedOrder.id,
-                                    type: 'EMAIL',
-                                    recipient: failedEmail,
-                                    category: 'payment_failure',
-                                    status: result.success ? 'SENT' : 'FAILED',
-                                },
-                            });
-                        }).catch((err) => console.error('Payment failure email error:', err));
+                                    customerName: failedName,
+                                    customerEmail: failedEmail,
+                                });
+                                await prisma.notification.create({
+                                    data: {
+                                        orderId: failedOrder.id,
+                                        type: 'EMAIL',
+                                        recipient: failedEmail,
+                                        category: 'payment_failure',
+                                        status: result.success ? 'SENT' : 'FAILED',
+                                    },
+                                });
+                            } catch (err) {
+                                console.error('Payment failure email error:', err);
+                            }
+                        });
                     }
 
                 }
@@ -306,12 +324,13 @@ export async function POST(request: NextRequest) {
                             },
                         });
 
-                        // Send refund SMS
+                        // Send refund notifications (use after() for reliability)
                         const refundPhone = order.user?.phone || order.guestPhone;
                         if (refundPhone) {
                             const orderRef = order.id.slice(-8).toUpperCase();
-                            sendSMS(refundPhone, `Tasman Star Seafoods: A $${refundedAmountAud.toFixed(2)} refund for order #${orderRef} has been processed. It may take 5-10 business days to appear.`)
-                                .then(async (result) => {
+                            after(async () => {
+                                try {
+                                    const result = await sendSMS(refundPhone, `Tasman Star Seafoods: A $${refundedAmountAud.toFixed(2)} refund for order #${orderRef} has been processed. It may take 5-10 business days to appear.`);
                                     await prisma.notification.create({
                                         data: {
                                             orderId: order.id,
@@ -321,31 +340,38 @@ export async function POST(request: NextRequest) {
                                             status: result.success ? 'SENT' : 'FAILED',
                                         },
                                     });
-                                })
-                                .catch((err) => console.error('Refund SMS error:', err));
+                                } catch (err) {
+                                    console.error('Refund SMS error:', err);
+                                }
+                            });
                         }
 
                         // Send refund notification email
                         const refundEmail = order.user?.email || order.guestEmail;
                         const refundName = order.user?.name || order.guestName || 'Customer';
                         if (refundEmail) {
-                            sendRefundNotificationEmail({
-                                orderId: order.id,
-                                customerName: refundName,
-                                customerEmail: refundEmail,
-                                refundAmount: refundedAmountAud.toFixed(2),
-                                isFullRefund,
-                            }).then(async (result) => {
-                                await prisma.notification.create({
-                                    data: {
+                            after(async () => {
+                                try {
+                                    const result = await sendRefundNotificationEmail({
                                         orderId: order.id,
-                                        type: 'EMAIL',
-                                        recipient: refundEmail,
-                                        category: 'refund',
-                                        status: result.success ? 'SENT' : 'FAILED',
-                                    },
-                                });
-                            }).catch((err) => console.error('Refund notification email error:', err));
+                                        customerName: refundName,
+                                        customerEmail: refundEmail,
+                                        refundAmount: refundedAmountAud.toFixed(2),
+                                        isFullRefund,
+                                    });
+                                    await prisma.notification.create({
+                                        data: {
+                                            orderId: order.id,
+                                            type: 'EMAIL',
+                                            recipient: refundEmail,
+                                            category: 'refund',
+                                            status: result.success ? 'SENT' : 'FAILED',
+                                        },
+                                    });
+                                } catch (err) {
+                                    console.error('Refund notification email error:', err);
+                                }
+                            });
                         }
 
                     }
