@@ -36,12 +36,10 @@ export default withSentryConfig(nextConfig, {
   // Suppress source map upload warnings when no auth token is set
   silent: !process.env.SENTRY_AUTH_TOKEN,
 
-  // Disable source map upload in development
-  disableSourceMapUpload: !process.env.SENTRY_AUTH_TOKEN,
-
-  // Hide source maps from clients
-  hideSourceMaps: true,
-
-  // Automatically instrument server functions
-  autoInstrumentServerFunctions: true,
+  // Disable source maps upload when no auth token is available
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+    // Delete source maps after upload to keep them out of client bundles
+    deleteSourcemapsAfterUpload: true,
+  },
 });
