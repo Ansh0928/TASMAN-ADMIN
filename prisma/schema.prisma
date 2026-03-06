@@ -275,9 +275,11 @@ model WholesaleOrderItem {
 }
 
 model NewsletterSubscription {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
+  id             String   @id @default(cuid())
+  email          String   @unique
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  unsubscribedAt DateTime? @map("unsubscribed_at")
 
   @@map("newsletter_subscriptions")
 }

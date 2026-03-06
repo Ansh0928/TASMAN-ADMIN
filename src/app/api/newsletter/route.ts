@@ -3,6 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit, newsletterLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  // Feature flag: disable newsletter signups if NEWSLETTER_ENABLED is explicitly "false"
+  if (process.env.NEWSLETTER_ENABLED === 'false') {
+    return NextResponse.json(
+      { message: 'Newsletter signups are currently unavailable.' },
+      { status: 503 }
+    );
+  }
+
   try {
     // Rate limit check (5 req/min for newsletter)
     const ip = getClientIp(request);
@@ -15,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const email = typeof body?.email === 'string' ? body.email.trim() : '';
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
 
     if (!email || !email.includes('@')) {
       return NextResponse.json(
@@ -29,6 +37,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
+      if (!existing.active) {
+        // Resubscribe if previously unsubscribed
+        await prisma.newsletterSubscription.update({
+          where: { email },
+          data: { active: true, unsubscribedAt: null },
+        });
+        return NextResponse.json(
+          { message: "Welcome back! You've been resubscribed." },
+          { status: 200 }
+        );
+      }
       return NextResponse.json(
         { message: "You're already subscribed!" },
         { status: 200 }
