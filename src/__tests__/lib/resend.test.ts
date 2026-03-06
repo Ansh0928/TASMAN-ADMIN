@@ -59,7 +59,7 @@ describe('Resend email functions', () => {
 
             expect(mockEmailsSend).toHaveBeenCalledTimes(1);
             const call = mockEmailsSend.mock.calls[0][0];
-            expect(call.from).toBe('Tasman Star Seafoods <onboarding@resend.dev>');
+            expect(call.from).toBe('Tasman Star Seafoods <orders@tasmanstarseafoodmarket.com.au>');
             expect(call.to).toBe('john@test.com');
             expect(call.subject).toContain('Order Confirmation');
             expect(call.subject).toContain('ABC12345');
@@ -118,7 +118,7 @@ describe('Resend email functions', () => {
 
             expect(mockEmailsSend).toHaveBeenCalledTimes(1);
             const call = mockEmailsSend.mock.calls[0][0];
-            expect(call.from).toBe('Tasman Star Seafoods <onboarding@resend.dev>');
+            expect(call.from).toBe('Tasman Star Seafoods <orders@tasmanstarseafoodmarket.com.au>');
             expect(call.to).toBe('jane@business.com');
             expect(call.subject).toBe('Application Received - Tasman Star Seafoods');
         });
