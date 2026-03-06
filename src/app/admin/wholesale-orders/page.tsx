@@ -13,11 +13,14 @@ interface WholesaleOrder {
     items: { quantity: number; unitPrice: string; total: string; wholesalePriceItem: { name: string; unit: string } }[];
 }
 
+const STATUS_OPTIONS = ['ALL', 'PENDING', 'CONFIRMED', 'REJECTED', 'COMPLETED'];
+
 export default function AdminWholesaleOrders() {
     const [orders, setOrders] = useState<WholesaleOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
+    const [statusFilter, setStatusFilter] = useState('ALL');
 
     const fetchOrders = async () => {
         try {
@@ -57,17 +60,38 @@ export default function AdminWholesaleOrders() {
         }
     };
 
+    const filteredOrders = statusFilter === 'ALL'
+        ? orders
+        : orders.filter(o => o.status === statusFilter);
+
     if (loading) return <p className="text-theme-text-muted text-center py-8">Loading wholesale orders...</p>;
 
     return (
         <>
             <h2 className="text-3xl font-bold text-theme-text mb-6">Wholesale Orders</h2>
 
-            {orders.length === 0 ? (
+            {/* Status Filter */}
+            <div className="flex flex-wrap gap-2 mb-6">
+                {STATUS_OPTIONS.map((status) => (
+                    <button
+                        key={status}
+                        onClick={() => setStatusFilter(status)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            statusFilter === status
+                                ? 'bg-theme-accent text-white'
+                                : 'bg-theme-secondary border border-theme-border text-theme-text-muted hover:text-theme-text'
+                        }`}
+                    >
+                        {status}
+                    </button>
+                ))}
+            </div>
+
+            {filteredOrders.length === 0 ? (
                 <p className="text-theme-text-muted text-center py-8">No wholesale orders yet.</p>
             ) : (
                 <div className="space-y-4">
-                    {orders.map(order => {
+                    {filteredOrders.map(order => {
                         const total = order.items.reduce((s, i) => s + parseFloat(i.total), 0);
                         const isExpanded = expandedId === order.id;
 
@@ -145,7 +169,7 @@ export default function AdminWholesaleOrders() {
                                                     className="w-full px-3 py-2 bg-theme-primary border border-theme-border rounded text-theme-text text-sm focus:border-theme-accent focus:outline-none"
                                                 />
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 flex-wrap">
                                                 {order.status === 'PENDING' && (
                                                     <>
                                                         <button onClick={() => updateStatus(order.id, 'CONFIRMED')}
@@ -156,7 +180,15 @@ export default function AdminWholesaleOrders() {
                                                 )}
                                                 {order.status === 'CONFIRMED' && (
                                                     <button onClick={() => updateStatus(order.id, 'COMPLETED')}
-                                                        className="px-3 py-2 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30">Mark Completed</button>
+                                                        className="px-3 py-2 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30">Mark Fulfilled</button>
+                                                )}
+                                                {!['COMPLETED', 'REJECTED'].includes(order.status) && (
+                                                    <button onClick={() => {
+                                                        if (confirm('Are you sure you want to cancel this wholesale order?')) {
+                                                            updateStatus(order.id, 'REJECTED');
+                                                        }
+                                                    }}
+                                                        className="px-3 py-2 bg-red-500/10 text-red-400 rounded text-sm hover:bg-red-500/20 border border-red-500/20">Cancel Order</button>
                                                 )}
                                             </div>
                                         </div>
