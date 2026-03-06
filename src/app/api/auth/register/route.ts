@@ -1,9 +1,20 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { rateLimit, authLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
     try {
+        // Rate limit check (5 req/min for auth endpoints)
+        const ip = getClientIp(request);
+        const { limited, headers: rateLimitHeaders } = await rateLimit(authLimiter, ip);
+        if (limited) {
+            return NextResponse.json(
+                { message: 'Too many requests. Please try again later.' },
+                { status: 429, headers: rateLimitHeaders }
+            );
+        }
+
         const { name, email, password, phone } = await request.json();
 
         if (!name || !email || !password) {

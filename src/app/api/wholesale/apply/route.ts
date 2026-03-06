@@ -3,9 +3,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendWholesaleApplicationReceivedEmail, sendWholesaleNewApplicationAdminEmail } from '@/lib/resend';
 import { sendSMS, wholesaleApplicationReceivedSMS } from '@/lib/twilio';
+import { rateLimit, apiLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
     try {
+        // Rate limit check (10 req/min for API endpoints)
+        const ip = getClientIp(request);
+        const { limited, headers: rateLimitHeaders } = await rateLimit(apiLimiter, ip);
+        if (limited) {
+            return NextResponse.json(
+                { message: 'Too many requests. Please try again later.' },
+                { status: 429, headers: rateLimitHeaders }
+            );
+        }
+
         const { companyName, abn, contactName, email, phone, password } = await request.json();
 
         // Validation

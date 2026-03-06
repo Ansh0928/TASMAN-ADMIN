@@ -1,11 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { resend, EMAIL_FROM } from '@/lib/resend';
 import { escapeHtml } from '@/lib/security';
+import { rateLimit, authLimiter, getClientIp } from '@/lib/rate-limit';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        // Rate limit check (5 req/min for auth endpoints)
+        const ip = getClientIp(request);
+        const { limited, headers: rateLimitHeaders } = await rateLimit(authLimiter, ip);
+        if (limited) {
+            return NextResponse.json(
+                { message: 'Too many requests. Please try again later.' },
+                { status: 429, headers: rateLimitHeaders }
+            );
+        }
+
         const { email } = await request.json();
         const genericMessage = "If an account exists with this email, you'll receive a reset link.";
 

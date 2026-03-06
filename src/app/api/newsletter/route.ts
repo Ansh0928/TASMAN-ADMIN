@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { rateLimit, newsletterLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check (5 req/min for newsletter)
+    const ip = getClientIp(request);
+    const { limited, headers: rateLimitHeaders } = await rateLimit(newsletterLimiter, ip);
+    if (limited) {
+      return NextResponse.json(
+        { message: 'Too many requests. Please try again later.' },
+        { status: 429, headers: rateLimitHeaders }
+      );
+    }
+
     const body = await request.json();
     const email = typeof body?.email === 'string' ? body.email.trim() : '';
 

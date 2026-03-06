@@ -3,9 +3,20 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@/lib/auth';
 import Decimal from 'decimal.js';
+import { rateLimit, apiLimiter, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
     try {
+        // Rate limit check (10 req/min for API endpoints)
+        const ip = getClientIp(request);
+        const { limited, headers: rateLimitHeaders } = await rateLimit(apiLimiter, ip);
+        if (limited) {
+            return NextResponse.json(
+                { message: 'Too many requests. Please try again later.' },
+                { status: 429, headers: rateLimitHeaders }
+            );
+        }
+
         const {
             items,
             fulfillment,
