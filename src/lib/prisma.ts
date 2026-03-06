@@ -13,6 +13,8 @@ function createPrisma(): PrismaClient {
         max: 5,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
+        // Allow Node.js process to exit with idle connections (important for serverless)
+        allowExitOnIdle: true,
     });
 
     pool.on('error', (err) => {
