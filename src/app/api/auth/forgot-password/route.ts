@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { resend, EMAIL_FROM } from '@/lib/resend';
+import { escapeHtml } from '@/lib/security';
 
 export async function POST(request: Request) {
     try {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
             <p style="color: #ccc; margin: 8px 0 0;">Password Reset</p>
         </div>
         <div style="padding: 30px;">
-            <p style="color: #333; font-size: 16px;">Hi ${user.name},</p>
+            <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(user.name || '')},</p>
             <p style="color: #555;">We received a request to reset your password. Click the button below to choose a new password:</p>
 
             <div style="text-align: center; margin: 30px 0;">

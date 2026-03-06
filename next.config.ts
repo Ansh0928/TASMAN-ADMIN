@@ -8,6 +8,24 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: `${process.env.AWS_S3_BUCKET_NAME || 'tasman-star-seafood'}.s3.${process.env.AWS_S3_REGION || 'ap-southeast-2'}.amazonaws.com`, pathname: '/**' },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.amazonaws.com; font-src 'self'; connect-src 'self' https://api.stripe.com https://*.amazonaws.com https://accounts.google.com; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

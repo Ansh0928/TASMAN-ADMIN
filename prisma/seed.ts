@@ -18,7 +18,8 @@ async function main() {
     console.log('Seeding database...');
 
     // ── Create Admin User ──
-    const adminPassword = await bcrypt.hash('admin123', 12);
+    // Production password should be changed via the app or database directly
+    const adminPassword = await bcrypt.hash('TasmanStar!Seed2026#', 12);
     const admin = await prisma.user.upsert({
         where: { email: 'admin@tasmanstar.com.au' },
         update: {},

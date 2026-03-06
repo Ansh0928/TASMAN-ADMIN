@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/security';
 
 let _resend: Resend | null = null;
 
@@ -110,12 +111,12 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
             <!-- Content -->
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.customerName)},</p>
                 <p style="color: #555;">Thank you for your order! Here's your order summary:</p>
 
                 <div style="background: #f8f9fa; border-radius: 8px; padding: 4px; margin: 20px 0;">
                     <p style="padding: 0 12px; color: #666; font-size: 14px;">
-                        <strong>Order #:</strong> ${data.orderId.slice(-8).toUpperCase()}
+                        <strong>Order #:</strong> ${escapeHtml(data.orderId.slice(-8).toUpperCase())}
                     </p>
                 </div>
 
@@ -147,7 +148,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
                         </tr>
                         ${(data.discountCode && data.discountAmount && parseFloat(data.discountAmount) > 0) ? `
 <tr>
-    <td style="padding: 4px 12px; color: #059669;">Discount (${data.discountCode})</td>
+    <td style="padding: 4px 12px; color: #059669;">Discount (${escapeHtml(data.discountCode!)})</td>
     <td style="padding: 4px 12px; text-align: right; color: #059669;">-$${parseFloat(data.discountAmount).toFixed(2)}</td>
 </tr>
 ` : ''}
@@ -169,7 +170,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
                 ${data.deliveryNotes ? `
                 <div style="margin-top: 12px; padding: 12px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;">
-                    <p style="color: #92400e; font-size: 13px; margin: 0;"><strong>Delivery Notes:</strong> ${data.deliveryNotes}</p>
+                    <p style="color: #92400e; font-size: 13px; margin: 0;"><strong>Delivery Notes:</strong> ${escapeHtml(data.deliveryNotes!)}</p>
                 </div>
                 ` : ''}
 
@@ -264,7 +265,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             ${emailHeader('Order Update')}
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.customerName)},</p>
 
                 <div style="background: ${content.bgColor}; border: 1px solid ${content.borderColor}; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
                     <p style="font-size: 36px; margin: 0 0 8px;">${content.emoji}</p>
@@ -281,7 +282,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
                 ${data.deliveryNotes ? `
                 <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin: 20px 0;">
                     <p style="color: #92400e; font-size: 13px; margin: 0;">
-                        <strong>Delivery Notes:</strong> ${data.deliveryNotes}
+                        <strong>Delivery Notes:</strong> ${escapeHtml(data.deliveryNotes!)}
                     </p>
                 </div>
                 ` : ''}
@@ -328,7 +329,7 @@ export async function sendRefundNotificationEmail(data: {
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             ${emailHeader('Refund Notification')}
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.customerName)},</p>
 
                 <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
                     <p style="font-size: 36px; margin: 0 0 8px;">💰</p>
@@ -390,7 +391,7 @@ export async function sendPaymentFailureEmail(data: {
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             ${emailHeader('Payment Issue')}
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.customerName},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.customerName)},</p>
 
                 <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
                     <p style="font-size: 36px; margin: 0 0 8px;">⚠️</p>
@@ -483,9 +484,9 @@ export async function sendNewOrderAdminEmail(data: {
                 <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin: 0 0 20px;">
                     <p style="color: #333; font-weight: bold; margin: 0 0 8px;">Customer Details</p>
                     <table style="width: 100%; font-size: 14px; color: #555;">
-                        <tr><td style="padding: 4px 0; font-weight: 600; width: 80px;">Name:</td><td>${data.customerName}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td><a href="mailto:${data.customerEmail}" style="color: #FF8543;">${data.customerEmail}</a></td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Phone:</td><td><a href="tel:${data.customerPhone}" style="color: #FF8543;">${data.customerPhone}</a></td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600; width: 80px;">Name:</td><td>${escapeHtml(data.customerName)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td><a href="mailto:${escapeHtml(data.customerEmail)}" style="color: #FF8543;">${escapeHtml(data.customerEmail)}</a></td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Phone:</td><td><a href="tel:${escapeHtml(data.customerPhone)}" style="color: #FF8543;">${escapeHtml(data.customerPhone)}</a></td></tr>
                     </table>
                 </div>
 
@@ -531,7 +532,7 @@ export async function sendNewOrderAdminEmail(data: {
     try {
         const result = await resend.emails.send({
             from: EMAIL_FROM,
-            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
             subject: `New Order #${orderRef} - $${parseFloat(data.total).toFixed(2)} - Tasman Star Seafoods`,
             html,
         });
@@ -600,7 +601,7 @@ export async function sendLowStockAlertEmail(data: {
     try {
         const result = await resend.emails.send({
             from: EMAIL_FROM,
-            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
             subject: `Low Stock Alert - Tasman Star Seafoods`,
             html,
         });
@@ -627,15 +628,15 @@ export async function sendWholesaleApplicationReceivedEmail(data: {
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             ${emailHeader('Wholesale Application')}
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.name},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.name)},</p>
                 <p style="color: #555;">Thank you for applying for a wholesale account with Tasman Star Seafoods. We've received your application and it's now being reviewed by our team.</p>
 
                 <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 16px; margin: 20px 0;">
                     <p style="color: #0369a1; font-weight: bold; margin: 0 0 8px;">Application Details</p>
                     <table style="width: 100%; font-size: 14px; color: #555;">
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Company:</td><td>${data.companyName}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">ABN:</td><td>${data.abn}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td>${data.email}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Company:</td><td>${escapeHtml(data.companyName)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">ABN:</td><td>${escapeHtml(data.abn)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td>${escapeHtml(data.email)}</td></tr>
                     </table>
                 </div>
 
@@ -695,11 +696,11 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
                 <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
                     <p style="color: #92400e; font-weight: bold; margin: 0 0 12px;">Applicant Details</p>
                     <table style="width: 100%; font-size: 14px; color: #555;">
-                        <tr><td style="padding: 4px 0; font-weight: 600; width: 120px;">Contact Name:</td><td>${data.name}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Company:</td><td>${data.companyName}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">ABN:</td><td>${data.abn}</td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td><a href="mailto:${data.email}" style="color: #FF8543;">${data.email}</a></td></tr>
-                        <tr><td style="padding: 4px 0; font-weight: 600;">Phone:</td><td><a href="tel:${data.phone}" style="color: #FF8543;">${data.phone}</a></td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600; width: 120px;">Contact Name:</td><td>${escapeHtml(data.name)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Company:</td><td>${escapeHtml(data.companyName)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">ABN:</td><td>${escapeHtml(data.abn)}</td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Email:</td><td><a href="mailto:${escapeHtml(data.email)}" style="color: #FF8543;">${escapeHtml(data.email)}</a></td></tr>
+                        <tr><td style="padding: 4px 0; font-weight: 600;">Phone:</td><td><a href="tel:${escapeHtml(data.phone)}" style="color: #FF8543;">${escapeHtml(data.phone)}</a></td></tr>
                     </table>
                 </div>
 
@@ -722,7 +723,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
     try {
         const result = await resend.emails.send({
             from: EMAIL_FROM,
-            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+            to: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
             subject: `New Wholesale Application - ${data.companyName}`,
             html,
         });
@@ -751,7 +752,7 @@ export async function sendWholesaleStatusEmail(data: {
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             ${emailHeader('Wholesale Application Update')}
             <div style="padding: 30px;">
-                <p style="color: #333; font-size: 16px;">Hi ${data.name},</p>
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.name)},</p>
                 ${isApproved ? `
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
                         <p style="color: #166534; font-size: 18px; font-weight: bold; margin: 0 0 8px;">Your wholesale application has been approved!</p>

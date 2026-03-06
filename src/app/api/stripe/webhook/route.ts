@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
                                         data: {
                                             orderId: order.id,
                                             type: 'EMAIL',
-                                            recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+                                            recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
                                             category: 'low_stock_alert',
                                             status: result.success ? 'SENT' : 'FAILED',
                                         },
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
                                 data: {
                                     orderId: order.id,
                                     type: 'EMAIL',
-                                    recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'anshumaansaraf24@gmail.com',
+                                    recipient: process.env.ADMIN_NOTIFICATION_EMAIL || 'techsupport@tasmanstarseafood.com',
                                     category: 'admin_new_order',
                                     status: result.success ? 'SENT' : 'FAILED',
                                 },

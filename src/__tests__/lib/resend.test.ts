@@ -153,7 +153,7 @@ describe('Resend email functions', () => {
 
             expect(mockEmailsSend).toHaveBeenCalledTimes(1);
             const call = mockEmailsSend.mock.calls[0][0];
-            expect(call.to).toBe('anshumaansaraf24@gmail.com');
+            expect(call.to).toBe('techsupport@tasmanstarseafood.com');
             expect(call.subject).toContain('New Wholesale Application');
             expect(call.subject).toContain('Fish Co.');
         });
