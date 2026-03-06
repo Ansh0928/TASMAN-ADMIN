@@ -443,7 +443,7 @@ export default function CheckoutPage() {
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             required
-                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.name ? 'border-red-500' : 'border-theme-border'}`}
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.name ? 'border-red-500' : 'border-theme-border'}`}
                                         />
                                         {fieldErrors.name && <p className="text-red-400 text-xs mt-1">{fieldErrors.name}</p>}
                                     </div>
@@ -455,7 +455,7 @@ export default function CheckoutPage() {
                                             value={formData.email}
                                             onChange={handleInputChange}
                                             required
-                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.email ? 'border-red-500' : 'border-theme-border'}`}
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.email ? 'border-red-500' : 'border-theme-border'}`}
                                         />
                                         {fieldErrors.email && <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>}
                                     </div>
@@ -468,7 +468,7 @@ export default function CheckoutPage() {
                                             onChange={handleInputChange}
                                             required
                                             placeholder="0412 345 678"
-                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.phone ? 'border-red-500' : 'border-theme-border'}`}
+                                            className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.phone ? 'border-red-500' : 'border-theme-border'}`}
                                         />
                                         {fieldErrors.phone && <p className="text-red-400 text-xs mt-1">{fieldErrors.phone}</p>}
                                     </div>
@@ -529,7 +529,7 @@ export default function CheckoutPage() {
                                                             setSelectedAddressId('');
                                                         }
                                                     }}
-                                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                                 >
                                                     {savedAddresses.map(addr => (
                                                         <option key={addr.id} value={addr.id}>
@@ -549,11 +549,11 @@ export default function CheckoutPage() {
                                                 value={formData.street}
                                                 onChange={handleInputChange}
                                                 required
-                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.street ? 'border-red-500' : 'border-theme-border'}`}
+                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.street ? 'border-red-500' : 'border-theme-border'}`}
                                             />
                                             {fieldErrors.street && <p className="text-red-400 text-xs mt-1">{fieldErrors.street}</p>}
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-theme-text mb-1">City *</label>
                                                 <input
@@ -562,7 +562,7 @@ export default function CheckoutPage() {
                                                     value={formData.city}
                                                     onChange={handleInputChange}
                                                     required
-                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.city ? 'border-red-500' : 'border-theme-border'}`}
+                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.city ? 'border-red-500' : 'border-theme-border'}`}
                                                 />
                                                 {fieldErrors.city && <p className="text-red-400 text-xs mt-1">{fieldErrors.city}</p>}
                                             </div>
@@ -574,7 +574,7 @@ export default function CheckoutPage() {
                                                     value={formData.state}
                                                     onChange={handleInputChange}
                                                     required
-                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.state ? 'border-red-500' : 'border-theme-border'}`}
+                                                    className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.state ? 'border-red-500' : 'border-theme-border'}`}
                                                 />
                                                 {fieldErrors.state && <p className="text-red-400 text-xs mt-1">{fieldErrors.state}</p>}
                                             </div>
@@ -589,7 +589,7 @@ export default function CheckoutPage() {
                                                 required
                                                 maxLength={4}
                                                 placeholder="4215"
-                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent ${fieldErrors.postcode ? 'border-red-500' : 'border-theme-border'}`}
+                                                className={`w-full px-4 py-2 border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent ${fieldErrors.postcode ? 'border-red-500' : 'border-theme-border'}`}
                                             />
                                             {fieldErrors.postcode && <p className="text-red-400 text-xs mt-1">{fieldErrors.postcode}</p>}
                                         </div>

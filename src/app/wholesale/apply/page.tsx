@@ -152,7 +152,7 @@ export default function WholesaleApplyPage() {
                                     value={formData.companyName}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="Your company name"
                                 />
                             </div>
@@ -167,7 +167,7 @@ export default function WholesaleApplyPage() {
                                     value={formData.abn}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="11 digit ABN"
                                 />
                             </div>
@@ -182,7 +182,7 @@ export default function WholesaleApplyPage() {
                                     value={formData.contactName}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="Your full name"
                                 />
                             </div>
@@ -197,7 +197,7 @@ export default function WholesaleApplyPage() {
                                     value={formData.email}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="your@email.com"
                                 />
                             </div>
@@ -212,7 +212,7 @@ export default function WholesaleApplyPage() {
                                     value={formData.phone}
                                     onChange={handleInputChange}
                                     required
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="+61 7 5555 0000"
                                 />
                             </div>
@@ -234,7 +234,7 @@ export default function WholesaleApplyPage() {
                                     onChange={handleInputChange}
                                     required
                                     minLength={8}
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="At least 8 characters"
                                 />
                             </div>
@@ -250,7 +250,7 @@ export default function WholesaleApplyPage() {
                                     onChange={handleInputChange}
                                     required
                                     minLength={8}
-                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text focus:outline-none focus:border-theme-accent"
+                                    className="w-full px-4 py-2 border border-theme-border rounded-lg bg-theme-primary text-theme-text text-base focus:outline-none focus:border-theme-accent"
                                     placeholder="Confirm your password"
                                 />
                             </div>
