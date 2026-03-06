@@ -25,6 +25,8 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@stripe/stripe-js": "^8.8.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.3",
     "@vnedyalk0v/react19-simple-maps": "^2.0.2",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
