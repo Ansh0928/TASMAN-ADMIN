@@ -317,7 +317,7 @@ export default function AdminWholesale() {
                             {/* New Item Form */}
                             {addingItemTo === cat.id && (
                                 <div className="p-4 bg-theme-primary/50 border-b border-theme-border">
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                         <input
                                             type="text"
                                             placeholder="Item name"
@@ -352,6 +352,7 @@ export default function AdminWholesale() {
 
                             {/* Items Table */}
                             {cat.items.length > 0 ? (
+                                <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
                                         <tr className="text-theme-text-muted text-sm border-b border-theme-border/50">
@@ -448,6 +449,7 @@ export default function AdminWholesale() {
                                         ))}
                                     </tbody>
                                 </table>
+                                </div>
                             ) : (
                                 <p className="text-theme-text-muted text-sm p-4">No items in this category yet.</p>
                             )}

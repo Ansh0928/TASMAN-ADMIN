@@ -232,8 +232,8 @@ export default function AdminOrders() {
                                 className="p-4 flex items-center justify-between cursor-pointer hover:bg-theme-primary/30"
                                 onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div>
+                                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                    <div className="min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <span className="text-theme-text font-mono text-sm">#{order.id.slice(-8)}</span>
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[order.status] || ''}`}>
@@ -302,6 +302,7 @@ export default function AdminOrders() {
                                     )}
 
                                     {/* Order Items */}
+                                    <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr className="text-theme-text-muted">
@@ -322,6 +323,7 @@ export default function AdminOrders() {
                                             ))}
                                         </tbody>
                                     </table>
+                                    </div>
 
                                     {/* Payment Breakdown */}
                                     <div className="mt-4 pt-4 border-t border-theme-border">

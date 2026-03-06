@@ -136,6 +136,7 @@ export default function AdminWholesaleOrders() {
                                             )}
                                         </div>
 
+                                        <div className="overflow-x-auto">
                                         <table className="w-full mb-4">
                                             <thead>
                                                 <tr className="text-theme-text-muted text-sm border-b border-theme-border/50">
@@ -156,6 +157,7 @@ export default function AdminWholesaleOrders() {
                                                 ))}
                                             </tbody>
                                         </table>
+                                        </div>
 
                                         {/* Admin actions */}
                                         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
