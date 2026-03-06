@@ -11,16 +11,16 @@ export const authConfig: NextAuthConfig = {
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
-                token.wholesaleStatus = (user as any).wholesaleStatus;
+                token.role = user.role;
+                token.wholesaleStatus = user.wholesaleStatus;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.id = token.id as string;
-                session.user.role = token.role as 'CUSTOMER' | 'WHOLESALE' | 'ADMIN';
-                session.user.wholesaleStatus = token.wholesaleStatus as 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+                session.user.id = token.id ?? '';
+                session.user.role = token.role ?? 'CUSTOMER';
+                session.user.wholesaleStatus = token.wholesaleStatus ?? null;
             }
             return session;
         },

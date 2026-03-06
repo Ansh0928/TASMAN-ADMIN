@@ -79,8 +79,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                         }
                         // Attach the DB id to the user object for JWT
                         user.id = existingUser.id;
-                        (user as any).role = existingUser.role;
-                        (user as any).wholesaleStatus = existingUser.wholesaleStatus;
+                        user.role = existingUser.role as 'CUSTOMER' | 'WHOLESALE' | 'ADMIN';
+                        user.wholesaleStatus = existingUser.wholesaleStatus as 'PENDING' | 'APPROVED' | 'REJECTED' | null;
                     } else {
                         // Create new user from Google profile
                         const newUser = await prisma.user.create({
@@ -93,8 +93,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                             },
                         });
                         user.id = newUser.id;
-                        (user as any).role = newUser.role;
-                        (user as any).wholesaleStatus = newUser.wholesaleStatus;
+                        user.role = newUser.role as 'CUSTOMER' | 'WHOLESALE' | 'ADMIN';
+                        user.wholesaleStatus = newUser.wholesaleStatus as 'PENDING' | 'APPROVED' | 'REJECTED' | null;
                     }
                     return true;
                 } catch (error) {
@@ -108,16 +108,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             // On initial sign-in, store user data in token
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
-                token.wholesaleStatus = (user as any).wholesaleStatus;
+                token.role = user.role;
+                token.wholesaleStatus = user.wholesaleStatus;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
-                session.user.id = token.id as string;
-                session.user.role = token.role as 'CUSTOMER' | 'WHOLESALE' | 'ADMIN';
-                session.user.wholesaleStatus = token.wholesaleStatus as 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+                session.user.id = token.id ?? '';
+                session.user.role = token.role ?? 'CUSTOMER';
+                session.user.wholesaleStatus = token.wholesaleStatus ?? null;
             }
             return session;
         },
