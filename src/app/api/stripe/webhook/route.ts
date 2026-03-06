@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    console.log(`Processing Stripe event: ${event.id} (${event.type})`);
+
     try {
         switch (event.type) {
             case 'checkout.session.completed':
@@ -85,16 +87,26 @@ export async function POST(request: NextRequest) {
                             }
                         }
 
-                        // Reduce stock for each ordered item
-                        for (const item of order.items) {
-                            await prisma.product.update({
-                                where: { id: item.productId },
-                                data: {
-                                    stockQuantity: {
-                                        decrement: item.quantity,
-                                    },
-                                },
+                        // Atomically reduce stock with guard against overselling
+                        try {
+                            await prisma.$transaction(async (tx) => {
+                                for (const item of order.items) {
+                                    const result = await tx.$queryRaw<Array<{ id: string }>>`
+                                        UPDATE products
+                                        SET stock_quantity = stock_quantity - ${item.quantity}
+                                        WHERE id = ${item.productId}
+                                        AND stock_quantity >= ${item.quantity}
+                                        RETURNING id
+                                    `;
+                                    if (result.length === 0) {
+                                        throw new Error(`Insufficient stock for product ${item.productId}`);
+                                    }
+                                }
                             });
+                        } catch (stockError: any) {
+                            console.error(`Order ${order.id}: Stock decrement failed - ${stockError.message}`);
+                            // Order remains CONFIRMED but stock was not decremented
+                            // Do not re-throw: return 200 to Stripe to prevent retries
                         }
 
                         // Check for low stock after decrement
@@ -274,6 +286,14 @@ export async function POST(request: NextRequest) {
 
                     if (order) {
                         const refundedAmountAud = (charge.amount_refunded / 100);
+                        const existingRefund = parseFloat(order.refundedAmount.toString());
+
+                        // Idempotency: skip if already processed same or higher refund
+                        if (existingRefund >= refundedAmountAud) {
+                            console.log(`Order ${order.id}: Refund already processed (existing: $${existingRefund}, incoming: $${refundedAmountAud})`);
+                            return NextResponse.json({ received: true }, { status: 200 });
+                        }
+
                         const totalAud = parseFloat(order.total.toString());
                         const isFullRefund = refundedAmountAud >= totalAud;
 
