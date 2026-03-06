@@ -2,11 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, ShoppingCart, Users, TrendingUp, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Package, ShoppingCart, Users, TrendingUp, RotateCcw, AlertTriangle, DollarSign, BarChart3, UserPlus, Trophy } from 'lucide-react';
 
 interface DailyRevenue {
     date: string;
     revenue: number;
+}
+
+interface OrderTrend {
+    date: string;
+    count: number;
+}
+
+interface TopProduct {
+    id: string;
+    name: string;
+    slug: string;
+    totalQuantity: number;
 }
 
 interface Stats {
@@ -15,10 +27,16 @@ interface Stats {
     totalRevenue: number;
     totalRefunded: number;
     netRevenue: number;
+    revenueToday: number;
+    revenueThisWeek: number;
+    revenueThisMonth: number;
     totalProducts: number;
     totalCustomers: number;
+    newCustomersThisMonth: number;
     pendingWholesaleApplications: number;
     dailyRevenue: DailyRevenue[];
+    orderTrend: OrderTrend[];
+    topSellingProducts: TopProduct[];
     lowStockProducts: number;
     lowStockList: Array<{ id: string; name: string; stockQuantity: number; slug: string }>;
 }
@@ -81,6 +99,97 @@ export default function AdminDashboard() {
                     <StatCard icon={Users} title="Pending Wholesale" value={stats.pendingWholesaleApplications}
                         highlight={stats.pendingWholesaleApplications > 0} />
                 )}
+            </div>
+
+            {/* Revenue Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-5">
+                    <div className="flex items-center gap-2 mb-1">
+                        <DollarSign size={16} className="text-theme-accent" />
+                        <p className="text-theme-text-muted text-sm">Today</p>
+                    </div>
+                    <p className="text-2xl font-bold text-theme-text">${stats.revenueToday.toFixed(2)}</p>
+                </div>
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-5">
+                    <div className="flex items-center gap-2 mb-1">
+                        <DollarSign size={16} className="text-theme-accent" />
+                        <p className="text-theme-text-muted text-sm">This Week</p>
+                    </div>
+                    <p className="text-2xl font-bold text-theme-text">${stats.revenueThisWeek.toFixed(2)}</p>
+                </div>
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-5">
+                    <div className="flex items-center gap-2 mb-1">
+                        <DollarSign size={16} className="text-theme-accent" />
+                        <p className="text-theme-text-muted text-sm">This Month</p>
+                    </div>
+                    <p className="text-2xl font-bold text-theme-text">${stats.revenueThisMonth.toFixed(2)}</p>
+                </div>
+            </div>
+
+            {/* Customer Counts */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-5 flex items-center justify-between">
+                    <div>
+                        <p className="text-theme-text-muted text-sm">Total Customers</p>
+                        <p className="text-2xl font-bold text-theme-text mt-1">{stats.totalCustomers}</p>
+                    </div>
+                    <Users size={32} className="text-theme-accent/30" />
+                </div>
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-5 flex items-center justify-between">
+                    <div>
+                        <p className="text-theme-text-muted text-sm">New This Month</p>
+                        <p className="text-2xl font-bold text-theme-text mt-1">{stats.newCustomersThisMonth}</p>
+                    </div>
+                    <UserPlus size={32} className="text-theme-accent/30" />
+                </div>
+            </div>
+
+            {/* Top Selling Products & Order Trend */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Top Selling Products */}
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-theme-text mb-4 flex items-center gap-2">
+                        <Trophy size={18} className="text-theme-accent" />
+                        Top Selling Products
+                    </h3>
+                    {stats.topSellingProducts.length === 0 ? (
+                        <p className="text-theme-text-muted text-sm">No sales data yet.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {stats.topSellingProducts.map((product, index) => (
+                                <div key={product.id} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-theme-accent font-bold text-lg w-6 text-center">
+                                            {index + 1}
+                                        </span>
+                                        <Link
+                                            href={`/product/${product.slug}`}
+                                            className="text-theme-text hover:text-theme-accent transition-colors text-sm"
+                                        >
+                                            {product.name}
+                                        </Link>
+                                    </div>
+                                    <span className="text-theme-text-muted text-sm font-medium">
+                                        {product.totalQuantity} sold
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Order Trend (Last 7 Days) */}
+                <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
+                    <h3 className="text-lg font-bold text-theme-text mb-4 flex items-center gap-2">
+                        <BarChart3 size={18} className="text-theme-accent" />
+                        Order Trend (Last 7 Days)
+                    </h3>
+                    {stats.orderTrend.length === 0 ? (
+                        <p className="text-theme-text-muted text-sm">No order data yet.</p>
+                    ) : (
+                        <OrderTrendChart data={stats.orderTrend} />
+                    )}
+                </div>
             </div>
 
             {/* Low Stock Alert */}
@@ -169,6 +278,32 @@ function RevenueChart({ data }: { data: DailyRevenue[] }) {
                             <p className="text-theme-text font-bold">${day.revenue.toFixed(2)}</p>
                             <p className="text-theme-text-muted">{label}</p>
                         </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+function OrderTrendChart({ data }: { data: OrderTrend[] }) {
+    const maxCount = Math.max(...data.map(d => d.count), 1);
+
+    return (
+        <div className="space-y-2">
+            {data.map((day) => {
+                const width = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
+                const date = new Date(day.date + 'T00:00:00');
+                const dayLabel = date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+                return (
+                    <div key={day.date} className="flex items-center gap-3">
+                        <span className="text-theme-text-muted text-xs w-24 shrink-0">{dayLabel}</span>
+                        <div className="flex-1 bg-theme-primary rounded-full h-5 overflow-hidden">
+                            <div
+                                className="h-full bg-theme-accent/70 rounded-full transition-all"
+                                style={{ width: `${Math.max(width, 2)}%` }}
+                            />
+                        </div>
+                        <span className="text-theme-text text-sm font-medium w-8 text-right">{day.count}</span>
                     </div>
                 );
             })}

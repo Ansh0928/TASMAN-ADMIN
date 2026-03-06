@@ -7,7 +7,13 @@ export async function GET() {
     if (error) return error;
 
     try {
-        const [totalOrders, confirmedOrders, totalProducts, pendingWholesaleUsers, totalCustomers, lowStockProducts, lowStockList] = await Promise.all([
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekStart = new Date(todayStart);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Sunday start
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [totalOrders, confirmedOrders, totalProducts, pendingWholesaleUsers, totalCustomers, newCustomersThisMonth, lowStockProducts, lowStockList] = await Promise.all([
             prisma.order.count(),
             prisma.order.count({ where: { status: { not: 'CANCELLED' } } }),
             prisma.product.count(),
@@ -17,8 +23,9 @@ export async function GET() {
                     wholesaleStatus: 'PENDING',
                 },
             }),
+            prisma.user.count(),
             prisma.user.count({
-                where: { role: 'CUSTOMER' },
+                where: { createdAt: { gte: monthStart } },
             }),
             prisma.product.count({
                 where: { stockQuantity: { gt: 0, lte: 5 }, isAvailable: true },
@@ -39,14 +46,33 @@ export async function GET() {
         const totalRefunded = orders.reduce((sum, order) => sum + parseFloat(order.refundedAmount.toString()), 0);
         const netRevenue = totalRevenue - totalRefunded;
 
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Revenue breakdowns (today, this week, this month)
+        let revenueToday = 0;
+        let revenueThisWeek = 0;
+        let revenueThisMonth = 0;
 
+        for (const order of orders) {
+            if (order.status === 'CANCELLED') continue;
+            const orderNet = parseFloat(order.total.toString()) - parseFloat(order.refundedAmount.toString());
+            if (order.createdAt >= todayStart) revenueToday += orderNet;
+            if (order.createdAt >= weekStart) revenueThisWeek += orderNet;
+            if (order.createdAt >= monthStart) revenueThisMonth += orderNet;
+        }
+
+        // Daily revenue chart (30 days)
         const dailyRevenueMap: Record<string, number> = {};
         for (let i = 0; i < 30; i++) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             dailyRevenueMap[date.toISOString().slice(0, 10)] = 0;
+        }
+
+        // Daily order count (7 days)
+        const dailyOrderCountMap: Record<string, number> = {};
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dailyOrderCountMap[date.toISOString().slice(0, 10)] = 0;
         }
 
         for (const order of orders) {
@@ -55,11 +81,43 @@ export async function GET() {
             if (dailyRevenueMap[dateKey] !== undefined) {
                 dailyRevenueMap[dateKey] += parseFloat(order.total.toString()) - parseFloat(order.refundedAmount.toString());
             }
+            if (dailyOrderCountMap[dateKey] !== undefined) {
+                dailyOrderCountMap[dateKey] += 1;
+            }
         }
 
         const dailyRevenue = Object.entries(dailyRevenueMap)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([date, revenue]) => ({ date, revenue: Math.max(0, revenue) }));
+
+        const orderTrend = Object.entries(dailyOrderCountMap)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([date, count]) => ({ date, count }));
+
+        // Top-selling products (top 5 by quantity)
+        const topProducts = await prisma.orderItem.groupBy({
+            by: ['productId'],
+            _sum: { quantity: true },
+            orderBy: { _sum: { quantity: 'desc' } },
+            take: 5,
+        });
+
+        const topProductDetails = topProducts.length > 0
+            ? await prisma.product.findMany({
+                where: { id: { in: topProducts.map(p => p.productId) } },
+                select: { id: true, name: true, slug: true },
+            })
+            : [];
+
+        const topSellingProducts = topProducts.map(tp => {
+            const product = topProductDetails.find(p => p.id === tp.productId);
+            return {
+                id: tp.productId,
+                name: product?.name || 'Unknown',
+                slug: product?.slug || '',
+                totalQuantity: tp._sum.quantity || 0,
+            };
+        });
 
         return NextResponse.json({
             totalOrders,
@@ -67,10 +125,16 @@ export async function GET() {
             totalRevenue,
             totalRefunded,
             netRevenue,
+            revenueToday,
+            revenueThisWeek,
+            revenueThisMonth,
             totalProducts,
             totalCustomers,
+            newCustomersThisMonth,
             pendingWholesaleApplications: pendingWholesaleUsers,
             dailyRevenue,
+            orderTrend,
+            topSellingProducts,
             lowStockProducts,
             lowStockList,
         });
