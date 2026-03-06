@@ -29,7 +29,7 @@ export default function CustomerLoginPage() {
                 password: formData.get('password') as string,
                 redirect: false,
             });
-            if (!result?.ok) { const msg = result?.error === 'CredentialsSignin' ? 'Invalid email or password.' : (result?.error || 'Invalid email or password.'); setFieldError(msg); toast.error(msg); return; }
+            if (result?.error || !result?.ok) { const msg = 'Invalid email or password.'; setFieldError(msg); toast.error(msg); return; }
             toast.success('Signed in successfully!');
             router.push(callbackUrl);
             router.refresh();

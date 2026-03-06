@@ -24,7 +24,7 @@ export default function WholesaleLoginPage() {
                 password: formData.get('password') as string,
                 redirect: false,
             });
-            if (!result?.ok) { const msg = result?.error === 'CredentialsSignin' ? 'Invalid email or password.' : (result?.error || 'Invalid email or password.'); setFieldError(msg); return; }
+            if (result?.error || !result?.ok) { setFieldError('Invalid email or password.'); return; }
             router.push('/wholesale/prices');
             router.refresh();
         } catch {
