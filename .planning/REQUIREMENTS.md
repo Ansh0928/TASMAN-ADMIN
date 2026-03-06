@@ -129,10 +129,10 @@
 | SEC-04 | Phase 1 | Pending |
 | SEC-05 | Phase 1 | Pending |
 | SEC-06 | Phase 1 | Pending |
-| SEC-07 | Phase 2 | Pending |
-| SEC-08 | Phase 2 | Pending |
-| SEC-09 | Phase 2 | Pending |
-| SEC-10 | Phase 2 | Pending |
+| SEC-07 | Phase 2 | Complete |
+| SEC-08 | Phase 2 | Complete |
+| SEC-09 | Phase 2 | Complete |
+| SEC-10 | Phase 2 | Complete |
 | AUTH-01 | Phase 3 | Pending |
 | AUTH-02 | Phase 3 | Pending |
 | AUTH-03 | Phase 3 | Pending |
