@@ -54,7 +54,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Install Upstash deps, create rate-limit module, test scaffolds
+- [x] 02-01-PLAN.md -- Install Upstash deps, create rate-limit module, test scaffolds
 - [ ] 02-02-PLAN.md -- Extend middleware (global rate limit + CSRF) and add per-route rate limiting
 
 ### Phase 3: Auth Hardening
@@ -192,7 +192,7 @@ Phases execute in numeric order. Phases 2, 3, 4, 6, 9 can run in parallel after 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Security Blockers | 0/? | Not started | - |
-| 2. Rate Limiting | 0/2 | Planned | - |
+| 2. Rate Limiting | 1/2 | In Progress | - |
 | 3. Auth Hardening | 0/? | Not started | - |
 | 4. Stock & Payment Integrity | 0/? | Not started | - |
 | 5. Checkout Flow Polish | 0/? | Not started | - |
