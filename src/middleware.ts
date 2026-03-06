@@ -159,11 +159,36 @@ export async function middleware(request: NextRequest) {
 
         const isLoggedIn = !!sessionToken;
 
+        // 4a. Admin route protection: return 404 for non-admin users (AUTH-01, AUTH-02)
+        const isAdminRoute = pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login');
+        if (isAdminRoute) {
+            if (!sessionToken) {
+                return NextResponse.json({ message: 'Not found' }, { status: 404 });
+            }
+
+            // Decode JWT payload to check role claim
+            try {
+                const parts = sessionToken.split('.');
+                if (parts.length !== 3) {
+                    return NextResponse.json({ message: 'Not found' }, { status: 404 });
+                }
+                const payload = JSON.parse(atob(parts[1]));
+                if (payload.role !== 'ADMIN') {
+                    return NextResponse.json({ message: 'Not found' }, { status: 404 });
+                }
+            } catch {
+                // Malformed JWT — treat as unauthorized
+                return NextResponse.json({ message: 'Not found' }, { status: 404 });
+            }
+
+            // Admin user authenticated — continue
+            return NextResponse.next();
+        }
+
+        // 4b. Non-admin protected routes: redirect to login if not authenticated
         if (!isLoggedIn) {
             let loginPath = '/auth/login';
-            if (pathname.startsWith('/admin')) {
-                loginPath = '/admin/login';
-            } else if (pathname.startsWith('/wholesale/prices')) {
+            if (pathname.startsWith('/wholesale/prices')) {
                 loginPath = '/wholesale/login';
             }
 
