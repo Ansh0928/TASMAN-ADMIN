@@ -174,7 +174,7 @@ export default function ProductDetailClient({
                                 </button>
                                 <button
                                     onClick={() => inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
-                                    className="border border-theme-border rounded-xl p-3 hover:border-red-500 transition-colors"
+                                    className="border border-theme-border rounded-xl p-3 min-h-11 min-w-11 flex items-center justify-center hover:border-red-500 transition-colors"
                                     aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                                 >
                                     <Heart size={22} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-theme-text-muted'} />
@@ -182,7 +182,7 @@ export default function ProductDetailClient({
                             </div>
                         ) : (
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
-                                <div className="flex items-center border border-theme-border rounded-xl overflow-hidden self-start">
+                                <div className="flex items-center border border-theme-border rounded-xl overflow-hidden self-stretch sm:self-start">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         className="px-4 py-3 text-theme-text hover:bg-theme-secondary transition-colors text-lg"
@@ -223,7 +223,7 @@ export default function ProductDetailClient({
 
                                 <button
                                     onClick={() => inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
-                                    className="border border-theme-border rounded-xl p-3 hover:border-red-500 transition-colors"
+                                    className="border border-theme-border rounded-xl p-3 min-h-11 min-w-11 flex items-center justify-center hover:border-red-500 transition-colors"
                                     aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                                 >
                                     <Heart size={22} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-theme-text-muted'} />

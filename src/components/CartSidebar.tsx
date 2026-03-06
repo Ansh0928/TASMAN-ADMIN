@@ -34,7 +34,7 @@ export default function CartSidebar() {
                     <h2 className="font-serif text-2xl font-bold">Your Cart</h2>
                     <button
                         onClick={() => setCartSideBarOpen(false)}
-                        className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-black"
+                        className="p-2 min-h-11 min-w-11 flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-black"
                     >
                         <X size={24} />
                     </button>
@@ -100,21 +100,21 @@ export default function CartSidebar() {
                                         <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-2 py-1">
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                className="p-2 hover:text-theme-accent active:text-theme-accent transition-colors"
+                                                className="p-2 min-h-11 min-w-11 flex items-center justify-center hover:text-theme-accent active:text-theme-accent transition-colors"
                                             >
                                                 <Minus size={16} />
                                             </button>
                                             <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="p-2 hover:text-theme-accent active:text-theme-accent transition-colors"
+                                                className="p-2 min-h-11 min-w-11 flex items-center justify-center hover:text-theme-accent active:text-theme-accent transition-colors"
                                             >
                                                 <Plus size={16} />
                                             </button>
                                         </div>
                                         <button
                                             onClick={() => removeItem(item.id)}
-                                            className="p-2.5 text-slate-400 hover:text-red-500 active:text-red-500 transition-colors"
+                                            className="p-2.5 min-h-11 min-w-11 flex items-center justify-center text-slate-400 hover:text-red-500 active:text-red-500 transition-colors"
                                         >
                                             <Trash2 size={16} />
                                         </button>

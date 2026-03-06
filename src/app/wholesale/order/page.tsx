@@ -183,11 +183,11 @@ export default function WholesaleOrderPage() {
                                                         <p className="text-sm text-theme-text-muted">{item.unit} &bull; ${parseFloat(item.price).toFixed(2)}</p>
                                                     </div>
                                                     {inCart ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <button onClick={() => updateQuantity(item.id, -1)} className="p-1 text-theme-text-muted hover:text-theme-text"><Minus size={16} /></button>
+                                                        <div className="flex items-center gap-1">
+                                                            <button onClick={() => updateQuantity(item.id, -1)} className="p-2 min-h-11 min-w-11 flex items-center justify-center text-theme-text-muted hover:text-theme-text"><Minus size={16} /></button>
                                                             <span className="text-theme-text w-8 text-center">{inCart.quantity}</span>
-                                                            <button onClick={() => updateQuantity(item.id, 1)} className="p-1 text-theme-text-muted hover:text-theme-text"><Plus size={16} /></button>
-                                                            <button onClick={() => removeFromCart(item.id)} className="p-1 text-red-400 hover:text-red-300 ml-1"><Trash2 size={14} /></button>
+                                                            <button onClick={() => updateQuantity(item.id, 1)} className="p-2 min-h-11 min-w-11 flex items-center justify-center text-theme-text-muted hover:text-theme-text"><Plus size={16} /></button>
+                                                            <button onClick={() => removeFromCart(item.id)} className="p-2 min-h-11 min-w-11 flex items-center justify-center text-red-400 hover:text-red-300"><Trash2 size={14} /></button>
                                                         </div>
                                                     ) : (
                                                         <button onClick={() => addToCart(item)} className="flex items-center gap-1 px-3 py-1.5 bg-theme-accent/10 text-theme-accent rounded text-sm hover:bg-theme-accent/20">
