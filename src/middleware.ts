@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { getToken } from 'next-auth/jwt';
 
 // --- CSRF Configuration ---
 
@@ -166,18 +167,13 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.json({ message: 'Not found' }, { status: 404 });
             }
 
-            // Decode JWT payload to check role claim
+            // Decode encrypted JWT to check role claim (NextAuth v5 uses JWE)
             try {
-                const parts = sessionToken.split('.');
-                if (parts.length !== 3) {
-                    return NextResponse.json({ message: 'Not found' }, { status: 404 });
-                }
-                const payload = JSON.parse(atob(parts[1]));
-                if (payload.role !== 'ADMIN') {
+                const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+                if (!token || token.role !== 'ADMIN') {
                     return NextResponse.json({ message: 'Not found' }, { status: 404 });
                 }
             } catch {
-                // Malformed JWT — treat as unauthorized
                 return NextResponse.json({ message: 'Not found' }, { status: 404 });
             }
 
