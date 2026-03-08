@@ -86,11 +86,11 @@ export default function AboutPage() {
                                 With direct connections to the Sydney Fish Market — the largest commercial fish market in the southern hemisphere — Tasman Star delivers the widest range of Australian and selected imported seafood products, backed by over 25 years of experience.
                             </p>
                         </div>
-                        <div className="relative">
+                        <div className="relative mt-8 md:mt-0">
                             <div className="rounded-3xl overflow-hidden shadow-2xl border border-theme-border">
                                 <img src="/assets/wholesale.png" alt="Tasman Star Fish Market" className="w-full h-80 object-cover" />
                             </div>
-                            <div className="absolute -bottom-6 -left-6 bg-[#0A192F] rounded-2xl p-5 shadow-xl border border-[#FF8543]/20">
+                            <div className="absolute -bottom-6 left-4 md:-left-6 bg-[#0A192F] rounded-2xl p-5 shadow-xl border border-[#FF8543]/20">
                                 <p className="text-[#FF8543] font-bold text-3xl">25+</p>
                                 <p className="text-slate-300 text-sm">Years of Experience</p>
                             </div>

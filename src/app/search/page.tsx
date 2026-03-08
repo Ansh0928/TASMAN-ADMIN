@@ -72,7 +72,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                                         </div>
                                         <div className="flex items-end justify-between mt-auto">
                                             <span className="text-[#FF7F50] font-bold text-xl">{price}</span>
-                                            <div className="w-10 h-10 rounded-full bg-[#FF8543] hover:bg-[#1A908A] text-white flex items-center justify-center font-bold text-xl transition-all shadow-md group-hover:scale-110">
+                                            <div className="w-11 h-11 rounded-full bg-[#FF8543] hover:bg-[#1A908A] text-white flex items-center justify-center font-bold text-xl transition-all shadow-md group-hover:scale-110">
                                                 +
                                             </div>
                                         </div>

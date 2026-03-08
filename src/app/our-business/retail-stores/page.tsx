@@ -34,7 +34,7 @@ export default function RetailStoresPage() {
 
                 {/* Labrador Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
-                    <div className="w-full md:w-1/2 overflow-hidden">
+                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px]">
                         <img src="/assets/products/store-3.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
@@ -60,7 +60,7 @@ export default function RetailStoresPage() {
 
                 {/* Varsity Lakes Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
-                    <div className="w-full md:w-1/2 overflow-hidden order-1 md:order-2">
+                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px] order-1 md:order-2">
                         <img src="/assets/products/storefront-flagship.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Flagship Store - Staff with Premium Crab Display" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">

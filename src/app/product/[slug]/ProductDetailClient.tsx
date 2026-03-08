@@ -185,7 +185,7 @@ export default function ProductDetailClient({
                                 <div className="flex items-center border border-theme-border rounded-xl overflow-hidden self-stretch sm:self-start">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="px-4 py-3 text-theme-text hover:bg-theme-secondary transition-colors text-lg"
+                                        className="px-4 py-3 min-w-11 min-h-11 text-theme-text hover:bg-theme-secondary transition-colors text-lg"
                                     >
                                         −
                                     </button>
@@ -198,7 +198,7 @@ export default function ProductDetailClient({
                                     <button
                                         onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
                                         disabled={quantity >= maxQuantity}
-                                        className="px-4 py-3 text-theme-text hover:bg-theme-secondary transition-colors disabled:opacity-30 text-lg"
+                                        className="px-4 py-3 min-w-11 min-h-11 text-theme-text hover:bg-theme-secondary transition-colors disabled:opacity-30 text-lg"
                                     >
                                         +
                                     </button>

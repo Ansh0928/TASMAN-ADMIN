@@ -107,7 +107,7 @@ export default function Home() {
                                     />
                                     <Link
                                         href={card.href}
-                                        className="group relative flex flex-col h-[16rem] overflow-hidden rounded-xl"
+                                        className="group relative flex flex-col h-[14rem] sm:h-[16rem] overflow-hidden rounded-xl"
                                     >
                                         {/* Image */}
                                         <img
@@ -143,13 +143,13 @@ export default function Home() {
                             />
                             <Link
                                 href={ONLINE_STORE.href}
-                                className="group relative flex flex-col h-[16rem] lg:h-full overflow-hidden rounded-xl"
+                                className="group relative flex flex-col h-[28rem] sm:h-[32rem] lg:h-full overflow-hidden rounded-xl"
                             >
                                 {/* Image */}
                                 <img
                                     src={ONLINE_STORE.image}
                                     alt={ONLINE_STORE.title}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/90 group-hover:via-black/50 group-hover:to-black/30 transition-all duration-500" />
 
@@ -163,7 +163,7 @@ export default function Home() {
                                     </p>
 
                                     {/* Explore CTA — visible on hover */}
-                                    <div className="flex items-center gap-2 opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                                    <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
                                         <span className="bg-[#FF8543] text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-lg">
                                             Explore
                                         </span>

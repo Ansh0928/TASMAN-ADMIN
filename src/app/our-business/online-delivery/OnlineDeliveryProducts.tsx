@@ -157,7 +157,7 @@ export default function OnlineDeliveryProducts() {
                         <div className="flex gap-2 pb-1">
                             <button
                                 onClick={() => { setActiveCategory('all'); setSortBy('featured'); }}
-                                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
                                     activeCategory === 'all'
                                         ? 'bg-theme-accent text-white shadow-sm'
                                         : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
@@ -169,7 +169,7 @@ export default function OnlineDeliveryProducts() {
                                 <button
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.slug)}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                    className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
                                         activeCategory === cat.slug
                                             ? 'bg-theme-accent text-white shadow-sm'
                                             : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'

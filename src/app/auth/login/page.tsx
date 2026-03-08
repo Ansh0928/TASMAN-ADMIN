@@ -75,7 +75,7 @@ export default function CustomerLoginPage() {
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-theme-text mb-1.5">Email</label>
                         <input type="email" id="email" name="email" required disabled={busy}
-                            className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
                             placeholder="you@example.com" />
                     </div>
                     <div>
@@ -84,11 +84,11 @@ export default function CustomerLoginPage() {
                             <Link href="/auth/forgot-password" className="text-sm text-theme-accent hover:underline">Forgot password?</Link>
                         </div>
                         <input type="password" id="password" name="password" required disabled={busy}
-                            className="w-full px-4 py-2.5 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
                             placeholder="••••••••" />
                     </div>
                     <button type="submit" disabled={busy}
-                        className="w-full bg-theme-accent text-white py-2.5 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
+                        className="w-full bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>

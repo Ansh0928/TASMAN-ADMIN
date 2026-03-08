@@ -153,13 +153,13 @@ export default function OrderConfirmationPage() {
                     <div className="flex flex-wrap justify-center gap-3 pt-4">
                         <Link
                             href="/"
-                            className="inline-block px-6 py-2 bg-theme-accent text-white rounded-lg hover:opacity-90 transition-opacity"
+                            className="inline-block px-6 py-3 bg-theme-accent text-white rounded-lg hover:opacity-90 transition-opacity"
                         >
                             Back to Home
                         </Link>
                         <Link
                             href="/our-products"
-                            className="inline-block px-6 py-2 border border-theme-accent text-theme-accent rounded-lg hover:bg-theme-accent/5 transition-colors"
+                            className="inline-block px-6 py-3 border border-theme-accent text-theme-accent rounded-lg hover:bg-theme-accent/5 transition-colors"
                         >
                             Continue Shopping
                         </Link>
@@ -168,7 +168,7 @@ export default function OrderConfirmationPage() {
                                 href={order.stripeInvoiceUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-6 py-2 border border-theme-accent text-theme-accent rounded-lg hover:bg-theme-accent/5 transition-colors"
+                                className="inline-flex items-center gap-2 px-6 py-3 border border-theme-accent text-theme-accent rounded-lg hover:bg-theme-accent/5 transition-colors"
                             >
                                 <FileText size={16} />
                                 Download Invoice
