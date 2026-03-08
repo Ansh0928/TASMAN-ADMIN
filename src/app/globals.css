@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Safe area for mobile bottom nav (iPhone home indicator) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* ===== DARK THEME (default) ===== */
 :root,
 [data-theme="dark"] {

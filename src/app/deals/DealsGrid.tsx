@@ -33,7 +33,7 @@ export function DealsGrid({ deals }: { deals: Deal[] }) {
                     <button
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
-                        className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+                        className={`px-5 py-3 rounded-full text-sm font-medium transition-all ${
                             activeFilter === filter
                                 ? 'bg-[#FF8543] text-white shadow-lg shadow-[#FF8543]/25'
                                 : 'bg-theme-toggle text-theme-text-muted hover:text-theme-text border border-theme-border'

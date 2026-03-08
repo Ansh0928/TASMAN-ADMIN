@@ -79,7 +79,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                             e.stopPropagation();
                             inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id);
                         }}
-                        className="absolute top-1 right-1 z-10 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+                        className="absolute top-1 right-1 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
                         aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                     >
                         <Heart size={14} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-white'} />
@@ -100,7 +100,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                     {!isOutOfStock && (
                         <button
                             onClick={handleAddToCart}
-                            className={`absolute bottom-2 right-2 w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all z-10 ${
+                            className={`absolute bottom-2 right-2 w-11 h-11 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all z-10 ${
                                 added
                                     ? 'bg-emerald-500 scale-110'
                                     : 'bg-theme-accent hover:scale-110'

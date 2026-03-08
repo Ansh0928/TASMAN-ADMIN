@@ -83,7 +83,7 @@ function CheckoutRecommendationCard({ product }: { product: RecommendedProduct }
                                     e.stopPropagation();
                                     handleAdd();
                                 }}
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all ${
+                                className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-xs transition-all ${
                                     added ? 'bg-emerald-500 scale-110' : 'bg-theme-accent hover:scale-110'
                                 }`}
                                 aria-label="Add to cart"
@@ -479,25 +479,25 @@ export default function CheckoutPage() {
                             <div className="bg-theme-secondary border border-theme-border rounded-lg p-6">
                                 <h2 className="text-xl font-bold text-theme-text mb-4">Fulfillment</h2>
                                 <div className="space-y-3">
-                                    <label className="flex items-center gap-3 cursor-pointer">
+                                    <label className={`flex items-center gap-3 cursor-pointer py-3 px-4 rounded-lg border transition-colors ${fulfillment === 'DELIVERY' ? 'border-theme-accent bg-theme-accent/5' : 'border-theme-border'}`}>
                                         <input
                                             type="radio"
                                             name="fulfillment"
                                             value="DELIVERY"
                                             checked={fulfillment === 'DELIVERY'}
                                             onChange={(e) => setFulfillment(e.target.value as 'DELIVERY' | 'PICKUP')}
-                                            className="w-4 h-4"
+                                            className="w-5 h-5"
                                         />
                                         <span className="text-theme-text font-medium">Delivery (+$10)</span>
                                     </label>
-                                    <label className="flex items-center gap-3 cursor-pointer">
+                                    <label className={`flex items-center gap-3 cursor-pointer py-3 px-4 rounded-lg border transition-colors ${fulfillment === 'PICKUP' ? 'border-theme-accent bg-theme-accent/5' : 'border-theme-border'}`}>
                                         <input
                                             type="radio"
                                             name="fulfillment"
                                             value="PICKUP"
                                             checked={fulfillment === 'PICKUP'}
                                             onChange={(e) => setFulfillment(e.target.value as 'DELIVERY' | 'PICKUP')}
-                                            className="w-4 h-4"
+                                            className="w-5 h-5"
                                         />
                                         <span className="text-theme-text font-medium">Pickup (Free)</span>
                                     </label>

@@ -5,14 +5,7 @@ import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut, Building2, Search } 
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
 import { logout } from '@/app/actions/auth';
-
-const NAV_LINKS = [
-    { href: '/', label: 'Our Business' },
-    { href: '/about', label: 'About Us' },
-    { href: '/our-partner', label: 'Our Partner' },
-    { href: '/our-products', label: 'Our Products' },
-    { href: '/deals', label: 'Deals' },
-];
+import { NAV_LINKS } from '@/lib/nav-links';
 
 interface MobileMenuProps {
     user?: {
@@ -22,6 +15,18 @@ interface MobileMenuProps {
         image?: string | null;
         wholesaleStatus?: string | null;
     } | null;
+}
+
+export function MobileMenuTrigger({ onClick }: { onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
+            aria-label="Open menu"
+        >
+            <Menu size={20} />
+        </button>
+    );
 }
 
 export default function MobileMenu({ user }: MobileMenuProps) {
@@ -40,17 +45,15 @@ export default function MobileMenu({ user }: MobileMenuProps) {
         return () => { document.body.style.overflow = ''; };
     }, [open]);
 
+    // Listen for custom event from trigger button
+    useEffect(() => {
+        const handler = () => setOpen(true);
+        window.addEventListener('open-mobile-menu', handler);
+        return () => window.removeEventListener('open-mobile-menu', handler);
+    }, []);
+
     return (
         <>
-            <button
-                onClick={() => setOpen(true)}
-                className="lg:hidden fixed top-5 right-4 z-[62] flex items-center justify-center w-11 h-11 rounded-full bg-theme-toggle border border-theme-toggle-border text-theme-secondary"
-                aria-label="Open menu"
-                style={{ display: open ? 'none' : undefined }}
-            >
-                <Menu size={20} />
-            </button>
-
             {open && (
                 <div
                     className="fixed inset-0 z-[70] bg-black/50 lg:hidden"

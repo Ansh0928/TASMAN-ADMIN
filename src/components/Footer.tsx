@@ -52,22 +52,22 @@ export default function Footer() {
                             Premium wholesale and retail seafood sourced directly from the finest pristine waters of Australia and beyond.
                         </p>
                         <div className="flex gap-4 mt-2">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Facebook size={18} /></a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Instagram size={18} /></a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Twitter size={18} /></a>
+                            <a href="#" className="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Facebook size={18} /></a>
+                            <a href="#" className="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Instagram size={18} /></a>
+                            <a href="#" className="w-11 h-11 rounded-full bg-white/5 flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-[#020C1B] active:text-[#020C1B] transition-colors"><Twitter size={18} /></a>
                         </div>
                     </div>
 
                     {/* Quick Links */}
                     <div>
                         <h3 className="text-white font-serif font-bold text-lg mb-6 tracking-wide">Quick Links</h3>
-                        <ul className="space-y-3 text-sm">
-                            <li><a href="/" className="hover:text-theme-accent active:text-theme-accent transition-colors">Our Business</a></li>
-                            <li><a href="/about" className="hover:text-theme-accent active:text-theme-accent transition-colors">About Us</a></li>
-                            <li><a href="/our-partner" className="hover:text-theme-accent active:text-theme-accent transition-colors">Our Partner</a></li>
-                            <li><a href="/our-products" className="hover:text-theme-accent active:text-theme-accent transition-colors">Our Products</a></li>
-                            <li><a href="/deals" className="hover:text-theme-accent active:text-theme-accent transition-colors">Today&apos;s Deals</a></li>
-                            <li><a href="/wholesale" className="hover:text-theme-accent active:text-theme-accent transition-colors">Wholesale</a></li>
+                        <ul className="space-y-1 text-sm">
+                            <li><a href="/" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">Our Business</a></li>
+                            <li><a href="/about" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">About Us</a></li>
+                            <li><a href="/our-partner" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">Our Partner</a></li>
+                            <li><a href="/our-products" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">Our Products</a></li>
+                            <li><a href="/deals" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">Today&apos;s Deals</a></li>
+                            <li><a href="/wholesale" className="block py-2 hover:text-theme-accent active:text-theme-accent transition-colors">Wholesale</a></li>
                         </ul>
                     </div>
 
