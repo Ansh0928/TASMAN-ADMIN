@@ -1,40 +1,37 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-// Use vi.hoisted() for mock references
-const mockLimit = vi.hoisted(() => vi.fn());
-const mockSlidingWindow = vi.hoisted(() => vi.fn());
-const mockRedisConstructor = vi.hoisted(() => vi.fn().mockImplementation(function() { return {}; }));
-const mockRatelimitConstructor = vi.hoisted(() =>
-    vi.fn().mockImplementation(() => ({ limit: mockLimit }))
-);
-
-vi.mock('@upstash/ratelimit', () => {
-    class MockRatelimit {
-        limit: typeof mockLimit;
-        constructor(...args: any[]) {
-            mockRatelimitConstructor(...args);
-            this.limit = mockLimit;
-        }
-        static slidingWindow = mockSlidingWindow;
-    }
-    return { Ratelimit: MockRatelimit };
-});
-
-vi.mock('@upstash/redis', () => {
-    // Use a real class so `new Redis(...)` works
-    class MockRedis {
-        constructor(...args: any[]) {
-            mockRedisConstructor(...args);
-        }
-    }
-    return { Redis: MockRedis };
-});
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('rate-limit module', () => {
+    const originalFetch = global.fetch;
+    let fetchMock: ReturnType<typeof vi.fn>;
+
     beforeEach(() => {
         vi.resetModules();
         vi.clearAllMocks();
+        fetchMock = vi.fn();
+        global.fetch = fetchMock;
+        // Clear env vars by default
+        delete process.env.UPSTASH_REDIS_REST_URL;
+        delete process.env.UPSTASH_REDIS_REST_TOKEN;
     });
+
+    afterEach(() => {
+        global.fetch = originalFetch;
+        delete process.env.UPSTASH_REDIS_REST_URL;
+        delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    });
+
+    // Helper to mock a fetch pipeline response with a given ZCARD count
+    function mockFetchPipeline(count: number) {
+        fetchMock.mockResolvedValueOnce({
+            ok: true,
+            json: async () => [
+                { result: 'OK' },       // ZREMRANGEBYSCORE
+                { result: 1 },          // ZADD
+                { result: count },      // ZCARD
+                { result: 1 },          // PEXPIRE
+            ],
+        } as Response);
+    }
 
     describe('rateLimit()', () => {
         it('returns { limited: false, headers: {} } when limiter is null', async () => {
@@ -44,41 +41,45 @@ describe('rate-limit module', () => {
             const result = await rateLimit(nullLimiter, '127.0.0.1');
 
             expect(result).toEqual({ limited: false, headers: {} });
-            expect(mockLimit).not.toHaveBeenCalled();
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
-        it('returns { limited: false } with rate limit headers on successful limit', async () => {
-            const { rateLimit } = await import('@/lib/rate-limit');
+        it('returns { limited: false } with rate limit headers when under limit', async () => {
+            process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io';
+            process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
 
-            mockLimit.mockResolvedValueOnce({
-                success: true,
-                limit: 100,
-                remaining: 99,
-                reset: Date.now() + 60000,
-            });
+            // ZCARD returns 1, which is under max of 100
+            mockFetchPipeline(1);
 
-            const mockLimiter = { get: () => ({ limit: mockLimit }) };
-            const result = await rateLimit(mockLimiter as any, '127.0.0.1');
+            const { rateLimit, globalLimiter } = await import('@/lib/rate-limit');
+            const result = await rateLimit(globalLimiter, '127.0.0.1');
 
             expect(result.limited).toBe(false);
             expect(result.headers['X-RateLimit-Limit']).toBe('100');
             expect(result.headers['X-RateLimit-Remaining']).toBe('99');
             expect(result.headers['Retry-After']).toBeUndefined();
+
+            // Verify fetch was called with correct pipeline URL
+            expect(fetchMock).toHaveBeenCalledWith(
+                'https://test.upstash.io/pipeline',
+                expect.objectContaining({
+                    method: 'POST',
+                    headers: expect.objectContaining({
+                        Authorization: 'Bearer test-token',
+                    }),
+                })
+            );
         });
 
         it('returns { limited: true } with Retry-After header when limit exceeded', async () => {
-            const { rateLimit } = await import('@/lib/rate-limit');
+            process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io';
+            process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
 
-            const resetTime = Date.now() + 30000; // 30 seconds from now
-            mockLimit.mockResolvedValueOnce({
-                success: false,
-                limit: 100,
-                remaining: 0,
-                reset: resetTime,
-            });
+            // ZCARD returns 101, which exceeds max of 100
+            mockFetchPipeline(101);
 
-            const mockLimiter = { get: () => ({ limit: mockLimit }) };
-            const result = await rateLimit(mockLimiter as any, '127.0.0.1');
+            const { rateLimit, globalLimiter } = await import('@/lib/rate-limit');
+            const result = await rateLimit(globalLimiter, '127.0.0.1');
 
             expect(result.limited).toBe(true);
             expect(result.headers['X-RateLimit-Limit']).toBe('100');
@@ -136,8 +137,8 @@ describe('rate-limit module', () => {
             expect(apiLimiter.get()).toBeNull();
             expect(newsletterLimiter.get()).toBeNull();
 
-            // Redis should not have been instantiated
-            expect(mockRedisConstructor).not.toHaveBeenCalled();
+            // No fetch calls should have been made
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('rateLimit() returns fail-open when no Redis configured', async () => {
@@ -151,23 +152,24 @@ describe('rate-limit module', () => {
     });
 
     describe('limiter creation with Redis configured', () => {
-        it('creates Redis and Ratelimit instances when UPSTASH_REDIS_REST_URL is set', async () => {
+        it('returns correct config when UPSTASH_REDIS_REST_URL is set', async () => {
             process.env.UPSTASH_REDIS_REST_URL = 'https://test.upstash.io';
             process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token';
 
-            const { globalLimiter } = await import('@/lib/rate-limit');
-            const limiter = globalLimiter.get();
+            const { globalLimiter, authLimiter, apiLimiter, newsletterLimiter } =
+                await import('@/lib/rate-limit');
 
-            expect(mockRedisConstructor).toHaveBeenCalledWith({
-                url: 'https://test.upstash.io',
-                token: 'test-token',
-            });
-            expect(mockRatelimitConstructor).toHaveBeenCalled();
-            expect(limiter).not.toBeNull();
+            const globalConfig = globalLimiter.get();
+            expect(globalConfig).toEqual({ key: 'rl:global', max: 100, windowSec: 60 });
 
-            // Clean up
-            delete process.env.UPSTASH_REDIS_REST_URL;
-            delete process.env.UPSTASH_REDIS_REST_TOKEN;
+            const authConfig = authLimiter.get();
+            expect(authConfig).toEqual({ key: 'rl:auth', max: 5, windowSec: 60 });
+
+            const apiConfig = apiLimiter.get();
+            expect(apiConfig).toEqual({ key: 'rl:api', max: 10, windowSec: 60 });
+
+            const newsletterConfig = newsletterLimiter.get();
+            expect(newsletterConfig).toEqual({ key: 'rl:newsletter', max: 5, windowSec: 60 });
         });
     });
 });
