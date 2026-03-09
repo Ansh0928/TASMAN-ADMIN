@@ -108,38 +108,15 @@ export async function middleware(request: NextRequest) {
 
     const globalRl = getGlobalRateLimiter();
     if (globalRl) {
-        const result = await globalRl.limit(ip);
-
-        if (!result.success) {
-            const retryAfterMs = result.reset - Date.now();
-            const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
-
-            return NextResponse.json(
-                { message: 'Too many requests' },
-                {
-                    status: 429,
-                    headers: {
-                        'Retry-After': String(retryAfterSec),
-                        'X-RateLimit-Limit': String(result.limit),
-                        'X-RateLimit-Remaining': String(result.remaining),
-                    },
-                }
-            );
-        }
-    }
-
-    // 3. Auth-tier rate limit for NextAuth paths (SEC-07 partial)
-    if (AUTH_RATE_LIMIT_PATHS.some(path => pathname.startsWith(path))) {
-        const authRl = getAuthRateLimiter();
-        if (authRl) {
-            const result = await authRl.limit(ip);
+        try {
+            const result = await globalRl.limit(ip);
 
             if (!result.success) {
                 const retryAfterMs = result.reset - Date.now();
                 const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
 
                 return NextResponse.json(
-                    { message: 'Too many requests. Please try again later.' },
+                    { message: 'Too many requests' },
                     {
                         status: 429,
                         headers: {
@@ -149,6 +126,37 @@ export async function middleware(request: NextRequest) {
                         },
                     }
                 );
+            }
+        } catch {
+            // Fail open — allow request if Redis is unreachable
+        }
+    }
+
+    // 3. Auth-tier rate limit for NextAuth paths (SEC-07 partial)
+    if (AUTH_RATE_LIMIT_PATHS.some(path => pathname.startsWith(path))) {
+        const authRl = getAuthRateLimiter();
+        if (authRl) {
+            try {
+                const result = await authRl.limit(ip);
+
+                if (!result.success) {
+                    const retryAfterMs = result.reset - Date.now();
+                    const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
+
+                    return NextResponse.json(
+                        { message: 'Too many requests. Please try again later.' },
+                        {
+                            status: 429,
+                            headers: {
+                                'Retry-After': String(retryAfterSec),
+                                'X-RateLimit-Limit': String(result.limit),
+                                'X-RateLimit-Remaining': String(result.remaining),
+                            },
+                        }
+                    );
+                }
+            } catch {
+                // Fail open — allow request if Redis is unreachable
             }
         }
     }
@@ -164,17 +172,22 @@ export async function middleware(request: NextRequest) {
         const isAdminRoute = pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login');
         if (isAdminRoute) {
             if (!sessionToken) {
-                return NextResponse.json({ message: 'Not found' }, { status: 404 });
+                const loginUrl = new URL('/admin/login', request.url);
+                return NextResponse.redirect(loginUrl);
             }
 
             // Decode encrypted JWT to check role claim (NextAuth v5 uses JWE)
             try {
                 const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
                 if (!token || token.role !== 'ADMIN') {
-                    return NextResponse.json({ message: 'Not found' }, { status: 404 });
+                    // Not admin — redirect to admin login instead of 404
+                    const loginUrl = new URL('/admin/login', request.url);
+                    return NextResponse.redirect(loginUrl);
                 }
-            } catch {
-                return NextResponse.json({ message: 'Not found' }, { status: 404 });
+            } catch (err) {
+                console.error('Admin JWT decode error:', err);
+                const loginUrl = new URL('/admin/login', request.url);
+                return NextResponse.redirect(loginUrl);
             }
 
             // Admin user authenticated — continue
