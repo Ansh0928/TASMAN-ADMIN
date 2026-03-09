@@ -51,7 +51,6 @@ Progress: [█████░░░░░] 50%
 - Trend: stable
 
 *Updated after each plan completion*
-| Phase 10 P02 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +65,7 @@ Recent decisions affecting current work:
 - [02-01]: Class-based mocks needed for Upstash constructors in vitest
 - [02-02]: Middleware instantiates Upstash directly (Edge-compatible) rather than importing lib/rate-limit.ts
 - [02-02]: CSRF exempt paths: /api/stripe/webhook and /api/auth/callback
+- [10-01]: Mock global.fetch instead of SDK constructors for Upstash REST pipeline tests
 - [Phase 10]: Adjusted isMobile breakpoint to 1024px to match Tailwind lg: for side-by-side map layout
 
 ### Pending Todos
