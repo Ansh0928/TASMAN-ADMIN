@@ -3,7 +3,16 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { sendPushNotification } from '@/lib/web-push';
 import { sendOrderStatusEmail } from '@/lib/resend';
 import { sendSMS, sendOrderStatusSMS } from '@/lib/twilio';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+    PENDING: ['CONFIRMED', 'CANCELLED'],
+    CONFIRMED: ['PREPARING', 'CANCELLED'],
+    PREPARING: ['READY', 'CANCELLED'],
+    READY: ['DELIVERED', 'CANCELLED'],
+    DELIVERED: [],
+    CANCELLED: [],
+};
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -49,6 +58,24 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             return NextResponse.json({ message: 'Invalid status' }, { status: 400 });
         }
 
+        // Validate status transition
+        const currentOrder = await prisma.order.findUnique({
+            where: { id },
+            select: { status: true },
+        });
+
+        if (!currentOrder) {
+            return NextResponse.json({ message: 'Order not found' }, { status: 404 });
+        }
+
+        const allowedTransitions = VALID_TRANSITIONS[currentOrder.status] || [];
+        if (!allowedTransitions.includes(status)) {
+            return NextResponse.json(
+                { message: `Cannot transition from ${currentOrder.status} to ${status}` },
+                { status: 400 }
+            );
+        }
+
         const order = await prisma.order.update({
             where: { id },
             data: { status },
@@ -83,51 +110,59 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             }
         }
 
-        // Send email + SMS on meaningful status transitions (fire-and-forget)
+        // Send email + SMS on meaningful status transitions
         if (notifyStatuses.includes(status)) {
             const customerEmail = order.user?.email || order.guestEmail;
             const customerName = order.user?.name || order.guestName || 'Customer';
             const customerPhone = order.user?.phone || order.guestPhone;
+            const orderId = order.id;
+            const userId = order.userId;
+            const fulfillment = order.fulfillment;
+            const notes = order.notes;
 
-            // Email notification
-            if (customerEmail) {
-                sendOrderStatusEmail({
-                    orderId: order.id,
-                    customerName,
-                    customerEmail,
-                    status: status as 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED',
-                    fulfillment: order.fulfillment,
-                    deliveryNotes: order.notes,
-                }).then(async (result) => {
-                    await prisma.notification.create({
-                        data: {
-                            orderId: order.id,
-                            userId: order.userId,
-                            type: 'EMAIL',
-                            recipient: customerEmail,
-                            category: 'order_status',
-                            status: result.success ? 'SENT' : 'FAILED',
-                        },
-                    });
-                }).catch((err) => console.error('Order status email error:', err));
-            }
+            after(async () => {
+                try {
+                    // Email notification
+                    if (customerEmail) {
+                        const result = await sendOrderStatusEmail({
+                            orderId,
+                            customerName,
+                            customerEmail,
+                            status: status as 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED',
+                            fulfillment,
+                            deliveryNotes: notes,
+                        });
+                        await prisma.notification.create({
+                            data: {
+                                orderId,
+                                userId,
+                                type: 'EMAIL',
+                                recipient: customerEmail,
+                                category: 'order_status',
+                                status: result.success ? 'SENT' : 'FAILED',
+                            },
+                        });
+                    }
 
-            // SMS notification
-            if (customerPhone) {
-                const smsBody = sendOrderStatusSMS(order.id, status, order.fulfillment);
-                sendSMS(customerPhone, smsBody).then(async (result) => {
-                    await prisma.notification.create({
-                        data: {
-                            orderId: order.id,
-                            userId: order.userId,
-                            type: 'SMS',
-                            recipient: customerPhone,
-                            category: 'order_status',
-                            status: result.success ? 'SENT' : 'FAILED',
-                        },
-                    });
-                }).catch((err) => console.error('Order status SMS error:', err));
-            }
+                    // SMS notification
+                    if (customerPhone) {
+                        const smsBody = sendOrderStatusSMS(orderId, status, fulfillment);
+                        const result = await sendSMS(customerPhone, smsBody);
+                        await prisma.notification.create({
+                            data: {
+                                orderId,
+                                userId,
+                                type: 'SMS',
+                                recipient: customerPhone,
+                                category: 'order_status',
+                                status: result.success ? 'SENT' : 'FAILED',
+                            },
+                        });
+                    }
+                } catch (err) {
+                    console.error('Order status notification error:', err);
+                }
+            });
         }
 
         return NextResponse.json({ order });

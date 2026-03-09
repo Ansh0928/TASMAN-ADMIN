@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '@/lib/password-validation';
+import { sendPasswordChangedEmail } from '@/lib/resend';
+import { after } from 'next/server';
 
 export async function POST(request: Request) {
     const session = await auth();
@@ -11,9 +14,10 @@ export async function POST(request: Request) {
 
     const { currentPassword, newPassword } = await request.json();
 
-    if (!newPassword || newPassword.length < 8) {
+    const passwordCheck = validatePassword(newPassword);
+    if (!passwordCheck.valid) {
         return NextResponse.json(
-            { message: 'New password must be at least 8 characters' },
+            { message: passwordCheck.message },
             { status: 400 }
         );
     }
@@ -39,9 +43,22 @@ export async function POST(request: Request) {
     }
 
     const hashed = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
+
+    const updatedUser = await prisma.user.update({
         where: { id: session.user.id },
         data: { passwordHash: hashed },
+        select: { email: true, name: true },
+    });
+
+    // Notify user that their password was changed
+    after(async () => {
+        if (updatedUser.email) {
+            try {
+                await sendPasswordChangedEmail({ email: updatedUser.email, name: updatedUser.name || 'Customer' });
+            } catch (e) {
+                console.error('Password changed notification error:', e);
+            }
+        }
     });
 
     return NextResponse.json({ message: 'Password updated successfully' });

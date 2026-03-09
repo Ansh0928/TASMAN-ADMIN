@@ -15,6 +15,9 @@ const {
                 findUnique: vi.fn(),
                 create: vi.fn(),
             },
+            notification: {
+                create: vi.fn().mockResolvedValue({}),
+            },
         },
         mockSendWholesaleApplicationReceivedEmail: vi.fn().mockResolvedValue({ success: true }),
         mockSendWholesaleNewApplicationAdminEmail: vi.fn().mockResolvedValue({ success: true }),
@@ -50,6 +53,15 @@ vi.mock('@/lib/rate-limit', () => ({
     getClientIp: vi.fn().mockReturnValue('127.0.0.1'),
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { POST } from '@/app/api/wholesale/apply/route';
 import { createMockRequest } from '../helpers/mocks';
 
@@ -59,19 +71,28 @@ const validApplication = {
     contactName: 'John Doe',
     email: 'john@testseafood.com',
     phone: '+61400111222',
-    password: 'securepass123',  // 13 chars, meets 8-char minimum
+    password: 'SecurePass123!',  // Meets all complexity requirements
 };
 
 describe('POST /api/wholesale/apply', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         // Restore default resolved values after clearAllMocks
         mockSendWholesaleApplicationReceivedEmail.mockResolvedValue({ success: true });
         mockSendWholesaleNewApplicationAdminEmail.mockResolvedValue({ success: true });
         mockSendSMS.mockResolvedValue({ success: true, sid: 'SM_test' });
         mockWholesaleApplicationReceivedSMS.mockReturnValue('SMS body');
         mockBcryptHash.mockResolvedValue('hashed-password');
+        mockPrisma.notification.create.mockResolvedValue({});
     });
+
+    /** Flush all after() callbacks registered during the request */
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     // ── Successful application ──
 
@@ -140,6 +161,7 @@ describe('POST /api/wholesale/apply', () => {
 
         const req = createMockRequest('POST', validApplication);
         await POST(req as any);
+        await flushAfterCallbacks();
 
         expect(mockSendWholesaleApplicationReceivedEmail).toHaveBeenCalledWith({
             name: validApplication.contactName,
@@ -156,6 +178,7 @@ describe('POST /api/wholesale/apply', () => {
 
         const req = createMockRequest('POST', validApplication);
         await POST(req as any);
+        await flushAfterCallbacks();
 
         expect(mockSendWholesaleNewApplicationAdminEmail).toHaveBeenCalledWith({
             name: validApplication.contactName,
@@ -172,6 +195,7 @@ describe('POST /api/wholesale/apply', () => {
 
         const req = createMockRequest('POST', validApplication);
         await POST(req as any);
+        await flushAfterCallbacks();
 
         expect(mockWholesaleApplicationReceivedSMS).toHaveBeenCalledWith(validApplication.contactName);
         expect(mockSendSMS).toHaveBeenCalledWith(validApplication.phone, 'SMS body');
@@ -184,6 +208,7 @@ describe('POST /api/wholesale/apply', () => {
 
         const req = createMockRequest('POST', validApplication);
         const res = await POST(req as any);
+        await flushAfterCallbacks();
 
         expect(res.status).toBe(201);
     });
@@ -195,6 +220,7 @@ describe('POST /api/wholesale/apply', () => {
 
         const req = createMockRequest('POST', validApplication);
         const res = await POST(req as any);
+        await flushAfterCallbacks();
 
         expect(res.status).toBe(201);
     });
@@ -262,12 +288,21 @@ describe('POST /api/wholesale/apply', () => {
     });
 
     it('rejects when password is shorter than 8 characters', async () => {
-        const req = createMockRequest('POST', { ...validApplication, password: '1234567' });
+        const req = createMockRequest('POST', { ...validApplication, password: 'Ab1!xyz' });
         const res = await POST(req as any);
         const body = await res.json();
 
         expect(res.status).toBe(400);
         expect(body.message).toBe('Password must be at least 8 characters');
+    });
+
+    it('rejects when password lacks a special character', async () => {
+        const req = createMockRequest('POST', { ...validApplication, password: 'SecurePass123' });
+        const res = await POST(req as any);
+        const body = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(body.message).toBe('Password must contain at least one special character');
     });
 
     // ── Duplicate email ──

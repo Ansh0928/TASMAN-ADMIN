@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { stripe } from '@/lib/stripe';
 import { sendRefundNotificationEmail } from '@/lib/resend';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -69,27 +69,34 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             },
         });
 
-        // Send refund notification email (fire-and-forget)
+        // Send refund notification email
         const customerEmail = order.user?.email || order.guestEmail;
         const customerName = order.user?.name || order.guestName || 'Customer';
+        const orderId = order.id;
+        const refundAmountFormatted = refundAmountAud.toFixed(2);
         if (customerEmail) {
-            sendRefundNotificationEmail({
-                orderId: order.id,
-                customerName,
-                customerEmail,
-                refundAmount: refundAmountAud.toFixed(2),
-                isFullRefund,
-            }).then(async (result) => {
-                await prisma.notification.create({
-                    data: {
-                        orderId: order.id,
-                        type: 'EMAIL',
-                        recipient: customerEmail,
-                        category: 'refund',
-                        status: result.success ? 'SENT' : 'FAILED',
-                    },
-                });
-            }).catch((err) => console.error('Refund email error:', err));
+            after(async () => {
+                try {
+                    const result = await sendRefundNotificationEmail({
+                        orderId,
+                        customerName,
+                        customerEmail,
+                        refundAmount: refundAmountFormatted,
+                        isFullRefund,
+                    });
+                    await prisma.notification.create({
+                        data: {
+                            orderId,
+                            type: 'EMAIL',
+                            recipient: customerEmail,
+                            category: 'refund',
+                            status: result.success ? 'SENT' : 'FAILED',
+                        },
+                    });
+                } catch (err) {
+                    console.error('Refund email error:', err);
+                }
+            });
         }
 
         return NextResponse.json({

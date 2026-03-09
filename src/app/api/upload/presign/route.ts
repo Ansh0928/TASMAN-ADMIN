@@ -6,8 +6,10 @@ export async function POST(req: NextRequest) {
     const { error } = await requireAdmin();
     if (error) return error;
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
     try {
-        const { filename, contentType, folder } = await req.json();
+        const { filename, contentType, folder, fileSize } = await req.json();
 
         if (!filename || !contentType || !folder) {
             return NextResponse.json({ message: 'filename, contentType, and folder are required' }, { status: 400 });
@@ -21,6 +23,10 @@ export async function POST(req: NextRequest) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         if (!allowedTypes.includes(contentType)) {
             return NextResponse.json({ message: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF' }, { status: 400 });
+        }
+
+        if (fileSize && typeof fileSize === 'number' && fileSize > MAX_FILE_SIZE) {
+            return NextResponse.json({ message: 'File too large. Maximum size is 10 MB.' }, { status: 400 });
         }
 
         const key = generateImageKey(folder, filename);

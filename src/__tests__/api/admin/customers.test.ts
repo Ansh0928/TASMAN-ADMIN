@@ -26,6 +26,15 @@ vi.mock('@/lib/twilio', () => ({
     wholesaleRejectedSMS: mockWholesaleRejectedSMS,
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { GET } from '@/app/api/admin/customers/route';
 import { PATCH, DELETE } from '@/app/api/admin/customers/[id]/route';
 
@@ -48,11 +57,18 @@ function adminForbidden() {
 describe('Admin Customers API', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         mockSendWholesaleStatusEmail.mockResolvedValue({ success: true });
         mockSendSMS.mockResolvedValue({ success: true, sid: 'SM_test' });
         mockWholesaleApprovedSMS.mockReturnValue('Approved SMS message');
         mockWholesaleRejectedSMS.mockReturnValue('Rejected SMS message');
     });
+
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     // ── Auth guard ──
 
@@ -308,6 +324,7 @@ describe('Admin Customers API', () => {
 
             const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
+            await flushAfterCallbacks();
 
             expect(res.status).toBe(200);
             expect(mockSendWholesaleStatusEmail).toHaveBeenCalledWith({
@@ -336,6 +353,7 @@ describe('Admin Customers API', () => {
 
             const req = createMockRequest('PATCH', { wholesaleStatus: 'REJECTED' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
+            await flushAfterCallbacks();
 
             expect(res.status).toBe(200);
             expect(mockSendWholesaleStatusEmail).toHaveBeenCalledWith({
@@ -364,6 +382,7 @@ describe('Admin Customers API', () => {
 
             const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockSendWholesaleStatusEmail).toHaveBeenCalled();
             expect(mockSendSMS).not.toHaveBeenCalled();
@@ -385,6 +404,7 @@ describe('Admin Customers API', () => {
 
             const req = createMockRequest('PATCH', { wholesaleStatus: 'PENDING' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockSendWholesaleStatusEmail).not.toHaveBeenCalled();
             expect(mockSendSMS).not.toHaveBeenCalled();

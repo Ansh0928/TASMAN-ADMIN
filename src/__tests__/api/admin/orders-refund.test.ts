@@ -23,6 +23,15 @@ vi.mock('@/lib/resend', () => ({
     sendRefundNotificationEmail: mockSendRefundNotificationEmail,
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { POST } from '@/app/api/admin/orders/[id]/refund/route';
 
 function adminOk() {
@@ -44,8 +53,15 @@ function adminForbidden() {
 describe('POST /api/admin/orders/[id]/refund', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         prismaMock.notification.create.mockResolvedValue({});
     });
+
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     it('rejects non-admin', async () => {
         adminForbidden();
@@ -221,6 +237,7 @@ describe('POST /api/admin/orders/[id]/refund', () => {
 
         const req = createMockRequest('POST', { amount: 50 });
         await POST(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+        await flushAfterCallbacks();
 
         expect(mockSendRefundNotificationEmail).toHaveBeenCalledWith({
             orderId: 'order-1',

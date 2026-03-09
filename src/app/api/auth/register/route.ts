@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { rateLimit, authLimiter, getClientIp } from '@/lib/rate-limit';
+import { validatePassword } from '@/lib/password-validation';
 
 export async function POST(request: NextRequest) {
     try {
@@ -24,30 +25,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (typeof password !== 'string' || password.length < 8) {
+        const passwordCheck = validatePassword(password);
+        if (!passwordCheck.valid) {
             return NextResponse.json(
-                { message: 'Password must be at least 8 characters' },
-                { status: 400 }
-            );
-        }
-
-        if (!/[A-Z]/.test(password)) {
-            return NextResponse.json(
-                { message: 'Password must contain at least one uppercase letter' },
-                { status: 400 }
-            );
-        }
-
-        if (!/[a-z]/.test(password)) {
-            return NextResponse.json(
-                { message: 'Password must contain at least one lowercase letter' },
-                { status: 400 }
-            );
-        }
-
-        if (!/[0-9]/.test(password)) {
-            return NextResponse.json(
-                { message: 'Password must contain at least one number' },
+                { message: passwordCheck.message },
                 { status: 400 }
             );
         }

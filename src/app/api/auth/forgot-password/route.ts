@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { resend, EMAIL_FROM } from '@/lib/resend';
@@ -76,15 +76,20 @@ export async function POST(request: NextRequest) {
 </body>
 </html>`;
 
-            resend.emails
-                .send({
-                    from: EMAIL_FROM,
-                    to: user.email,
-                    subject: 'Reset Your Password - Tasman Star Seafoods',
-                    html,
-                })
-                .then(() => console.log('Password reset email sent to', user.email))
-                .catch((err: unknown) => console.error('Failed to send password reset email:', err));
+            const userEmail = user.email;
+            after(async () => {
+                try {
+                    await resend.emails.send({
+                        from: EMAIL_FROM,
+                        to: userEmail,
+                        subject: 'Reset Your Password - Tasman Star Seafoods',
+                        html,
+                    });
+                    console.log('Password reset email sent to', userEmail);
+                } catch (err) {
+                    console.error('Failed to send password reset email:', err);
+                }
+            });
         }
 
         return NextResponse.json({ message: genericMessage });

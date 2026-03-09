@@ -27,6 +27,15 @@ vi.mock('@/lib/twilio', () => ({
     sendSMS: mockSendSMS,
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { GET } from '@/app/api/admin/wholesale-orders/route';
 import { PATCH } from '@/app/api/admin/wholesale-orders/[id]/route';
 
@@ -49,9 +58,16 @@ function adminForbidden() {
 describe('Admin Wholesale Orders API', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         mockResendEmailsSend.mockResolvedValue({ data: { id: 'email-1' } });
         mockSendSMS.mockResolvedValue({ success: true, sid: 'SM_test' });
     });
+
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     // ── Auth guard ──
 
@@ -210,6 +226,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockResendEmailsSend).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -226,6 +243,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'REJECTED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockResendEmailsSend).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -242,6 +260,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'COMPLETED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockResendEmailsSend).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -258,6 +277,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockSendSMS).toHaveBeenCalledWith(
                 '+61400000000',
@@ -272,6 +292,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockSendSMS).not.toHaveBeenCalled();
         });
@@ -283,6 +304,7 @@ describe('Admin Wholesale Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'PENDING' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockResendEmailsSend).not.toHaveBeenCalled();
             expect(mockSendSMS).not.toHaveBeenCalled();

@@ -17,6 +17,15 @@ vi.mock('@/lib/wholesale-notifications', () => ({
     notifyWholesalersOfUpdate: mockNotifyWholesalersOfUpdate,
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { GET, POST } from '@/app/api/admin/wholesale/route';
 import { PUT, DELETE } from '@/app/api/admin/wholesale/[id]/route';
 
@@ -39,8 +48,15 @@ function adminForbidden() {
 describe('Admin Wholesale API', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         mockNotifyWholesalersOfUpdate.mockResolvedValue(undefined);
     });
+
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     // ── Auth guard ──
 
@@ -208,6 +224,7 @@ describe('Admin Wholesale API', () => {
                 price: '10',
             });
             await POST(req as any);
+            await flushAfterCallbacks();
 
             expect(mockNotifyWholesalersOfUpdate).toHaveBeenCalled();
         });
@@ -222,6 +239,7 @@ describe('Admin Wholesale API', () => {
 
             const req = createMockRequest('POST', { type: 'category', name: 'New Cat' });
             await POST(req as any);
+            await flushAfterCallbacks();
 
             expect(mockNotifyWholesalersOfUpdate).not.toHaveBeenCalled();
         });
@@ -306,6 +324,7 @@ describe('Admin Wholesale API', () => {
 
             const req = createMockRequest('PUT', { type: 'item', name: 'X' });
             await PUT(req as any, { params: Promise.resolve({ id: 'wpi-1' }) });
+            await flushAfterCallbacks();
 
             expect(mockNotifyWholesalersOfUpdate).toHaveBeenCalled();
         });

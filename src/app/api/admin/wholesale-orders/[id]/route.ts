@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { resend, EMAIL_FROM } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -39,30 +39,39 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             };
             const label = statusLabels[status];
             if (label) {
-                // Email notification
-                resend.emails.send({
-                    from: EMAIL_FROM,
-                    to: order.user.email,
-                    subject: `Wholesale Order ${label.charAt(0).toUpperCase() + label.slice(1)} - Tasman Star Seafoods`,
-                    html: `<p>Hi ${order.user.name},</p><p>Your wholesale order #${id.slice(-8).toUpperCase()} has been <strong>${label}</strong>.</p>${adminNotes ? `<p><strong>Notes:</strong> ${adminNotes}</p>` : ''}<p>Contact us at info@tasmanstar.com.au with any questions.</p>`,
-                }).catch(console.error);
+                const userEmail = order.user.email;
+                const userName = order.user.name;
+                const userPhone = order.user.phone;
+                const userId = order.user.id;
+                const shortId = id.slice(-8).toUpperCase();
 
-                // SMS notification
-                if (order.user.phone) {
-                    sendSMS(order.user.phone, `Tasman Star Seafoods: Your wholesale order #${id.slice(-8).toUpperCase()} has been ${label}.`)
-                        .then(async (result) => {
+                after(async () => {
+                    try {
+                        // Email notification
+                        await resend.emails.send({
+                            from: EMAIL_FROM,
+                            to: userEmail,
+                            subject: `Wholesale Order ${label.charAt(0).toUpperCase() + label.slice(1)} - Tasman Star Seafoods`,
+                            html: `<p>Hi ${userName},</p><p>Your wholesale order #${shortId} has been <strong>${label}</strong>.</p>${adminNotes ? `<p><strong>Notes:</strong> ${adminNotes}</p>` : ''}<p>Contact us at info@tasmanstar.com.au with any questions.</p>`,
+                        });
+
+                        // SMS notification
+                        if (userPhone) {
+                            const result = await sendSMS(userPhone, `Tasman Star Seafoods: Your wholesale order #${shortId} has been ${label}.`);
                             await prisma.notification.create({
                                 data: {
-                                    userId: order.user!.id,
+                                    userId,
                                     type: 'SMS',
-                                    recipient: order.user!.phone!,
+                                    recipient: userPhone,
                                     category: 'wholesale_order_status',
                                     status: result.success ? 'SENT' : 'FAILED',
                                 },
                             });
-                        })
-                        .catch(console.error);
-                }
+                        }
+                    } catch (err) {
+                        console.error('Wholesale order notification error:', err);
+                    }
+                });
             }
         }
 

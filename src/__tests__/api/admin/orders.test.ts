@@ -29,6 +29,15 @@ vi.mock('@/lib/twilio', () => ({
     sendOrderStatusSMS: mockSendOrderStatusSMS,
 }));
 
+const mockAfterCallbacks: Array<() => Promise<void>> = [];
+vi.mock('next/server', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('next/server')>();
+    return {
+        ...actual,
+        after: vi.fn((cb: () => Promise<void>) => { mockAfterCallbacks.push(cb); }),
+    };
+});
+
 import { GET } from '@/app/api/admin/orders/route';
 import {
     GET as GET_BY_ID,
@@ -54,8 +63,15 @@ function adminForbidden() {
 describe('Admin Orders API', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockAfterCallbacks.length = 0;
         mockSendPushNotification.mockResolvedValue(undefined);
     });
+
+    async function flushAfterCallbacks() {
+        for (const cb of mockAfterCallbacks) {
+            await cb();
+        }
+    }
 
     // ── Auth guard ──
 
@@ -207,6 +223,8 @@ describe('Admin Orders API', () => {
     describe('PATCH /api/admin/orders/[id]', () => {
         it('updates order status', async () => {
             adminOk();
+            // findUnique for status transition validation: PENDING -> CONFIRMED is valid
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'PENDING' }));
             const updatedOrder = { ...factories.order({ status: 'CONFIRMED', userId: null }), user: null };
             prismaMock.order.update.mockResolvedValue(updatedOrder);
 
@@ -227,6 +245,7 @@ describe('Admin Orders API', () => {
 
         it('returns 400 for invalid status', async () => {
             adminOk();
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'PENDING' }));
             const req = createMockRequest('PATCH', { status: 'INVALID' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
             expect(res.status).toBe(400);
@@ -236,6 +255,8 @@ describe('Admin Orders API', () => {
 
         it('sends push notification on status change when user has subscriptions', async () => {
             adminOk();
+            // CONFIRMED -> PREPARING is valid
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'CONFIRMED' }));
             const updatedOrder = {
                 ...factories.order({ status: 'PREPARING', userId: 'user-1', guestEmail: 'test@example.com', guestPhone: '+61400000000' }),
                 user: { name: 'Test User', email: 'test@example.com', phone: '+61400000000' },
@@ -253,6 +274,7 @@ describe('Admin Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'PREPARING' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+            await flushAfterCallbacks();
 
             expect(res.status).toBe(200);
             expect(prismaMock.pushSubscription.findMany).toHaveBeenCalledWith({
@@ -273,11 +295,14 @@ describe('Admin Orders API', () => {
 
         it('does not send push notification when order has no userId', async () => {
             adminOk();
+            // PENDING -> CONFIRMED is valid
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'PENDING' }));
             const updatedOrder = { ...factories.order({ status: 'CONFIRMED', userId: null }), user: null };
             prismaMock.order.update.mockResolvedValue(updatedOrder);
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
             await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+            await flushAfterCallbacks();
 
             expect(prismaMock.pushSubscription.findMany).not.toHaveBeenCalled();
             expect(mockSendPushNotification).not.toHaveBeenCalled();
@@ -285,6 +310,8 @@ describe('Admin Orders API', () => {
 
         it('sends email and SMS on PREPARING status change', async () => {
             adminOk();
+            // CONFIRMED -> PREPARING is valid
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'CONFIRMED' }));
             const updatedOrder = {
                 ...factories.order({
                     status: 'PREPARING',
@@ -301,6 +328,7 @@ describe('Admin Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'PREPARING' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+            await flushAfterCallbacks();
 
             expect(res.status).toBe(200);
 
@@ -321,6 +349,8 @@ describe('Admin Orders API', () => {
 
         it('does not send email/SMS for CONFIRMED status', async () => {
             adminOk();
+            // PENDING -> CONFIRMED is valid
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'PENDING' }));
             const updatedOrder = {
                 ...factories.order({ status: 'CONFIRMED', userId: null, guestEmail: 'guest@example.com', guestPhone: '+61400111222' }),
                 user: null,
@@ -329,6 +359,7 @@ describe('Admin Orders API', () => {
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'order-1' }) });
+            await flushAfterCallbacks();
 
             expect(res.status).toBe(200);
             // CONFIRMED is NOT in notifyStatuses, so no email/SMS
@@ -338,6 +369,7 @@ describe('Admin Orders API', () => {
 
         it('returns 500 on database error', async () => {
             adminOk();
+            prismaMock.order.findUnique.mockResolvedValue(factories.order({ status: 'PENDING' }));
             prismaMock.order.update.mockRejectedValue(new Error('DB error'));
 
             const req = createMockRequest('PATCH', { status: 'CONFIRMED' });

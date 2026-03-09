@@ -736,6 +736,48 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
 
 // ── Wholesale Approval/Rejection Email ──
 
+export async function sendPasswordChangedEmail(data: {
+    email: string;
+    name: string;
+}) {
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            ${emailHeader('Security Alert')}
+            <div style="padding: 30px;">
+                <p style="color: #333; font-size: 16px;">Hi ${escapeHtml(data.name)},</p>
+                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                    <p style="color: #92400e; font-size: 16px; font-weight: bold; margin: 0 0 8px;">Your password has been changed</p>
+                    <p style="color: #a16207; margin: 0;">If you made this change, no further action is needed.</p>
+                </div>
+                <p style="color: #555;">If you did not change your password, please contact us immediately at
+                    <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a>
+                    or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
+                </p>
+            </div>
+            ${emailFooter()}
+        </div>
+    </body>
+    </html>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: EMAIL_FROM,
+            to: data.email,
+            subject: 'Password Changed - Tasman Star Seafoods',
+            html,
+        });
+        return { success: true, id: result.data?.id };
+    } catch (error) {
+        console.error('Failed to send password changed email:', error);
+        return { success: false, error };
+    }
+}
+
 export async function sendWholesaleStatusEmail(data: {
     name: string;
     email: string;

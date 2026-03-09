@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import { sendWholesaleApplicationReceivedEmail, sendWholesaleNewApplicationAdminEmail } from '@/lib/resend';
 import { sendSMS, wholesaleApplicationReceivedSMS } from '@/lib/twilio';
 import { rateLimit, apiLimiter, getClientIp } from '@/lib/rate-limit';
+import { validatePassword } from '@/lib/password-validation';
+import { after } from 'next/server';
 
 export async function POST(request: NextRequest) {
     try {
@@ -27,9 +29,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (typeof password !== 'string' || password.length < 8) {
+        const passwordCheck = validatePassword(password);
+        if (!passwordCheck.valid) {
             return NextResponse.json(
-                { message: 'Password must be at least 8 characters' },
+                { message: passwordCheck.message },
                 { status: 400 }
             );
         }
@@ -63,31 +66,40 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Send confirmation emails (fire-and-forget — don't block the response)
+        // Send notifications after response (non-blocking)
         const emailData = { name: contactName, email, companyName, abn, phone };
+        const userId = user.id;
 
-        sendWholesaleApplicationReceivedEmail(emailData)
-            .catch((e) => console.error('Wholesale application email error:', e));
+        after(async () => {
+            try {
+                await sendWholesaleApplicationReceivedEmail(emailData);
+            } catch (e) {
+                console.error('Wholesale application email error:', e);
+            }
 
-        sendWholesaleNewApplicationAdminEmail(emailData)
-            .catch((e) => console.error('Wholesale admin notification error:', e));
+            try {
+                await sendWholesaleNewApplicationAdminEmail(emailData);
+            } catch (e) {
+                console.error('Wholesale admin notification error:', e);
+            }
 
-        // Send SMS to applicant (fire-and-forget)
-        if (phone) {
-            sendSMS(phone, wholesaleApplicationReceivedSMS(contactName))
-                .then(async (result) => {
+            if (phone) {
+                try {
+                    const result = await sendSMS(phone, wholesaleApplicationReceivedSMS(contactName));
                     await prisma.notification.create({
                         data: {
-                            userId: user.id,
+                            userId,
                             type: 'SMS',
                             recipient: phone,
                             category: 'wholesale_application',
                             status: result.success ? 'SENT' : 'FAILED',
                         },
                     });
-                })
-                .catch((e) => console.error('Wholesale application SMS error:', e));
-        }
+                } catch (e) {
+                    console.error('Wholesale application SMS error:', e);
+                }
+            }
+        });
 
         return NextResponse.json(
             { message: 'Application submitted successfully', userId: user.id },

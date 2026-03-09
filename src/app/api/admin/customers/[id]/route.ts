@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { sendWholesaleStatusEmail } from '@/lib/resend';
 import { sendSMS, wholesaleApprovedSMS, wholesaleRejectedSMS } from '@/lib/twilio';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -84,33 +84,43 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             },
         });
 
-        // Send email notification when wholesale status changes to APPROVED or REJECTED
+        // Send notifications when wholesale status changes to APPROVED or REJECTED
         if (wholesaleStatus === 'APPROVED' || wholesaleStatus === 'REJECTED') {
-            const emailResult = await sendWholesaleStatusEmail({
-                name: user.name,
-                email: user.email,
-                status: wholesaleStatus,
-                companyName: user.companyName,
-            });
-            // Send SMS notification (fire-and-forget)
-            if (user.phone) {
-                const smsBody = wholesaleStatus === 'APPROVED'
-                    ? wholesaleApprovedSMS(user.name)
-                    : wholesaleRejectedSMS(user.name);
-                sendSMS(user.phone, smsBody)
-                    .then(async (result) => {
+            const userName = user.name;
+            const userEmail = user.email;
+            const userPhone = user.phone;
+            const userId = user.id;
+            const companyName = user.companyName;
+
+            after(async () => {
+                try {
+                    await sendWholesaleStatusEmail({
+                        name: userName,
+                        email: userEmail,
+                        status: wholesaleStatus,
+                        companyName,
+                    });
+
+                    // SMS notification
+                    if (userPhone) {
+                        const smsBody = wholesaleStatus === 'APPROVED'
+                            ? wholesaleApprovedSMS(userName)
+                            : wholesaleRejectedSMS(userName);
+                        const result = await sendSMS(userPhone, smsBody);
                         await prisma.notification.create({
                             data: {
-                                userId: user.id,
+                                userId,
                                 type: 'SMS',
-                                recipient: user.phone!,
+                                recipient: userPhone,
                                 category: 'wholesale_status',
                                 status: result.success ? 'SENT' : 'FAILED',
                             },
                         });
-                    })
-                    .catch((e) => console.error('Wholesale status SMS error:', e));
-            }
+                    }
+                } catch (err) {
+                    console.error('Wholesale status notification error:', err);
+                }
+            });
         }
 
         return NextResponse.json({ user });
