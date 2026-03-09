@@ -57,7 +57,7 @@ describe('ProductCard', () => {
 
         expect(screen.getByText('Atlantic Salmon')).toBeInTheDocument();
         expect(screen.getByText('$29.99')).toBeInTheDocument();
-        expect(screen.getByText('KG')).toBeInTheDocument();
+        expect(screen.getByText('/kg')).toBeInTheDocument();
     });
 
     it('renders product image', () => {
