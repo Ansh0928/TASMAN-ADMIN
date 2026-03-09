@@ -5,14 +5,10 @@ import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
 import { authConfig } from './auth.config';
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-    ...authConfig,
-    providers: [
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        }),
-        Credentials({
+import type { Provider } from 'next-auth/providers';
+
+const providers: Provider[] = [
+    Credentials({
             name: 'Credentials',
             credentials: {
                 email: { label: 'Email', type: 'email' },
@@ -54,7 +50,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 };
             },
         }),
-    ],
+];
+
+// Only add Google provider if credentials are configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.unshift(
+        Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })
+    );
+}
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
+    providers,
     callbacks: {
         ...authConfig.callbacks,
         async signIn({ user, account }) {

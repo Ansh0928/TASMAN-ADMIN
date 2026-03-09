@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
-import { getToken } from 'next-auth/jwt';
 
 // --- CSRF Configuration ---
 
@@ -10,47 +7,68 @@ const STATE_CHANGING_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
 
 const CSRF_EXEMPT_PATHS = ['/api/stripe/webhook', '/api/auth/callback'];
 
-// --- Lazy singleton rate limiters (Edge-compatible) ---
+// --- Upstash REST-based rate limiting (no SDK needed for Edge) ---
 
-let _globalLimiter: Ratelimit | null | undefined;
-let _authMwLimiter: Ratelimit | null | undefined;
-
-function getGlobalRateLimiter(): Ratelimit | null {
-    if (_globalLimiter !== undefined) return _globalLimiter;
-
-    const url = process.env.UPSTASH_REDIS_REST_URL;
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-    if (!url) {
-        _globalLimiter = null;
-        return null;
-    }
-
-    _globalLimiter = new Ratelimit({
-        redis: new Redis({ url, token: token || '' }),
-        limiter: Ratelimit.slidingWindow(100, '60 s'),
-        prefix: 'rl:global',
-    });
-    return _globalLimiter;
+interface RateLimitResult {
+    limited: boolean;
+    limit: number;
+    remaining: number;
+    reset: number;
 }
 
-function getAuthRateLimiter(): Ratelimit | null {
-    if (_authMwLimiter !== undefined) return _authMwLimiter;
-
+async function upstashRateLimit(
+    key: string,
+    maxRequests: number,
+    windowSec: number
+): Promise<RateLimitResult> {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    if (!url) {
-        _authMwLimiter = null;
-        return null;
+    if (!url || !token) {
+        return { limited: false, limit: maxRequests, remaining: maxRequests, reset: 0 };
     }
 
-    _authMwLimiter = new Ratelimit({
-        redis: new Redis({ url, token: token || '' }),
-        limiter: Ratelimit.slidingWindow(5, '60 s'),
-        prefix: 'rl:auth:mw',
-    });
-    return _authMwLimiter;
+    try {
+        // Use sliding window with MULTI/EXEC via Upstash REST pipeline
+        const now = Date.now();
+        const windowMs = windowSec * 1000;
+        const windowStart = now - windowMs;
+        const member = `${now}:${Math.random().toString(36).slice(2, 8)}`;
+
+        const pipeline = [
+            ['ZREMRANGEBYSCORE', key, '0', String(windowStart)],
+            ['ZADD', key, String(now), member],
+            ['ZCARD', key],
+            ['PEXPIRE', key, String(windowMs)],
+        ];
+
+        const resp = await fetch(`${url}/pipeline`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pipeline),
+        });
+
+        if (!resp.ok) {
+            return { limited: false, limit: maxRequests, remaining: maxRequests, reset: 0 };
+        }
+
+        const results = await resp.json();
+        const count = results[2]?.result ?? 0;
+        const remaining = Math.max(0, maxRequests - count);
+
+        return {
+            limited: count > maxRequests,
+            limit: maxRequests,
+            remaining,
+            reset: now + windowMs,
+        };
+    } catch {
+        // Fail open
+        return { limited: false, limit: maxRequests, remaining: maxRequests, reset: 0 };
+    }
 }
 
 // --- Auth-tier rate limit paths ---
@@ -58,8 +76,6 @@ function getAuthRateLimiter(): Ratelimit | null {
 const AUTH_RATE_LIMIT_PATHS = ['/api/auth/signin', '/api/auth/callback/credentials'];
 
 // --- Session-protected paths ---
-
-const SESSION_PROTECTED_PREFIXES = ['/admin/', '/wholesale/prices', '/account/'];
 
 function needsSessionCheck(pathname: string): boolean {
     // /admin/* except /admin/login
@@ -103,61 +119,45 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 2. Global rate limit (SEC-09)
+    // 2. Global rate limit (SEC-09) — API routes only, 200 req/min per IP
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
 
-    const globalRl = getGlobalRateLimiter();
-    if (globalRl) {
-        try {
-            const result = await globalRl.limit(ip);
-
-            if (!result.success) {
-                const retryAfterMs = result.reset - Date.now();
-                const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
-
-                return NextResponse.json(
-                    { message: 'Too many requests' },
-                    {
-                        status: 429,
-                        headers: {
-                            'Retry-After': String(retryAfterSec),
-                            'X-RateLimit-Limit': String(result.limit),
-                            'X-RateLimit-Remaining': String(result.remaining),
-                        },
-                    }
-                );
+    // Only rate-limit API routes — page navigations should never be throttled
+    const isApiRoute = pathname.startsWith('/api/');
+    const globalResult = isApiRoute
+        ? await upstashRateLimit(`rl:global:${ip}`, 200, 60)
+        : { limited: false, limit: 200, remaining: 200, reset: 0 };
+    if (globalResult.limited) {
+        const retryAfterSec = Math.max(1, Math.ceil((globalResult.reset - Date.now()) / 1000));
+        return NextResponse.json(
+            { message: 'Too many requests' },
+            {
+                status: 429,
+                headers: {
+                    'Retry-After': String(retryAfterSec),
+                    'X-RateLimit-Limit': String(globalResult.limit),
+                    'X-RateLimit-Remaining': String(globalResult.remaining),
+                },
             }
-        } catch {
-            // Fail open — allow request if Redis is unreachable
-        }
+        );
     }
 
-    // 3. Auth-tier rate limit for NextAuth paths (SEC-07 partial)
+    // 3. Auth-tier rate limit for NextAuth paths (SEC-07 partial) — 5 req/min
     if (AUTH_RATE_LIMIT_PATHS.some(path => pathname.startsWith(path))) {
-        const authRl = getAuthRateLimiter();
-        if (authRl) {
-            try {
-                const result = await authRl.limit(ip);
-
-                if (!result.success) {
-                    const retryAfterMs = result.reset - Date.now();
-                    const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
-
-                    return NextResponse.json(
-                        { message: 'Too many requests. Please try again later.' },
-                        {
-                            status: 429,
-                            headers: {
-                                'Retry-After': String(retryAfterSec),
-                                'X-RateLimit-Limit': String(result.limit),
-                                'X-RateLimit-Remaining': String(result.remaining),
-                            },
-                        }
-                    );
+        const authResult = await upstashRateLimit(`rl:auth:${ip}`, 5, 60);
+        if (authResult.limited) {
+            const retryAfterSec = Math.max(1, Math.ceil((authResult.reset - Date.now()) / 1000));
+            return NextResponse.json(
+                { message: 'Too many requests. Please try again later.' },
+                {
+                    status: 429,
+                    headers: {
+                        'Retry-After': String(retryAfterSec),
+                        'X-RateLimit-Limit': String(authResult.limit),
+                        'X-RateLimit-Remaining': String(authResult.remaining),
+                    },
                 }
-            } catch {
-                // Fail open — allow request if Redis is unreachable
-            }
+            );
         }
     }
 
@@ -168,29 +168,14 @@ export async function middleware(request: NextRequest) {
 
         const isLoggedIn = !!sessionToken;
 
-        // 4a. Admin route protection: return 404 for non-admin users (AUTH-01, AUTH-02)
+        // 4a. Admin route protection: redirect unauthenticated users to login
+        // Role check (ADMIN) is handled by the admin layout via useSession()
         const isAdminRoute = pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login');
         if (isAdminRoute) {
             if (!sessionToken) {
                 const loginUrl = new URL('/admin/login', request.url);
                 return NextResponse.redirect(loginUrl);
             }
-
-            // Decode encrypted JWT to check role claim (NextAuth v5 uses JWE)
-            try {
-                const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-                if (!token || token.role !== 'ADMIN') {
-                    // Not admin — redirect to admin login instead of 404
-                    const loginUrl = new URL('/admin/login', request.url);
-                    return NextResponse.redirect(loginUrl);
-                }
-            } catch (err) {
-                console.error('Admin JWT decode error:', err);
-                const loginUrl = new URL('/admin/login', request.url);
-                return NextResponse.redirect(loginUrl);
-            }
-
-            // Admin user authenticated — continue
             return NextResponse.next();
         }
 

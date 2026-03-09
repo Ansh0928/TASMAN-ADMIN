@@ -74,7 +74,7 @@ export default function AdminDashboard() {
         return (
             <div className="text-center py-12">
                 <p className="text-theme-text-muted">Failed to load dashboard. Make sure you are logged in as admin.</p>
-                <Link href="/auth/login" className="text-theme-accent hover:underline mt-2 inline-block">
+                <Link href="/admin/login" className="text-theme-accent hover:underline mt-2 inline-block">
                     Go to Login
                 </Link>
             </div>
