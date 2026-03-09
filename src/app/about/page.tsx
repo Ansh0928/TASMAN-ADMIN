@@ -56,7 +56,7 @@ export default function AboutPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                         <div>
                             <p className="text-[#FF8543] font-bold tracking-widest uppercase text-xs mb-3">Who We Are</p>
-                            <h2 className="font-serif text-3xl font-bold text-theme-text mb-4">Tasman Star Seafood Market</h2>
+                            <h2 className="font-serif text-3xl font-bold text-theme-text mb-4">Tasman Star Seafoods</h2>
                             <p className="text-theme-text-muted leading-relaxed mb-3">
                                 From a small Gold Coast operation to a complete seafood supply chain — our own trawler fleet, two retail stores, wholesale, and freight across the east coast.
                             </p>

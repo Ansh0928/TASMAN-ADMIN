@@ -55,7 +55,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
     const isOutOfStock = product.stockQuantity <= 0;
 
     return (
-        <div className={gridMode ? "w-full" : "snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]"}>
+        <article className={gridMode ? "w-full" : "snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]"}>
             <Link
                 href={`/product/${product.slug}`}
                 className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent active:border-theme-accent transition-all group h-full flex flex-col"
@@ -133,6 +133,6 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                     </div>
                 </div>
             </Link>
-        </div>
+        </article>
     );
 }
