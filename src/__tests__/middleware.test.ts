@@ -1,31 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Use vi.hoisted() for mock references consistent with project patterns
-const mockLimit = vi.hoisted(() => vi.fn());
-const mockSlidingWindow = vi.hoisted(() => vi.fn());
-const mockRatelimitConstructor = vi.hoisted(() => vi.fn());
-const mockRedisConstructor = vi.hoisted(() => vi.fn());
-
-vi.mock('@upstash/ratelimit', () => {
-    class MockRatelimit {
-        limit: typeof mockLimit;
-        constructor(...args: any[]) {
-            mockRatelimitConstructor(...args);
-            this.limit = mockLimit;
-        }
-        static slidingWindow = mockSlidingWindow;
-    }
-    return { Ratelimit: MockRatelimit };
-});
-
-vi.mock('@upstash/redis', () => {
-    class MockRedis {
-        constructor(...args: any[]) {
-            mockRedisConstructor(...args);
-        }
-    }
-    return { Redis: MockRedis };
-});
+const originalFetch = global.fetch;
+let fetchMock: ReturnType<typeof vi.fn>;
 
 // Helper to create mock NextRequest objects
 function createMockRequest(options: {
@@ -58,20 +34,48 @@ function createMockRequest(options: {
     } as any;
 }
 
+// Helper to mock a fetch pipeline response with a given ZCARD count
+function mockFetchPipelineAllowed() {
+    fetchMock.mockResolvedValue({
+        ok: true,
+        json: async () => [
+            { result: 'OK' },
+            { result: 1 },
+            { result: 1 },    // ZCARD: count=1, well under any limit
+            { result: 1 },
+        ],
+    } as Response);
+}
+
+function mockFetchPipelineLimited(count: number = 201) {
+    fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: async () => [
+            { result: 'OK' },
+            { result: 1 },
+            { result: count },  // ZCARD: count exceeds limit
+            { result: 1 },
+        ],
+    } as Response);
+}
+
 describe('Middleware', () => {
     beforeEach(() => {
         vi.resetModules();
         vi.clearAllMocks();
+        fetchMock = vi.fn();
+        global.fetch = fetchMock;
         // Set Upstash env vars so rate limiters initialize
         process.env.UPSTASH_REDIS_REST_URL = 'https://fake.upstash.io';
         process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
-        // Default: allow rate limit
-        mockLimit.mockResolvedValue({
-            success: true,
-            limit: 100,
-            remaining: 99,
-            reset: Date.now() + 60000,
-        });
+        // Default: allow rate limit (low count)
+        mockFetchPipelineAllowed();
+    });
+
+    afterEach(() => {
+        global.fetch = originalFetch;
+        delete process.env.UPSTASH_REDIS_REST_URL;
+        delete process.env.UPSTASH_REDIS_REST_TOKEN;
     });
 
     describe('CSRF Origin validation (SEC-10)', () => {
@@ -173,12 +177,9 @@ describe('Middleware', () => {
 
     describe('Global rate limiting (SEC-09)', () => {
         it('returns 429 when global rate limit is exceeded', async () => {
-            mockLimit.mockResolvedValueOnce({
-                success: false,
-                limit: 100,
-                remaining: 0,
-                reset: Date.now() + 60000,
-            });
+            // Reset default mock and set up limited response
+            fetchMock.mockReset();
+            mockFetchPipelineLimited(201); // exceeds 200 limit in middleware
 
             const { middleware } = await import('@/middleware');
 
@@ -195,13 +196,6 @@ describe('Middleware', () => {
         });
 
         it('passes through when under global rate limit', async () => {
-            mockLimit.mockResolvedValueOnce({
-                success: true,
-                limit: 100,
-                remaining: 99,
-                reset: Date.now() + 60000,
-            });
-
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
