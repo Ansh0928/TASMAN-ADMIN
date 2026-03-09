@@ -48,7 +48,7 @@ export default function CustomerLoginPage() {
         <div className="min-h-[80vh] flex items-center justify-center bg-theme-primary px-4 py-12">
             <div className="w-full max-w-sm space-y-6">
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold text-theme-text">Welcome back</h1>
+                    <h1 className="text-3xl font-bold text-theme-text">Welcome back to Tasman Star</h1>
                     <p className="text-theme-text-muted mt-1 text-sm">Sign in to your customer account</p>
                 </div>
 
@@ -75,7 +75,7 @@ export default function CustomerLoginPage() {
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-theme-text mb-1.5">Email</label>
                         <input type="email" id="email" name="email" required disabled={busy}
-                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                             placeholder="you@example.com" />
                     </div>
                     <div>
@@ -84,11 +84,11 @@ export default function CustomerLoginPage() {
                             <Link href="/auth/forgot-password" className="text-sm text-theme-accent hover:underline">Forgot password?</Link>
                         </div>
                         <input type="password" id="password" name="password" required disabled={busy}
-                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                            className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                             placeholder="••••••••" />
                     </div>
                     <button type="submit" disabled={busy}
-                        className="w-full bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
+                        className="w-full bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-colors transition-opacity">
                         {isLoading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>

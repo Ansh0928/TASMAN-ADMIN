@@ -77,7 +77,7 @@ export default function Home() {
             {/* Hero Banner */}
             <div className="w-full bg-[#0A192F] py-16 md:py-24">
                 <div className="container mx-auto px-6 text-center">
-                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 font-serif">
                         Tasman Star Seafoods
                     </h1>
                     <p className="text-[#FF8543] font-semibold tracking-[0.3em] uppercase text-sm mb-4">Our Business</p>
@@ -119,12 +119,15 @@ export default function Home() {
 
                                         {/* Text */}
                                         <div className="relative z-10 mt-auto p-5">
-                                            <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight mb-1.5" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                            <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-tight mb-1.5 font-serif">
                                                 {card.title}
                                             </h2>
                                             <p className="text-slate-300 text-sm leading-relaxed">
                                                 {card.description}
                                             </p>
+                                            <span className="text-theme-accent text-sm font-medium mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 lg:opacity-0 transition-opacity">
+                                                Learn more →
+                                            </span>
                                         </div>
                                     </Link>
                                 </div>
@@ -155,7 +158,7 @@ export default function Home() {
 
                                 {/* Text */}
                                 <div className="relative z-10 mt-auto p-6">
-                                    <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                                    <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight leading-tight mb-2 font-serif">
                                         {ONLINE_STORE.title}
                                     </h2>
                                     <p className="text-slate-300 text-sm leading-relaxed mb-4">
@@ -181,7 +184,23 @@ export default function Home() {
                 </section>
 
                 {/* Best Buys */}
-                {!loading && bestBuys.length > 0 && (
+                {loading ? (
+                    <section className="container mx-auto max-w-7xl pb-16 px-4">
+                        <div className="animate-pulse py-8">
+                            <div className="h-8 bg-theme-secondary rounded w-48 mb-2"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-32 mb-6"></div>
+                            <div className="flex gap-3 overflow-hidden">
+                                {[1, 2, 3, 4, 5].map((i) => (
+                                    <div key={i} className="flex-shrink-0 w-[200px]">
+                                        <div className="aspect-square bg-theme-secondary rounded-xl mb-3"></div>
+                                        <div className="h-4 bg-theme-secondary rounded w-3/4 mb-2"></div>
+                                        <div className="h-3 bg-theme-secondary rounded w-1/2"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                ) : bestBuys.length > 0 ? (
                     <section className="container mx-auto max-w-7xl pb-16">
                         <ProductCarousel
                             title="Best Buys"
@@ -193,7 +212,7 @@ export default function Home() {
                             ))}
                         </ProductCarousel>
                     </section>
-                )}
+                ) : null}
 
             </main>
         </div>

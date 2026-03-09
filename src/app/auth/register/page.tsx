@@ -90,35 +90,35 @@ export default function RegisterPage() {
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-theme-text mb-1.5">Full Name</label>
                                 <input type="text" id="name" name="name" required disabled={busy}
-                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                                     placeholder="John Doe" />
                             </div>
                             <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-theme-text mb-1.5">Email</label>
                                 <input type="email" id="email" name="email" required disabled={busy}
-                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                                     placeholder="you@example.com" />
                             </div>
                             <div>
                                 <label htmlFor="phone" className="block text-sm font-medium text-theme-text mb-1.5">Phone <span className="text-theme-text-muted">(optional)</span></label>
                                 <input type="tel" id="phone" name="phone" disabled={busy}
-                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                                     placeholder="+61 7 5555 0000" />
                             </div>
                             <div>
                                 <label htmlFor="password" className="block text-sm font-medium text-theme-text mb-1.5">Password</label>
                                 <input type="password" id="password" name="password" required disabled={busy}
-                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                                     placeholder="Min. 8 characters" />
                             </div>
                             <div>
                                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-theme-text mb-1.5">Confirm Password</label>
                                 <input type="password" id="confirmPassword" name="confirmPassword" required disabled={busy}
-                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent disabled:opacity-50"
+                                    className="w-full px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text focus:outline-none focus:border-theme-accent transition-colors disabled:opacity-50"
                                     placeholder="••••••••" />
                             </div>
                             <button type="submit" disabled={busy}
-                                className="w-full bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                className="w-full bg-theme-accent text-white py-3 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 transition-colors transition-opacity">
                                 {isLoading ? 'Creating account...' : 'Create Account'}
                             </button>
                         </form>

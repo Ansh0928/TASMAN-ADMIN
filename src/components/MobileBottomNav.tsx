@@ -1,15 +1,15 @@
 'use client';
 
-import { Home, ShoppingBag, Tag, Fish, User } from 'lucide-react';
+import { Home, Tag, Fish, User, Search } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 const BOTTOM_NAV = [
     { href: '/', label: 'Home', icon: Home },
-    { href: '/our-products', label: 'Products', icon: Fish },
+    { href: '/our-products', label: 'Shop', icon: Fish },
     { href: '/deals', label: 'Deals', icon: Tag },
-    { href: '/wholesale', label: 'Wholesale', icon: ShoppingBag },
     { href: '/account', label: 'Account', icon: User },
+    { href: '/search', label: 'Search', icon: Search },
 ];
 
 export default function MobileBottomNav() {

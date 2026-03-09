@@ -79,7 +79,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                             e.stopPropagation();
                             inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id);
                         }}
-                        className="absolute top-1 right-1 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+                        className="absolute top-1 right-1 z-10 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
                         aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
                     >
                         <Heart size={14} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-white'} />
@@ -87,7 +87,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
 
                     {/* Badge */}
                     {badge && (
-                        <span className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm ${
+                        <span className={`absolute top-2 left-2 text-white text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm ${
                             badge === 'Best Buy' ? 'bg-emerald-500' :
                             badge === 'Fresh Pick' ? 'bg-[#FF7F50]' :
                             'bg-theme-accent'
@@ -104,7 +104,7 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                                 added
                                     ? 'bg-emerald-500 scale-110'
                                     : 'bg-theme-accent hover:scale-110'
-                            }`}
+                            } focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2`}
                             aria-label="Add to cart"
                         >
                             {added ? <Check size={16} /> : '+'}
@@ -125,12 +125,10 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                     <h3 className="text-theme-text font-semibold text-sm leading-tight line-clamp-2 mb-1 group-hover:text-theme-accent transition-colors">
                         {product.name}
                     </h3>
-                    <p className="text-theme-text-muted text-xs mb-2">
-                        {product.unit}
-                    </p>
                     <div className="flex items-center justify-between mt-auto">
                         <span className="text-theme-accent font-bold text-base">
                             ${parseFloat(product.price).toFixed(2)}
+                            <span className="text-theme-text-muted font-normal text-xs ml-0.5">/{product.unit.toLowerCase()}</span>
                         </span>
                     </div>
                 </div>
