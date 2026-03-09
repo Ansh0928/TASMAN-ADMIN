@@ -20,8 +20,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     { id: '4', name: 'Ben', role: 'HR', image: '/assets/team/ben.png' },
     { id: '5', name: 'Harry', role: 'PRODUCTION TEAM', image: '/assets/team/harry.png' },
     { id: '6', name: 'Bella', role: 'CUSTOMER SERVICE', image: '/assets/team/bella.png' },
-    { id: '7', name: 'Taka', role: 'SUSHI CHEF · 12+ YEARS EXPERIENCE', image: '/assets/team/taka.jpg' },
-    { id: '8', name: 'Ichy', role: 'SUSHI CHEF', image: '/assets/team/ichy.png' },
+    { id: '7', name: 'Ichy', role: 'SUSHI CHEF', image: '/assets/team/ichy.png' },
 ];
 
 const VALUES = [
