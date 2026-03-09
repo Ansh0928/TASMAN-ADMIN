@@ -4,8 +4,9 @@ import { Handshake, Mail } from 'lucide-react';
 import { SpinningLogos } from '@/components/ui/spinning-logos';
 
 export const metadata: Metadata = {
-    title: 'Our Partners | Tasman Star Seafoods',
+    title: 'Our Partners',
     description: 'Discover Tasman Star\'s trusted supply chain partners — from the Sydney Fish Market to local commercial fishers across Australia\'s east coast.',
+    alternates: { canonical: '/our-partner' },
     openGraph: {
         title: 'Our Partners | Tasman Star Seafoods',
         description: 'Trusted partnerships powering Australia\'s freshest seafood supply chain.',

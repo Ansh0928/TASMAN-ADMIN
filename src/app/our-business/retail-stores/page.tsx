@@ -3,8 +3,9 @@ import { MapPin, Clock, Phone } from 'lucide-react';
 import { StaggerTestimonials } from '@/components/ui/stagger-testimonials';
 
 export const metadata: Metadata = {
-    title: 'Our Retail Stores | Tasman Star Seafoods',
+    title: 'Our Retail Stores',
     description: 'Visit our fresh seafood stores at Labrador and Varsity Lakes on the Gold Coast. Open daily with the freshest catch from our own fleet.',
+    alternates: { canonical: '/our-business/retail-stores' },
     openGraph: {
         title: 'Our Retail Stores | Tasman Star Seafoods',
         description: 'Visit our direct-to-public markets to pick your own fresh catch.',

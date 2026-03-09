@@ -23,13 +23,37 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
 
 export const metadata: Metadata = {
-  title: 'Tasman Star Market | Premium Seafood',
-  description: 'Fresh from the ocean, delivered to your door. Premium seafood from Tasman Star — prawns, oysters, salmon, platters & more.',
+  title: {
+    default: 'Tasman Star Seafoods | Premium Seafood Gold Coast',
+    template: '%s | Tasman Star Seafoods',
+  },
+  description: 'Fresh from the ocean, delivered to your door. Premium seafood from Tasman Star Seafoods — prawns, oysters, salmon, platters & more. Gold Coast\'s trusted seafood market.',
+  metadataBase: new URL('https://tasman-admin.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'Tasman Star Seafood Market',
+    title: 'Tasman Star Seafoods | Premium Seafood Gold Coast',
     description: 'Fresh from the ocean, delivered to your door. Premium seafood — prawns, oysters, salmon, platters & more.',
     type: 'website',
-    siteName: 'Tasman Star Seafood Market',
+    siteName: 'Tasman Star Seafoods',
+    locale: 'en_AU',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Tasman Star Seafoods | Premium Seafood Gold Coast',
+    description: 'Fresh from the ocean, delivered to your door. Premium seafood — prawns, oysters, salmon, platters & more.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 }
 
@@ -130,6 +154,54 @@ export default async function RootLayout({
           </CartProvider>
         </ThemeProvider>
         </SessionProvider>
+        {/* Site-wide structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'Organization',
+                  '@id': 'https://tasman-admin.vercel.app/#organization',
+                  name: 'Tasman Star Seafoods',
+                  url: 'https://tasman-admin.vercel.app',
+                  logo: {
+                    '@type': 'ImageObject',
+                    url: 'https://tasman-admin.vercel.app/assets/tasman-star-logo.png',
+                  },
+                  description: 'Gold Coast\'s trusted seafood destination — wholesale, retail, fleet, and freight all under one roof.',
+                  telephone: '+61755290844',
+                  email: 'admin@tasmanstarseafood.com',
+                  foundingDate: '2012',
+                  address: [
+                    { '@type': 'PostalAddress', streetAddress: '5-7 Olsen Ave', addressLocality: 'Labrador', addressRegion: 'QLD', postalCode: '4215', addressCountry: 'AU' },
+                    { '@type': 'PostalAddress', streetAddress: '201 Varsity Parade', addressLocality: 'Varsity Lakes', addressRegion: 'QLD', postalCode: '4227', addressCountry: 'AU' },
+                  ],
+                  sameAs: [
+                    'https://www.facebook.com/TasmanStarSeafoodMarket/',
+                    'https://www.instagram.com/tasmanstarseafoodmarket/',
+                  ],
+                },
+                {
+                  '@type': 'WebSite',
+                  '@id': 'https://tasman-admin.vercel.app/#website',
+                  url: 'https://tasman-admin.vercel.app',
+                  name: 'Tasman Star Seafoods',
+                  publisher: { '@id': 'https://tasman-admin.vercel.app/#organization' },
+                  potentialAction: {
+                    '@type': 'SearchAction',
+                    target: {
+                      '@type': 'EntryPoint',
+                      urlTemplate: 'https://tasman-admin.vercel.app/search?q={search_term_string}',
+                    },
+                    'query-input': 'required name=search_term_string',
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </body>
     </html>
   )

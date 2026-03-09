@@ -4,8 +4,9 @@ import { ChevronLeft, SearchX } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-    title: 'Search | Tasman Star Seafoods',
+    title: 'Search',
     description: 'Search our full range of premium fresh seafood products.',
+    alternates: { canonical: '/search' },
     openGraph: {
         title: 'Search | Tasman Star Seafoods',
         description: 'Search our full range of premium fresh seafood products.',

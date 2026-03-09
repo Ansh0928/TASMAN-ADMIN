@@ -3,8 +3,9 @@ import { Globe } from 'lucide-react';
 import OnlineDeliveryProducts from './OnlineDeliveryProducts';
 
 export const metadata: Metadata = {
-    title: 'Online & Delivery | Tasman Star Seafoods',
+    title: 'Online & Delivery',
     description: 'Order premium seafood online and get it delivered fresh to your door on the Gold Coast. Free delivery on orders over $150.',
+    alternates: { canonical: '/our-business/online-delivery' },
     openGraph: {
         title: 'Online & Delivery | Tasman Star Seafoods',
         description: 'Premium seafood delivered fresh to your door. Order online and enjoy restaurant-quality seafood at home.',

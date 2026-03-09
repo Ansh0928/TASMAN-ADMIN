@@ -4,8 +4,9 @@ import type { TeamMember } from '@/components/ui/team-showcase';
 import TeamShowcase from '@/components/ui/team-showcase';
 
 export const metadata: Metadata = {
-    title: 'About Us | Tasman Star Seafoods',
-    description: 'Learn about Tasman Star — Gold Coast\'s trusted seafood destination with 13+ years of experience in wholesale, retail, fleet, and freight.',
+    title: 'About Us',
+    description: 'Learn about Tasman Star Seafoods — Gold Coast\'s trusted seafood destination with 13+ years of experience in wholesale, retail, fleet, and freight.',
+    alternates: { canonical: '/about' },
     openGraph: {
         title: 'About Us | Tasman Star Seafoods',
         description: 'Gold Coast\'s trusted seafood destination — wholesale, retail, fleet, and freight all under one roof.',
@@ -154,16 +155,57 @@ export default function AboutPage() {
                 dangerouslySetInnerHTML={{
                     __html: JSON.stringify({
                         '@context': 'https://schema.org',
-                        '@type': 'LocalBusiness',
-                        name: 'Tasman Star Seafoods',
-                        description: 'Gold Coast\'s trusted seafood destination — wholesale, retail, fleet, and freight.',
-                        url: 'https://tasmanstar.com.au',
-                        telephone: '+61755290844',
-                        address: [
-                            { '@type': 'PostalAddress', streetAddress: '5-7 Olsen Ave', addressLocality: 'Labrador', addressRegion: 'QLD', postalCode: '4215', addressCountry: 'AU' },
-                            { '@type': 'PostalAddress', streetAddress: '201 Varsity Parade', addressLocality: 'Varsity Lakes', addressRegion: 'QLD', postalCode: '4227', addressCountry: 'AU' },
+                        '@graph': [
+                            {
+                                '@type': 'LocalBusiness',
+                                '@id': 'https://tasman-admin.vercel.app/about#localbusiness',
+                                name: 'Tasman Star Seafoods',
+                                description: 'Gold Coast\'s trusted seafood destination — wholesale, retail, fleet, and freight.',
+                                url: 'https://tasman-admin.vercel.app',
+                                telephone: '+61755290844',
+                                address: [
+                                    { '@type': 'PostalAddress', streetAddress: '5-7 Olsen Ave', addressLocality: 'Labrador', addressRegion: 'QLD', postalCode: '4215', addressCountry: 'AU' },
+                                    { '@type': 'PostalAddress', streetAddress: '201 Varsity Parade', addressLocality: 'Varsity Lakes', addressRegion: 'QLD', postalCode: '4227', addressCountry: 'AU' },
+                                ],
+                                openingHours: 'Mo-Su 07:00-18:00',
+                                sameAs: [
+                                    'https://www.facebook.com/TasmanStarSeafoodMarket/',
+                                    'https://www.instagram.com/tasmanstarseafoodmarket/',
+                                ],
+                                image: 'https://tasman-admin.vercel.app/assets/tasman-star-logo.png',
+                                priceRange: '$$',
+                            },
+                            {
+                                '@type': 'FAQPage',
+                                mainEntity: [
+                                    {
+                                        '@type': 'Question',
+                                        name: 'Where are Tasman Star Seafoods stores located?',
+                                        acceptedAnswer: { '@type': 'Answer', text: 'Tasman Star Seafoods has two retail stores on the Gold Coast: 5-7 Olsen Ave, Labrador QLD 4215 and 201 Varsity Parade, Varsity Lakes QLD 4227. Both stores are open 7 days a week, 7am to 6pm.' },
+                                    },
+                                    {
+                                        '@type': 'Question',
+                                        name: 'What services does Tasman Star Seafoods offer?',
+                                        acceptedAnswer: { '@type': 'Answer', text: 'Tasman Star Seafoods offers retail seafood sales, wholesale supply for restaurants and grocers, their own fishing fleet (trawlers), and temperature-controlled transport and freight services across the east coast of Australia.' },
+                                    },
+                                    {
+                                        '@type': 'Question',
+                                        name: 'Does Tasman Star Seafoods deliver seafood?',
+                                        acceptedAnswer: { '@type': 'Answer', text: 'Yes, Tasman Star Seafoods offers online ordering with delivery. They also run their own temperature-controlled logistics fleet for wholesale deliveries across the Gold Coast and east coast of Australia.' },
+                                    },
+                                    {
+                                        '@type': 'Question',
+                                        name: 'How long has Tasman Star Seafoods been in business?',
+                                        acceptedAnswer: { '@type': 'Answer', text: 'Tasman Star Seafoods has been serving the Gold Coast for over 13 years, growing from a small operation to a complete seafood supply chain with their own trawler fleet, retail stores, wholesale division, and freight services.' },
+                                    },
+                                    {
+                                        '@type': 'Question',
+                                        name: 'Can I buy wholesale seafood from Tasman Star?',
+                                        acceptedAnswer: { '@type': 'Answer', text: 'Yes, Tasman Star Seafoods supplies wholesale seafood to restaurants, cafes, and independent grocers. You can apply for a wholesale account through their website to access wholesale pricing and ordering.' },
+                                    },
+                                ],
+                            },
                         ],
-                        openingHours: 'Mo-Su 07:00-18:00',
                     }),
                 }}
             />

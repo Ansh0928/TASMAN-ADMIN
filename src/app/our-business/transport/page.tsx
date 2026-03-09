@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import { Truck, Snowflake, ShieldCheck, Route, Phone, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Transport & Fish Freight | Tasman Star Seafoods',
+    title: 'Transport & Fish Freight',
     description: 'Temperature-controlled seafood logistics across QLD, NSW, and beyond. Our refrigerated fleet ensures your seafood arrives at peak freshness.',
+    alternates: { canonical: '/our-business/transport' },
     openGraph: {
         title: 'Transport & Fish Freight | Tasman Star Seafoods',
         description: 'Our dedicated fleet of refrigerated vehicles ensures seafood arrives at peak freshness.',

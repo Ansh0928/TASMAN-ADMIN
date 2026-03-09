@@ -5,8 +5,9 @@ import { prisma } from '@/lib/prisma';
 import { DealsGrid } from './DealsGrid';
 
 export const metadata: Metadata = {
-    title: 'Deals & Specials | Tasman Star Seafoods',
+    title: 'Deals & Specials',
     description: 'Discover daily deals and special offers on premium fresh seafood from Tasman Star. Updated daily at 6 AM AEST.',
+    alternates: { canonical: '/deals' },
     openGraph: {
         title: 'Deals & Specials | Tasman Star Seafoods',
         description: 'Fresh from the boats, straight to your table. Grab these limited-time deals.',

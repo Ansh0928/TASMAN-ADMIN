@@ -53,8 +53,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 
     return {
-        title: `${product.name} | Tasman Star Seafoods`,
+        title: product.name,
         description: product.description || `Buy fresh ${product.name} from Tasman Star Seafoods. Premium quality seafood from the Gold Coast.`,
+        alternates: { canonical: `/product/${slug}` },
         openGraph: {
             title: `${product.name} | Tasman Star Seafoods`,
             description: product.description || `Buy fresh ${product.name} from Tasman Star Seafoods.`,

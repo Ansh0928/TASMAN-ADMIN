@@ -3,8 +3,9 @@ import Link from 'next/link';
 import { ClipboardList, Phone, Mail, Truck, Scissors, Star, MessageSquare } from 'lucide-react';
 
 export const metadata: Metadata = {
-    title: 'Wholesale Supply | Tasman Star Seafoods',
+    title: 'Wholesale Supply',
     description: 'Premium wholesale seafood supply for restaurants, cafes, and grocers. Custom filleting, daily deliveries, and exclusive access to rare species.',
+    alternates: { canonical: '/our-business/wholesale' },
     openGraph: {
         title: 'Wholesale Supply | Tasman Star Seafoods',
         description: 'Providing chefs and grocers with uncompromised quality, straight off the boats.',

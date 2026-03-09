@@ -3,8 +3,9 @@ import { ShoppingBag } from 'lucide-react';
 import OnlineDeliveryProducts from '@/app/our-business/online-delivery/OnlineDeliveryProducts';
 
 export const metadata: Metadata = {
-    title: 'Our Products | Tasman Star Seafoods',
+    title: 'Our Products',
     description: 'Browse our full range of premium Australian seafood — prawns, fish fillets, oysters, crabs, shellfish and more. Gold Coast\'s freshest catch.',
+    alternates: { canonical: '/our-products' },
     openGraph: {
         title: 'Our Products | Tasman Star Seafoods',
         description: 'Browse premium Australian seafood. Fresh from the trawler to your table.',
