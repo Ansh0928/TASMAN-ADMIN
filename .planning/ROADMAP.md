@@ -169,7 +169,7 @@ Plans:
 - [ ] 09-01: TBD
 
 ### Phase 10: Final Verification
-**Goal**: Confirm every user flow works end-to-end in production
+**Goal**: Confirm every user flow works end-to-end in production, fix map layout for side-by-side species display with product links
 **Depends on**: Phase 7, Phase 8, Phase 9
 **Requirements**: None (verification of all prior phases)
 **Complexity**: S
@@ -179,10 +179,13 @@ Plans:
   3. An admin can log in, manage products/orders/customers, view analytics, and export data
   4. All flows above work on mobile without layout issues
   5. Security headers, rate limiting, and role-based access are verified in production
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md -- Fix 4 failing tests (rate-limit + middleware mock alignment with fetch-based implementation)
+- [ ] 10-02-PLAN.md -- Map layout fix: side-by-side info panel, species-to-product links, remove unmatched species
+- [ ] 10-03-PLAN.md -- Automated verification suite (build, tests, security headers) + map visual checkpoint
+- [ ] 10-04-PLAN.md -- Comprehensive production flow verification (auth, checkout, wholesale, admin, mobile, SEO)
 
 ## Progress
 
@@ -200,4 +203,4 @@ Phases execute in numeric order. Phases 2, 3, 4, 6, 9 can run in parallel after 
 | 7. Frontend Responsive Pass | 0/? | Not started | - |
 | 8. Fix Failing Tests | 0/? | Not started | - |
 | 9. Infrastructure | 0/? | Not started | - |
-| 10. Final Verification | 0/? | Not started | - |
+| 10. Final Verification | 0/4 | Planned | - |
