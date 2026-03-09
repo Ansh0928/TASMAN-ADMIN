@@ -8,7 +8,7 @@ describe('rate-limit module', () => {
         vi.resetModules();
         vi.clearAllMocks();
         fetchMock = vi.fn();
-        global.fetch = fetchMock;
+        global.fetch = fetchMock as typeof fetch;
         // Clear env vars by default
         delete process.env.UPSTASH_REDIS_REST_URL;
         delete process.env.UPSTASH_REDIS_REST_TOKEN;

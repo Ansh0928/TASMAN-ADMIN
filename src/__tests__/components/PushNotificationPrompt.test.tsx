@@ -64,7 +64,6 @@ function setupPushSupport(options: {
         // Delete properties so 'in' operator returns false
         // @ts-expect-error - deleting browser API for test
         delete navigator.serviceWorker;
-        // @ts-expect-error - deleting browser API for test
         delete (window as any).PushManager;
     }
 

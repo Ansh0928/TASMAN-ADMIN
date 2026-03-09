@@ -64,7 +64,7 @@ describe('Middleware', () => {
         vi.resetModules();
         vi.clearAllMocks();
         fetchMock = vi.fn();
-        global.fetch = fetchMock;
+        global.fetch = fetchMock as typeof fetch;
         // Set Upstash env vars so rate limiters initialize
         process.env.UPSTASH_REDIS_REST_URL = 'https://fake.upstash.io';
         process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
