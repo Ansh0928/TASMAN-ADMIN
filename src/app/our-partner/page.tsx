@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Handshake, Mail } from 'lucide-react';
 import { SpinningLogos } from '@/components/ui/spinning-logos';
+import { LogoCloud } from '@/components/ui/logo-cloud';
 
 export const metadata: Metadata = {
     title: 'Our Partners',
@@ -13,6 +14,24 @@ export const metadata: Metadata = {
         type: 'website',
     },
 };
+
+const partnerLogos = [
+    {
+        src: '/assets/partners/sydney-fish-market.svg',
+        alt: 'Sydney Fish Market Logo',
+        label: 'Sydney Fish Market',
+    },
+    {
+        src: '/assets/partners/pacific-west.png',
+        alt: 'Pacific West Logo',
+        label: 'Pacific West',
+    },
+    {
+        src: '/assets/partners/tasman-star.png',
+        alt: 'Tasman Star Seafoods Logo',
+        label: 'Tasman Star Seafoods',
+    },
+];
 
 export default function OurPartnerPage() {
     return (
@@ -34,7 +53,7 @@ export default function OurPartnerPage() {
 
             <main className="container mx-auto px-4 md:px-8 py-16 max-w-5xl flex flex-col gap-16">
 
-                {/* Spinning Partner Logos */}
+                {/* Partner Logo Cloud */}
                 <section className="flex flex-col items-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-2 text-theme-text tracking-tight">
                         Our Supply Partners
@@ -42,6 +61,11 @@ export default function OurPartnerPage() {
                     <p className="text-theme-text-muted text-center mb-4 max-w-lg">
                         The trusted partners powering our seafood supply chain.
                     </p>
+                    <LogoCloud logos={partnerLogos} />
+                </section>
+
+                {/* Spinning Partner Logos */}
+                <section className="flex flex-col items-center">
                     <SpinningLogos />
                 </section>
 
