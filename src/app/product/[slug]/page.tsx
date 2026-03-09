@@ -203,9 +203,16 @@ export default async function ProductPage({ params }: Props) {
                         '@type': 'Product',
                         name: product.name,
                         description: product.description || `Fresh ${product.name} from Tasman Star Seafoods`,
-                        image: product.imageUrls[0] || undefined,
+                        image: product.imageUrls.length > 0 ? product.imageUrls : undefined,
+                        sku: product.id,
+                        category: product.category?.name,
+                        brand: {
+                            '@type': 'Brand',
+                            name: 'Tasman Star Seafoods',
+                        },
                         offers: {
                             '@type': 'Offer',
+                            url: `https://tasman-admin.vercel.app/product/${product.slug}`,
                             price: Number(product.price).toFixed(2),
                             priceCurrency: 'AUD',
                             availability: product.isAvailable && product.stockQuantity > 0
@@ -215,8 +222,25 @@ export default async function ProductPage({ params }: Props) {
                                 '@type': 'Organization',
                                 name: 'Tasman Star Seafoods',
                             },
+                            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         },
-                        category: product.category?.name,
+                    }),
+                }}
+            />
+
+            {/* JSON-LD Breadcrumb Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tasman-admin.vercel.app' },
+                            { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://tasman-admin.vercel.app/our-business/online-delivery' },
+                            ...(product.category ? [{ '@type': 'ListItem', position: 3, name: product.category.name, item: `https://tasman-admin.vercel.app/our-products?category=${product.category.slug}` }] : []),
+                            { '@type': 'ListItem', position: product.category ? 4 : 3, name: product.name },
+                        ],
                     }),
                 }}
             />
