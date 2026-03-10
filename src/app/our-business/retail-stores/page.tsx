@@ -19,7 +19,7 @@ export default function RetailStoresPage() {
 
             {/* Header Banner */}
             <div className="w-full h-[50vh] relative overflow-hidden bg-[#0A192F]">
-                <img src="/assets/products/retail-store.webp" alt="Tasman Star Retail Store" className="w-full h-full object-cover" />
+                <img src="/assets/products/store remake.png" alt="Tasman Star Retail Store" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-10 z-10">
                     <div className="container mx-auto px-6 text-center">
@@ -36,7 +36,7 @@ export default function RetailStoresPage() {
                 {/* Labrador Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
                     <div className="w-full md:w-1/2 overflow-hidden min-h-[240px]">
-                        <img src="/assets/products/store-3.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
+                        <img src="/assets/products/labrador store.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                         <div className="inline-block bg-[#FF8543]/10 text-[#FF8543] border border-[#FF8543]/20 text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Local Branch</div>
@@ -53,7 +53,7 @@ export default function RetailStoresPage() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone size={20} className="text-[#FF8543] shrink-0" />
-                                <p>(07) 5555 1234</p>
+                                <p>(07) 5529 2500</p>
                             </div>
                         </div>
                     </div>
@@ -79,7 +79,7 @@ export default function RetailStoresPage() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone size={20} className="text-[#FF8543] shrink-0" />
-                                <p>(07) 5555 9876</p>
+                                <p>(07) 5522 1221</p>
                             </div>
                         </div>
                     </div>
@@ -103,7 +103,7 @@ export default function RetailStoresPage() {
                             '@type': 'LocalBusiness',
                             name: 'Tasman Star Seafoods - Labrador',
                             description: 'Local branch retail store on the Gold Coast',
-                            telephone: '(07) 5555 1234',
+                            telephone: '(07) 5529 2500',
                             address: {
                                 '@type': 'PostalAddress',
                                 streetAddress: '5-7 Olsen Ave',
@@ -119,7 +119,7 @@ export default function RetailStoresPage() {
                             '@type': 'LocalBusiness',
                             name: 'Tasman Star Seafoods - Varsity Lakes',
                             description: 'Flagship seafood retail store',
-                            telephone: '(07) 5555 9876',
+                            telephone: '(07) 5522 1221',
                             address: {
                                 '@type': 'PostalAddress',
                                 streetAddress: '20 Casua Dr',

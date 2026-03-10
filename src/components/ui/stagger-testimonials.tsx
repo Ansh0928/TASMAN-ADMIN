@@ -9,8 +9,12 @@ interface GalleryItem {
 }
 
 const storePhotos: GalleryItem[] = [
+  { src: '/assets/products/oyster-opening.jpg', alt: 'Fresh oyster opening', caption: 'Fresh Oyster Opening' },
+  { src: '/assets/products/carl.jpg', alt: 'Carl at work', caption: 'Carl at Work' },
   { src: '/assets/products/store.webp', alt: 'Store interior', caption: 'Fresh Daily Selection' },
+  { src: '/assets/products/tuna-tail-cut.jpg', alt: 'Tuna tail cut', caption: 'Tuna Tail Cut' },
   { src: '/assets/products/img0821.webp', alt: 'Ocean perch and snapper display', caption: 'Ocean Perch & Snapper' },
+  { src: '/assets/products/yellow-fin-tuna-whole.jpg', alt: 'Yellow Fin Tuna whole', caption: 'Yellow Fin Tuna Whole' },
   { src: '/assets/products/store-2.webp', alt: 'Fresh fish display', caption: 'Premium Fish Display' },
   { src: '/assets/products/storefront-flagship.webp', alt: 'Staff with premium crab display', caption: 'Our Famous Crab Mountain' },
   { src: '/assets/products/store-4.webp', alt: 'Seafood counter', caption: 'Seafood Counter' },
