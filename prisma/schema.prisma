@@ -125,6 +125,7 @@ model Product {
   isAvailable       Boolean     @default(true) @map("is_available")
   isFeatured        Boolean     @default(false) @map("is_featured")
   isTodaysSpecial   Boolean     @default(false) @map("is_todays_special")
+  countryOfOrigin   String      @default("Australia") @map("country_of_origin")
   tags              String[]
   relatedProductIds String[]    @map("related_product_ids")
   createdAt         DateTime    @default(now()) @map("created_at")

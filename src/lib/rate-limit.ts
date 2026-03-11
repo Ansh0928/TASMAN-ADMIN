@@ -1,53 +1,84 @@
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
 import type { NextRequest } from 'next/server';
 
-// --- Lazy singleton Redis client ---
+// --- Upstash REST-based rate limiting (fetch only, no SDK) ---
 
-let _redis: Redis | null = null;
-let _redisChecked = false;
+interface RateLimitResult {
+    limited: boolean;
+    headers: Record<string, string>;
+}
 
-function getRedis(): Redis | null {
-    if (_redisChecked) return _redis;
-    _redisChecked = true;
-
+async function upstashRateLimit(
+    key: string,
+    maxRequests: number,
+    windowSec: number
+): Promise<RateLimitResult> {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    if (!url) {
-        console.warn('[rate-limit] UPSTASH_REDIS_REST_URL not set -- rate limiting disabled');
-        return null;
+    if (!url || !token) {
+        return { limited: false, headers: {} };
     }
 
-    _redis = new Redis({ url, token: token || '' });
-    return _redis;
+    try {
+        const now = Date.now();
+        const windowMs = windowSec * 1000;
+        const windowStart = now - windowMs;
+        const member = `${now}:${Math.random().toString(36).slice(2, 8)}`;
+
+        const pipeline = [
+            ['ZREMRANGEBYSCORE', key, '0', String(windowStart)],
+            ['ZADD', key, String(now), member],
+            ['ZCARD', key],
+            ['PEXPIRE', key, String(windowMs)],
+        ];
+
+        const resp = await fetch(`${url}/pipeline`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pipeline),
+        });
+
+        if (!resp.ok) {
+            return { limited: false, headers: {} };
+        }
+
+        const results = await resp.json();
+        const count = results[2]?.result ?? 0;
+        const remaining = Math.max(0, maxRequests - count);
+        const limited = count > maxRequests;
+
+        const headers: Record<string, string> = {
+            'X-RateLimit-Limit': String(maxRequests),
+            'X-RateLimit-Remaining': String(remaining),
+        };
+
+        if (limited) {
+            const retryAfterSec = Math.max(1, Math.ceil(windowMs / 1000));
+            headers['Retry-After'] = String(retryAfterSec);
+        }
+
+        return { limited, headers };
+    } catch {
+        // Fail open
+        return { limited: false, headers: {} };
+    }
 }
 
 // --- Limiter factory ---
 
 interface LazyLimiter {
-    get: () => Ratelimit | null;
+    get: () => { key: string; max: number; windowSec: number } | null;
 }
 
-function createLimiter(tokens: number, window: `${number} s` | `${number} m` | `${number} h` | `${number} d` | `${number} ms`, prefix: string): LazyLimiter {
-    let cached: Ratelimit | null | undefined;
-
+function createLimiter(tokens: number, windowSec: number, prefix: string): LazyLimiter {
     return {
         get() {
-            if (cached !== undefined) return cached;
-
-            const redis = getRedis();
-            if (!redis) {
-                cached = null;
-                return null;
-            }
-
-            cached = new Ratelimit({
-                redis,
-                limiter: Ratelimit.slidingWindow(tokens, window),
-                prefix,
-            });
-            return cached;
+            const url = process.env.UPSTASH_REDIS_REST_URL;
+            if (!url) return null;
+            return { key: prefix, max: tokens, windowSec };
         },
     };
 }
@@ -55,42 +86,29 @@ function createLimiter(tokens: number, window: `${number} s` | `${number} m` | `
 // --- Pre-configured limiters ---
 
 /** Global limiter: 100 requests per 60 seconds */
-export const globalLimiter = createLimiter(100, '60 s', 'rl:global');
+export const globalLimiter = createLimiter(100, 60, 'rl:global');
 
 /** Auth limiter: 5 requests per 60 seconds */
-export const authLimiter = createLimiter(5, '60 s', 'rl:auth');
+export const authLimiter = createLimiter(5, 60, 'rl:auth');
 
 /** API limiter: 10 requests per 60 seconds */
-export const apiLimiter = createLimiter(10, '60 s', 'rl:api');
+export const apiLimiter = createLimiter(10, 60, 'rl:api');
 
 /** Newsletter limiter: 5 requests per 60 seconds */
-export const newsletterLimiter = createLimiter(5, '60 s', 'rl:newsletter');
+export const newsletterLimiter = createLimiter(5, 60, 'rl:newsletter');
 
 // --- Helper functions ---
 
 export async function rateLimit(
-    limiter: { get: () => Ratelimit | null },
+    limiter: LazyLimiter,
     identifier: string
-): Promise<{ limited: boolean; headers: Record<string, string> }> {
-    const rl = limiter.get();
-    if (!rl) {
+): Promise<RateLimitResult> {
+    const config = limiter.get();
+    if (!config) {
         return { limited: false, headers: {} };
     }
 
-    const result = await rl.limit(identifier);
-
-    const headers: Record<string, string> = {
-        'X-RateLimit-Limit': String(result.limit),
-        'X-RateLimit-Remaining': String(result.remaining),
-    };
-
-    if (!result.success) {
-        const retryAfterMs = result.reset - Date.now();
-        const retryAfterSec = Math.max(1, Math.ceil(retryAfterMs / 1000));
-        headers['Retry-After'] = String(retryAfterSec);
-    }
-
-    return { limited: !result.success, headers };
+    return upstashRateLimit(`${config.key}:${identifier}`, config.max, config.windowSec);
 }
 
 export function getClientIp(request: NextRequest): string {

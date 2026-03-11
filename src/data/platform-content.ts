@@ -109,14 +109,14 @@ export const homepage = {
 
     // ── 2c. Category Icon Grid (8 circles) ──
     categoryGrid: [
-        { label: 'Prawns', slug: 'prawns', icon: '🦐', imageUrl: '/assets/products/prawns.png' },
-        { label: 'Fish Fillets', slug: 'fish-fillet', icon: '🐟', imageUrl: '/assets/products/fillets.png' },
-        { label: 'Oysters', slug: 'oyster', icon: '🦪', imageUrl: '/assets/products/oysters-mornay.png' },
-        { label: 'Crabs & Lobsters', slug: 'crabs-lobsters-bugs', icon: '🦀', imageUrl: '/assets/products/crabs.png' },
-        { label: 'Shellfish', slug: 'shellfish', icon: '🐚', imageUrl: '/assets/products/scallops.png' },
-        { label: 'Sushi/Sashimi', slug: 'sushi-sashimi', icon: '🍣', imageUrl: '/assets/products/salmon.png' },
-        { label: 'Squid & Octopus', slug: 'squid-octopus', icon: '🦑', imageUrl: '/assets/products/octopus.png' },
-        { label: 'Whole Fish', slug: 'whole-fish', icon: '🎣', imageUrl: '/assets/products/fillets.png' },
+        { label: 'Fish (Whole)', slug: 'fish-whole', icon: '🎣', imageUrl: '/assets/products/local-snapper-whole.webp' },
+        { label: 'Fish (Fillets & Steaks)', slug: 'fish-fillets-steaks', icon: '🐟', imageUrl: '/assets/products/red-snapper-fillet.webp' },
+        { label: 'Prawns (Cooked)', slug: 'prawns-cooked', icon: '🦐', imageUrl: '/assets/products/large-cooked-king-prawn.webp' },
+        { label: 'Prawns (Raw)', slug: 'prawns-raw', icon: '🦐', imageUrl: '/assets/products/jumbo-raw-kung-prawns.webp' },
+        { label: 'Crabs', slug: 'crabs-cooked', icon: '🦀', imageUrl: '/assets/products/cooked-sand-crab.webp' },
+        { label: 'Bugs & Lobsters', slug: 'bugs-lobsters-crayfish', icon: '🦞', imageUrl: '/assets/products/large-cooked-moreton-bay-bugs.webp' },
+        { label: 'Oysters', slug: 'oysters', icon: '🦪', imageUrl: '/assets/products/pacific-plate-oyster.webp' },
+        { label: 'Squid & Octopus', slug: 'squid-octopus-cuttlefish', icon: '🦑', imageUrl: '/assets/products/cleaned-octoupus-2.webp' },
     ],
 
     // ── 2d. Curated Product Rows (3 rows × 4 products) ──
@@ -128,10 +128,10 @@ export const homepage = {
             viewAllHref: '/our-products',
             badge: 'Best Buy',
             productSlugs: [
-                'tiger-prawns-1kg',
-                'barramundi-fillets-1kg',
-                'fresh-scallops-500g',
-                'oysters-mornay-each',
+                'large-cooked-king-prawns',
+                'qld-barramundi-whole',
+                'tasmanian-scallop-meat',
+                'jumbo-pacific-oyster',
             ],
         },
         {
@@ -141,10 +141,10 @@ export const homepage = {
             viewAllHref: '/deals',
             badge: 'Fresh Pick',
             productSlugs: [
-                'cooked-spanner-crab-meat-500g',
-                'fresh-sashimi-kingfish-300g',
-                'crab-soft-shell-1kg',
-                'fresh-sashimi-kingfish-500g-sliced',
+                'cooked-local-spanner-crabs',
+                'hiramasa-kingfish-whole',
+                'coral-trout-whole',
+                'red-snapper-fillet',
             ],
         },
         {
@@ -153,10 +153,10 @@ export const homepage = {
             subtitle: 'Crowd-pleasers for weekend dinners',
             viewAllHref: '/our-products',
             productSlugs: [
-                'salmon-fillet-fresh-1kg',
-                'cooked-prawns-1kg',
-                'blue-eye-cod-fillets-1kg',
-                'octopus-whole-1kg',
+                'king-ora-salmon-whole',
+                'large-cooked-king-prawns',
+                'mahi-mahi-fillet',
+                'bbq-octopus',
             ],
         },
     ],
@@ -289,19 +289,17 @@ export const categoryPage = {
             label: 'Category',
             type: 'checkbox' as const,
             options: [
-                { value: 'prawns', label: 'Prawns', count: 2 },
-                { value: 'fish-fillet', label: 'Fish Fillets', count: 4 },
-                { value: 'oyster', label: 'Oysters', count: 1 },
-                { value: 'crabs-lobsters-bugs', label: 'Crabs, Lobsters & Bugs', count: 4 },
-                { value: 'shellfish', label: 'Shellfish', count: 2 },
-                { value: 'sushi-sashimi', label: 'Sushi / Sashimi', count: 2 },
-                { value: 'squid-octopus', label: 'Squid & Octopus', count: 1 },
-                { value: 'whole-fish', label: 'Whole Fish', count: 0 },
-                { value: 'frozen-products', label: 'Frozen', count: 0 },
-                { value: 'platters', label: 'Platters', count: 0 },
-                { value: 'family-value-packs', label: 'Family Value Packs', count: 0 },
-                { value: 'condiments-sauces', label: 'Condiments & Sauces', count: 0 },
-                { value: 'smoked-cured-fish', label: 'Smoked & Cured', count: 0 },
+                { value: 'fish-whole', label: 'Fish (Whole)', count: 37 },
+                { value: 'fish-fillets-steaks', label: 'Fish (Fillets & Steaks)', count: 8 },
+                { value: 'prawns-cooked', label: 'Prawns (Cooked)', count: 6 },
+                { value: 'prawns-raw', label: 'Prawns (Raw)', count: 11 },
+                { value: 'crabs-live', label: 'Crabs (Live)', count: 2 },
+                { value: 'crabs-cooked', label: 'Crabs (Cooked)', count: 7 },
+                { value: 'bugs-lobsters-crayfish', label: 'Bugs, Lobsters & Crayfish', count: 8 },
+                { value: 'oysters', label: 'Oysters', count: 4 },
+                { value: 'shellfish-molluscs', label: 'Shellfish & Molluscs', count: 7 },
+                { value: 'squid-octopus-cuttlefish', label: 'Squid, Octopus & Cuttlefish', count: 10 },
+                { value: 'prepared-meals-sushi', label: 'Prepared Meals & Sushi', count: 4 },
             ],
         },
         {
@@ -498,7 +496,7 @@ export interface ProductDefinition {
 export const products: ProductDefinition[] = [
     // ── 1. Tiger Prawns 1kg ──
     {
-        slug: 'tiger-prawns-1kg',
+        slug: 'jumbo-raw-king-prawns',
         name: 'Tiger Prawns 1kg Pack',
         shortName: 'Tiger Prawns',
         category: 'Prawns',
@@ -542,13 +540,13 @@ export const products: ProductDefinition[] = [
             'Ice-packed in insulated box',
             'Cooking tips card included',
         ],
-        frequentlyOrderedWith: ['cooked-prawns-1kg', 'fresh-scallops-500g'],
-        youMayAlsoLike: ['barramundi-fillets-1kg', 'salmon-fillet-fresh-1kg', 'octopus-whole-1kg'],
+        frequentlyOrderedWith: ['large-cooked-king-prawns', 'tasmanian-scallop-meat'],
+        youMayAlsoLike: ['qld-barramundi-whole', 'king-ora-salmon-whole', 'bbq-octopus'],
     },
 
     // ── 2. Barramundi Fillets 1kg ──
     {
-        slug: 'barramundi-fillets-1kg',
+        slug: 'qld-barramundi-whole',
         name: 'Barramundi Fillets Fresh 1kg Pack',
         shortName: 'Barramundi Fillets',
         category: 'Fish Fillet',
@@ -592,13 +590,13 @@ export const products: ProductDefinition[] = [
             'Vacuum sealed for freshness',
             'Recipe card included',
         ],
-        frequentlyOrderedWith: ['salmon-fillet-fresh-1kg', 'snapper-fillets-500g', 'blue-eye-cod-fillets-1kg'],
-        youMayAlsoLike: ['tiger-prawns-1kg', 'fresh-scallops-500g', 'oysters-mornay-each'],
+        frequentlyOrderedWith: ['king-ora-salmon-whole', 'red-snapper-fillet', 'hapuku-fillet'],
+        youMayAlsoLike: ['jumbo-raw-king-prawns', 'tasmanian-scallop-meat', 'jumbo-pacific-oyster'],
     },
 
     // ── 3. Blue Eye Cod Fillets 1kg ──
     {
-        slug: 'blue-eye-cod-fillets-1kg',
+        slug: 'hapuku-fillet',
         name: 'Blue Eye Cod Fillets Fresh 1kg Pack',
         shortName: 'Blue Eye Cod',
         category: 'Fish Fillet',
@@ -642,13 +640,13 @@ export const products: ProductDefinition[] = [
             'Vacuum sealed',
             'Premium insulated packaging',
         ],
-        frequentlyOrderedWith: ['barramundi-fillets-1kg', 'snapper-fillets-500g'],
-        youMayAlsoLike: ['salmon-fillet-fresh-1kg', 'fresh-scallops-500g', 'tiger-prawns-1kg'],
+        frequentlyOrderedWith: ['qld-barramundi-whole', 'red-snapper-fillet'],
+        youMayAlsoLike: ['king-ora-salmon-whole', 'tasmanian-scallop-meat', 'jumbo-raw-king-prawns'],
     },
 
     // ── 4. Salmon Fillet Fresh 1kg ──
     {
-        slug: 'salmon-fillet-fresh-1kg',
+        slug: 'king-ora-salmon-whole',
         name: 'Salmon Fillet Fresh 1kg',
         shortName: 'Atlantic Salmon',
         category: 'Fish Fillet',
@@ -692,13 +690,13 @@ export const products: ProductDefinition[] = [
             'Sashimi grade quality',
             'Vacuum sealed with ice pack',
         ],
-        frequentlyOrderedWith: ['barramundi-fillets-1kg', 'fresh-sashimi-kingfish-300g'],
-        youMayAlsoLike: ['blue-eye-cod-fillets-1kg', 'snapper-fillets-500g', 'tiger-prawns-1kg'],
+        frequentlyOrderedWith: ['qld-barramundi-whole', 'hiramasa-kingfish-whole'],
+        youMayAlsoLike: ['hapuku-fillet', 'red-snapper-fillet', 'jumbo-raw-king-prawns'],
     },
 
     // ── 5. Fresh Scallops 500g ──
     {
-        slug: 'fresh-scallops-500g',
+        slug: 'tasmanian-scallop-meat',
         name: 'Fresh Scallops 500g Pack',
         shortName: 'Fresh Scallops',
         category: 'Shellfish',
@@ -742,13 +740,13 @@ export const products: ProductDefinition[] = [
             'Dry-packed (no added water)',
             'Best seared or grilled',
         ],
-        frequentlyOrderedWith: ['clams-1kg', 'tiger-prawns-1kg'],
-        youMayAlsoLike: ['oysters-mornay-each', 'barramundi-fillets-1kg', 'salmon-fillet-fresh-1kg'],
+        frequentlyOrderedWith: ['mixed-clams', 'jumbo-raw-king-prawns'],
+        youMayAlsoLike: ['jumbo-pacific-oyster', 'qld-barramundi-whole', 'king-ora-salmon-whole'],
     },
 
     // ── 6. Cooked Spanner Crab Meat 500g ──
     {
-        slug: 'cooked-spanner-crab-meat-500g',
+        slug: 'cooked-local-spanner-crabs',
         name: 'Cooked Spanner Crab Meat 500g',
         shortName: 'Spanner Crab Meat',
         category: 'Crabs, Lobsters, Bugs',
@@ -792,13 +790,13 @@ export const products: ProductDefinition[] = [
             'Ready to eat — no cooking required',
             'Sealed container with ice pack',
         ],
-        frequentlyOrderedWith: ['crab-soft-shell-1kg', 'crab-meat-pots-each', 'crab-meat-raw-500g'],
-        youMayAlsoLike: ['tiger-prawns-1kg', 'fresh-scallops-500g', 'oysters-mornay-each'],
+        frequentlyOrderedWith: ['live-mud-crabs', 'mud-crab-cooked', 'raw-sand-crabs'],
+        youMayAlsoLike: ['jumbo-raw-king-prawns', 'tasmanian-scallop-meat', 'jumbo-pacific-oyster'],
     },
 
     // ── 7. Fresh Sashimi Kingfish 300g ──
     {
-        slug: 'fresh-sashimi-kingfish-300g',
+        slug: 'hiramasa-kingfish-whole',
         name: 'Fresh Sashimi Kingfish per 300gm Block',
         shortName: 'Sashimi Kingfish',
         category: 'Sushi/Sashimi',
@@ -842,13 +840,13 @@ export const products: ProductDefinition[] = [
             'Individually vacuum sealed',
             'Sashimi slicing guide included',
         ],
-        frequentlyOrderedWith: ['fresh-sashimi-kingfish-500g-sliced', 'salmon-fillet-fresh-1kg'],
-        youMayAlsoLike: ['fresh-scallops-500g', 'tiger-prawns-1kg', 'oysters-mornay-each'],
+        frequentlyOrderedWith: ['kingfish', 'king-ora-salmon-whole'],
+        youMayAlsoLike: ['tasmanian-scallop-meat', 'jumbo-raw-king-prawns', 'jumbo-pacific-oyster'],
     },
 
     // ── 8. Oysters Mornay ──
     {
-        slug: 'oysters-mornay-each',
+        slug: 'jumbo-pacific-oyster',
         name: 'Oysters Mornay each',
         shortName: 'Oysters Mornay',
         category: 'Oyster',
@@ -892,13 +890,13 @@ export const products: ProductDefinition[] = [
             'Oven-ready — just bake and serve',
             'Order as many as you need',
         ],
-        frequentlyOrderedWith: ['tiger-prawns-1kg', 'fresh-scallops-500g'],
-        youMayAlsoLike: ['cooked-spanner-crab-meat-500g', 'barramundi-fillets-1kg', 'salmon-fillet-fresh-1kg'],
+        frequentlyOrderedWith: ['jumbo-raw-king-prawns', 'tasmanian-scallop-meat'],
+        youMayAlsoLike: ['cooked-local-spanner-crabs', 'qld-barramundi-whole', 'king-ora-salmon-whole'],
     },
 
     // ── 9. Octopus Whole 1kg ──
     {
-        slug: 'octopus-whole-1kg',
+        slug: 'bbq-octopus',
         name: 'Octopus Whole 1kg',
         shortName: 'Whole Octopus',
         category: 'Squid & Octopus',
@@ -942,13 +940,13 @@ export const products: ProductDefinition[] = [
             'Ready to slow-cook or braise',
             'Cooking guide with recipes',
         ],
-        frequentlyOrderedWith: ['clams-1kg', 'fresh-scallops-500g'],
-        youMayAlsoLike: ['tiger-prawns-1kg', 'barramundi-fillets-1kg', 'cooked-spanner-crab-meat-500g'],
+        frequentlyOrderedWith: ['mixed-clams', 'tasmanian-scallop-meat'],
+        youMayAlsoLike: ['jumbo-raw-king-prawns', 'qld-barramundi-whole', 'cooked-local-spanner-crabs'],
     },
 
     // ── 10. Cooked Prawns 1kg ──
     {
-        slug: 'cooked-prawns-1kg',
+        slug: 'large-cooked-king-prawns',
         name: 'Cooked Prawns 1kg',
         shortName: 'Cooked Prawns',
         category: 'Prawns',
@@ -992,13 +990,13 @@ export const products: ProductDefinition[] = [
             'Ready to eat — just peel and enjoy',
             'Great for prawn cocktails and platters',
         ],
-        frequentlyOrderedWith: ['tiger-prawns-1kg', 'oysters-mornay-each'],
-        youMayAlsoLike: ['fresh-scallops-500g', 'cooked-spanner-crab-meat-500g', 'salmon-fillet-fresh-1kg'],
+        frequentlyOrderedWith: ['jumbo-raw-king-prawns', 'jumbo-pacific-oyster'],
+        youMayAlsoLike: ['tasmanian-scallop-meat', 'cooked-local-spanner-crabs', 'king-ora-salmon-whole'],
     },
 
     // ── 11. Snapper Fillets 500g ──
     {
-        slug: 'snapper-fillets-500g',
+        slug: 'red-snapper-fillet',
         name: 'Snapper Fillets 500g',
         shortName: 'Snapper Fillets',
         category: 'Fish Fillet',
@@ -1042,13 +1040,13 @@ export const products: ProductDefinition[] = [
             'Vacuum sealed',
             'Perfect for pan-frying or baking',
         ],
-        frequentlyOrderedWith: ['barramundi-fillets-1kg', 'blue-eye-cod-fillets-1kg'],
-        youMayAlsoLike: ['salmon-fillet-fresh-1kg', 'tiger-prawns-1kg', 'fresh-scallops-500g'],
+        frequentlyOrderedWith: ['qld-barramundi-whole', 'hapuku-fillet'],
+        youMayAlsoLike: ['king-ora-salmon-whole', 'jumbo-raw-king-prawns', 'tasmanian-scallop-meat'],
     },
 
     // ── 12. Clams 1kg ──
     {
-        slug: 'clams-1kg',
+        slug: 'mixed-clams',
         name: 'Clams 1kg Pack',
         shortName: 'Fresh Clams',
         category: 'Shellfish',
@@ -1092,8 +1090,8 @@ export const products: ProductDefinition[] = [
             'Approx 40–60 clams per kg',
             'Cooking guide with vongole recipe',
         ],
-        frequentlyOrderedWith: ['fresh-scallops-500g', 'octopus-whole-1kg'],
-        youMayAlsoLike: ['tiger-prawns-1kg', 'barramundi-fillets-1kg', 'cooked-spanner-crab-meat-500g'],
+        frequentlyOrderedWith: ['tasmanian-scallop-meat', 'bbq-octopus'],
+        youMayAlsoLike: ['jumbo-raw-king-prawns', 'qld-barramundi-whole', 'cooked-local-spanner-crabs'],
     },
 ];
 
@@ -1102,7 +1100,7 @@ export const products: ProductDefinition[] = [
 // ─────────────────────────────────────────────
 
 export const flagshipPDP = {
-    slug: 'salmon-fillet-fresh-1kg',
+    slug: 'king-ora-salmon-whole',
     layout: {
         // Top section: 2-col (images | details)
         hero: {
@@ -1185,12 +1183,12 @@ export const flagshipPDP = {
         frequentlyOrderedTogether: {
             title: 'Frequently Ordered Together',
             subtitle: 'More from Fish Fillets',
-            productSlugs: ['barramundi-fillets-1kg', 'snapper-fillets-500g', 'blue-eye-cod-fillets-1kg'],
+            productSlugs: ['qld-barramundi-whole', 'red-snapper-fillet', 'hapuku-fillet'],
         },
         youMayAlsoLike: {
             title: 'You May Also Like',
             subtitle: 'Explore other popular picks',
-            productSlugs: ['tiger-prawns-1kg', 'fresh-scallops-500g', 'oysters-mornay-each', 'cooked-spanner-crab-meat-500g', 'octopus-whole-1kg', 'cooked-prawns-1kg'],
+            productSlugs: ['jumbo-raw-king-prawns', 'tasmanian-scallop-meat', 'jumbo-pacific-oyster', 'cooked-local-spanner-crabs', 'bbq-octopus', 'large-cooked-king-prawns'],
         },
     },
 };

@@ -6,11 +6,17 @@ interface GalleryItem {
   src: string;
   alt: string;
   caption: string;
+  /** Optional class for the image */
+  imageClassName?: string;
+  /** Optional inline style for the image */
+  imageStyle?: React.CSSProperties;
+  /** If true, image is rotated -90deg and shown in full (no crop) via a wrapper */
+  rotateLeftFull?: boolean;
 }
 
 const storePhotos: GalleryItem[] = [
   { src: '/assets/products/oyster-opening.jpg', alt: 'Fresh oyster opening', caption: 'Fresh Oyster Opening' },
-  { src: '/assets/products/carl.jpg', alt: 'Carl at work', caption: 'Carl at Work' },
+  { src: '/assets/products/carl.jpg', alt: 'Carl at work', caption: 'Carl at Work', rotateLeftFull: true },
   { src: '/assets/products/store.webp', alt: 'Store interior', caption: 'Fresh Daily Selection' },
   { src: '/assets/products/tuna-tail-cut.jpg', alt: 'Tuna tail cut', caption: 'Tuna Tail Cut' },
   { src: '/assets/products/img0821.webp', alt: 'Ocean perch and snapper display', caption: 'Ocean Perch & Snapper' },
@@ -23,7 +29,7 @@ const storePhotos: GalleryItem[] = [
   { src: '/assets/products/img3505.webp', alt: 'Sashimi and premium cuts counter', caption: 'Sashimi & Premium Cuts' },
   { src: '/assets/products/store-6.webp', alt: 'Fresh catch display', caption: 'Fresh Catch Display' },
   { src: '/assets/products/img0089.webp', alt: 'Whole fresh fish on ice', caption: 'Whole Fresh Fish' },
-  { src: '/assets/products/store-8.webp', alt: 'Premium seafood selection', caption: 'Premium Shellfish' },
+  { src: '/assets/products/store-8.webp', alt: 'Premium seafood selection', caption: 'Premium Seafood' },
   { src: '/assets/products/img0362.webp', alt: 'Tasman Star trucks at Sydney Fish Market', caption: 'Direct from Sydney Fish Market' },
   { src: '/assets/products/store-pic-9.webp', alt: 'Store atmosphere', caption: 'Our Welcoming Store' },
   { src: '/assets/products/img0881.webp', alt: 'Vibrant red fish display', caption: 'Vibrant Red Fish' },
@@ -31,13 +37,37 @@ const storePhotos: GalleryItem[] = [
 ];
 
 function PhotoCard({ item }: { item: GalleryItem }) {
+  const rotateLeftFull = item.rotateLeftFull === true;
+  const hasCustomTransform = !rotateLeftFull && item.imageStyle?.transform != null;
   return (
     <div className="relative flex-shrink-0 w-[280px] sm:w-[320px] h-[360px] sm:h-[420px] rounded-2xl overflow-hidden group/card">
-      <img
-        src={item.src}
-        alt={item.alt}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-      />
+      {rotateLeftFull ? (
+        /* Rotated wrapper: inner size = card size swapped so after -90deg it fills the card. Full image visible with object-contain. */
+        <div className="absolute inset-0 flex items-center justify-center bg-theme-secondary transition-transform duration-700 group-hover/card:scale-105">
+          <div className="w-[360px] h-[280px] sm:w-[420px] sm:h-[320px] shrink-0 -rotate-90">
+            <img
+              src={item.src}
+              alt={item.alt}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>
+      ) : hasCustomTransform ? (
+        <div className="absolute inset-0 bg-theme-secondary transition-transform duration-700 group-hover/card:scale-105 flex items-center justify-center">
+          <img
+            src={item.src}
+            alt={item.alt}
+            className={`absolute inset-0 w-full h-full ${item.imageClassName ?? 'object-cover'}`}
+            style={item.imageStyle}
+          />
+        </div>
+      ) : (
+        <img
+          src={item.src}
+          alt={item.alt}
+          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 ${item.imageClassName ?? ''}`}
+        />
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover/card:opacity-90 transition-opacity duration-300" />
       <div className="absolute bottom-0 left-0 right-0 p-5">
         <p className="text-white font-semibold text-base sm:text-lg drop-shadow-md">

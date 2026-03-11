@@ -29,6 +29,7 @@ export default function NewProduct() {
         isAvailable: true,
         isFeatured: false,
         isTodaysSpecial: false,
+        countryOfOrigin: 'Australia',
         tags: '',
     });
 
@@ -53,6 +54,7 @@ export default function NewProduct() {
                     imageUrls: form.imageUrls,
                     stockQuantity: parseInt(form.stockQuantity, 10),
                     tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    countryOfOrigin: form.countryOfOrigin,
                 }),
             });
 
@@ -159,6 +161,18 @@ export default function NewProduct() {
                                 <option value="PACK">Pack</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-theme-text-muted text-sm mb-1">Country of Origin</label>
+                        <select
+                            value={form.countryOfOrigin}
+                            onChange={(e) => setForm({ ...form, countryOfOrigin: e.target.value })}
+                            className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                        >
+                            <option value="Australia">Australia</option>
+                            <option value="New Zealand">New Zealand</option>
+                        </select>
                     </div>
 
                     <ImageUploader

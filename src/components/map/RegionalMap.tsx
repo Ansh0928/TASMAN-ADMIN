@@ -1,19 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { ComposableMap, Geographies, Geography, ZoomableGroup, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
-import type { Position } from "@vnedyalk0v/react19-simple-maps";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, RotateCcw, MapPin } from "lucide-react";
-import Image from "next/image";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { ComposableMap, Geographies, Geography, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
+import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
-// Map region IDs from the JSON to standard state abbreviations
 const regionMapping: Record<string, string> = {
-    "Queensland": "QLD",
+    Queensland: "QLD",
     "New South Wales": "NSW",
-    "Victoria": "VIC",
-    "Tasmania": "TAS",
+    Victoria: "VIC",
+    Tasmania: "TAS",
     "South Australia": "SA",
     "Western Australia": "WA",
     "Northern Territory": "NT",
@@ -21,397 +17,332 @@ const regionMapping: Record<string, string> = {
     "New Zealand": "NZ",
 };
 
-// Regional species data — only species with matching products
-const REGIONAL_DATA: Record<string, {
-    name: string;
-    description: string;
-    species: Array<{ name: string; desc: string; emoji: string; productSlug: string }>;
-    images: string[];
-}> = {
-    "QLD": {
-        name: "Queensland",
-        description: "The Great Barrier Reef and tropical currents provide sweet, unique seafood.",
-        species: [
-            { name: "Barramundi", desc: "Iconic Australian sportfish, mild flavor.", emoji: "\u{1F41F}", productSlug: "barramundi-fillets-skin-on" },
-            { name: "Mud Crab", desc: "Sweet, moist meat packed with flavor.", emoji: "\u{1F980}", productSlug: "cooked-mud-crabs" },
-            { name: "Tiger Prawn", desc: "Crisp texture, sweet taste, bold stripes.", emoji: "\u{1F990}", productSlug: "large-cooked-tiger-prawns" }
-        ],
-        images: ["mud-crab-cooked", "jumbo-raw-tiger-prawns", "cooked-tiger-prawns-2"],
-    },
-    "NSW": {
-        name: "New South Wales",
-        description: "Pristine estuaries and deep off-shore canyons.",
-        species: [
-            { name: "Sydney Rock Oyster", desc: "Rich, creamy, with a lasting mineral tang.", emoji: "\u{1F9AA}", productSlug: "sydney-rock-bistro-oysters-1-dozen" },
-            { name: "Yellowtail Kingfish", desc: "Firm, white flesh ideal for sashimi.", emoji: "\u{1F41F}", productSlug: "kingfish-sashimi" },
-            { name: "Snapper", desc: "Delicate, sweet flavor with medium texture.", emoji: "\u{1F420}", productSlug: "local-snapper-fillets" }
-        ],
-        images: ["pacific-plate-oysters", "local-snapper-whole", "hira-masa-king-fish-whole"],
-    },
-    "SA": {
-        name: "South Australia",
-        description: "Cold, clean waters of the Great Australian Bight.",
-        species: [
-            { name: "Southern Rock Lobster", desc: "Premium, firm, sweet white meat.", emoji: "\u{1F99E}", productSlug: "cooked-southern-rock-lobster" },
-            { name: "King George Whiting", desc: "Delicate, sweet flavor. A national treasure.", emoji: "\u{1F41F}", productSlug: "king-george-whiting-fillets" }
-        ],
-        images: ["king-george-whitining-whole", "wa-cray-fish-cooked"],
-    },
-    "TAS": {
-        name: "Tasmania",
-        description: "The coldest, purest waters in the world.",
-        species: [
-            { name: "Atlantic Salmon", desc: "Rich in Omega-3, buttery texture.", emoji: "\u{1F363}", productSlug: "salmon-fillets-skin-on" },
-            { name: "Pacific Oysters", desc: "Plump, salty, and incredibly fresh.", emoji: "\u{1F9AA}", productSlug: "pacific-plate-oysters-1-dozen" },
-            { name: "Ocean Trout", desc: "Vibrant color and a luxurious melt-in-the-mouth feel.", emoji: "\u{1F41F}", productSlug: "ocean-trout-fillets" }
-        ],
-        images: ["king-ora-salmon-whole", "ocean-trout-fillets", "tasmania-scallops-meat"],
-    },
-    "WA": {
-        name: "Western Australia",
-        description: "Wild, rugged coastlines spanning thousands of kilometers.",
-        species: [
-            { name: "Western Rock Lobster", desc: "Highly sought after for its rich, sweet flavor.", emoji: "\u{1F99E}", productSlug: "cooked-western-crayfish" }
-        ],
-        images: ["wa-cray-fish-live", "wa-cray-fish-cooked"],
-    },
-    "VIC": {
-        name: "Victoria",
-        description: "Stormy southern seas producing resilient, deep-flavored seafood.",
-        species: [
-            { name: "Scallops", desc: "Plump, sweet, and perfect for a quick sear.", emoji: "\u{1F9AA}", productSlug: "roe-on-tassie-scallops" }
-        ],
-        images: ["tasmania-scallops-meat", "tassie-scollop-meats"],
-    },
-    "NT": {
-        name: "Northern Territory",
-        description: "Vast tidal rivers and warm Arafura Sea waters.",
-        species: [
-            { name: "Spanish Mackerel", desc: "Thick, meaty steaks perfect for the BBQ.", emoji: "\u{1F41F}", productSlug: "spanish-mackerel-fillets" },
-            { name: "Goldband Snapper", desc: "Exceptional eating with a firm, flaky texture.", emoji: "\u{1F420}", productSlug: "gold-band-snapper-fillets" },
-            { name: "Mud Crab", desc: "Massive claws with incredibly sweet, rich meat.", emoji: "\u{1F980}", productSlug: "live-mud-crabs" }
-        ],
-        images: ["gold-band-snapper-whole", "spanish-mackerel-fillet", "live-mud-crabs"],
-    },
-    "NZ": {
-        name: "New Zealand",
-        description: "Crystal-clear waters surrounding the islands produce world-class seafood.",
-        species: [
-            { name: "Green-lipped Mussels", desc: "Plump, sweet, and uniquely New Zealand.", emoji: "\u{1F9AA}", productSlug: "greenlip-mussels-loose" },
-            { name: "Crayfish", desc: "Sweet, succulent rock lobster from pristine waters.", emoji: "\u{1F99E}", productSlug: "cooked-western-crayfish" }
-        ],
-        images: ["fresh-black-mussels", "wa-cray-fish-live-2"],
+
+const REGIONAL_DATA: Record<
+    string,
+    {
+        name: string;
+        tagline: string;
+        species: Array<{ name: string; emoji: string; productSlug: string }>;
     }
+> = {
+    QLD: {
+        name: "Queensland",
+        tagline: "Tropical reefs & warm currents",
+        species: [
+            { name: "Barramundi", emoji: "🐟", productSlug: "qld-barramundi-whole" },
+            { name: "Mud Crab", emoji: "🦀", productSlug: "mud-crab-cooked" },
+            { name: "Tiger Prawn", emoji: "🦐", productSlug: "cooked-tiger-prawns" },
+        ],
+    },
+    NSW: {
+        name: "New South Wales",
+        tagline: "Deep canyons & pristine estuaries",
+        species: [
+            { name: "Pacific Oyster", emoji: "🦪", productSlug: "pacific-plate-oyster" },
+            { name: "Kingfish", emoji: "🐟", productSlug: "kingfish" },
+            { name: "Snapper", emoji: "🐠", productSlug: "local-snapper-whole" },
+        ],
+    },
+    SA: {
+        name: "South Australia",
+        tagline: "The Great Australian Bight",
+        species: [
+            { name: "Crayfish", emoji: "🦞", productSlug: "wa-crayfish-cooked" },
+            { name: "King George Whiting", emoji: "🐟", productSlug: "king-george-whiting-whole" },
+        ],
+    },
+    TAS: {
+        name: "Tasmania",
+        tagline: "Cold, pure southern waters",
+        species: [
+            { name: "Salmon", emoji: "🐟", productSlug: "king-ora-salmon-whole" },
+            { name: "Pacific Oysters", emoji: "🦪", productSlug: "jumbo-pacific-oyster" },
+            { name: "Ocean Trout", emoji: "🐟", productSlug: "ocean-trout-fillets" },
+        ],
+    },
+    WA: {
+        name: "Western Australia",
+        tagline: "Wild rugged coastline",
+        species: [
+            { name: "Rock Lobster", emoji: "🦞", productSlug: "wa-crayfish-live" },
+        ],
+    },
+    VIC: {
+        name: "Victoria",
+        tagline: "Stormy southern seas",
+        species: [
+            { name: "Scallops", emoji: "🦪", productSlug: "tasmanian-scallop-meat" },
+        ],
+    },
+    NT: {
+        name: "Northern Territory",
+        tagline: "Arafura Sea & tidal rivers",
+        species: [
+            { name: "Spanish Mackerel", emoji: "🐟", productSlug: "spanish-mackerel-fillet" },
+            { name: "Goldband Snapper", emoji: "🐠", productSlug: "gold-band-snapper-whole" },
+            { name: "Mud Crab", emoji: "🦀", productSlug: "live-mud-crabs" },
+        ],
+    },
+    NZ: {
+        name: "New Zealand",
+        tagline: "Crystal waters & world-class shellfish",
+        species: [
+            { name: "Mussels", emoji: "🦪", productSlug: "fresh-black-mussels" },
+            { name: "Crayfish", emoji: "🦞", productSlug: "wa-crayfish-cooked" },
+        ],
+    },
 };
 
-const DEFAULT_CENTER = createCoordinates(150, -30);
-
 export default function RegionalMap() {
-    const [activeRegion, setActiveRegion] = useState<string | null>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [geoData, setGeoData] = useState<any>(null);
+    const [activeRegion, setActiveRegion] = useState<string | null>(null);
+    const [pinned, setPinned] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const [zoom, setZoom] = useState(1);
+    const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener("resize", check);
+        return () => window.removeEventListener("resize", check);
     }, []);
 
     useEffect(() => {
         fetch("/australia.geojson")
-            .then((res) => res.json())
-            .then((data) => setGeoData(data))
-            .catch((err) => console.error("Failed to load geojson:", err));
+            .then((r) => r.json())
+            .then(setGeoData)
+            .catch(console.error);
     }, []);
 
-    const handleMoveEnd = useCallback((position: Position) => {
-        setZoom(position.zoom);
-    }, []);
+    // Click pins the card open so user can interact with it
+    const handleRegion = useCallback(
+        (code: string | null) => {
+            if (!code || !REGIONAL_DATA[code]) return;
+            if (leaveTimer.current) clearTimeout(leaveTimer.current);
+            setActiveRegion((p) => {
+                if (p === code) { setPinned(false); return null; }
+                setPinned(true);
+                return code;
+            });
+        },
+        []
+    );
 
-    const handleZoomIn = useCallback(() => {
-        setZoom(prev => Math.min(prev * 1.5, 5));
-    }, []);
+    const handleEnter = useCallback(
+        (code: string | null) => {
+            if (isMobile || !code || !REGIONAL_DATA[code]) return;
+            if (leaveTimer.current) clearTimeout(leaveTimer.current);
+            if (!pinned) setActiveRegion(code);
+        },
+        [isMobile, pinned]
+    );
 
-    const handleZoomOut = useCallback(() => {
-        setZoom(prev => Math.max(prev / 1.5, 1));
-    }, []);
+    const handleLeave = useCallback(() => {
+        if (isMobile || pinned) return;
+        // Delay so user can move mouse to the card
+        leaveTimer.current = setTimeout(() => setActiveRegion(null), 600);
+    }, [isMobile, pinned]);
 
-    const handleReset = useCallback(() => {
-        setZoom(1);
-    }, []);
-
-    const regionData = activeRegion ? REGIONAL_DATA[activeRegion] : null;
-    const mapScale = isMobile ? 380 : 750;
-    const projConfig = { scale: mapScale, center: DEFAULT_CENTER };
+    const data = activeRegion ? REGIONAL_DATA[activeRegion] : null;
 
     if (!geoData) {
         return (
-            <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-theme-accent/20 shadow-2xl">
-                <div className="relative w-full h-[500px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-theme-accent/30 border-t-theme-accent rounded-full animate-spin mx-auto mb-4" />
-                        <p className="text-slate-400 text-sm">Loading map...</p>
+            <div className="w-full rounded-3xl overflow-hidden" style={{ background: "#06111f" }}>
+                <div className="h-[600px] md:h-[650px] flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="w-12 h-12 rounded-full border-2 border-[#FF8543]/20 border-t-[#FF8543] animate-spin" />
+                        <span className="text-[11px] tracking-[0.3em] uppercase text-slate-500">Loading map</span>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // Info panel content — shared between mobile and desktop
-    const infoPanelContent = regionData ? (
-        <div className="px-4 md:px-6 lg:px-6 py-5 md:py-8 lg:py-6">
-            <div className="max-w-4xl mx-auto lg:max-w-none">
-                <div className="flex justify-between items-start mb-4 md:mb-6">
-                    <div>
-                        <p className="text-theme-accent text-xs font-bold tracking-[0.3em] uppercase mb-1">Regional Seafood</p>
-                        <h3 className="text-2xl md:text-3xl lg:text-2xl xl:text-3xl font-serif font-bold text-white drop-shadow-md">
-                            {regionData.name}
-                        </h3>
-                    </div>
-                    <button
-                        onClick={() => setActiveRegion(null)}
-                        className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-white mt-1"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-
-                {/* Product Image Strip */}
-                <div className="flex gap-3 overflow-x-auto pb-2 mb-6 md:mb-8 lg:mb-4 scrollbar-hide">
-                    {regionData.images.map((img, idx) => (
-                        <div key={idx} className="relative w-36 h-[120px] md:w-44 md:h-[130px] lg:w-full lg:h-[100px] flex-shrink-0 lg:flex-shrink rounded-xl overflow-hidden border border-white/10">
-                            <Image
-                                src={`/assets/products/${img}.webp`}
-                                alt={`${regionData.name} seafood`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 144px, (max-width: 1024px) 176px, 300px"
-                            />
-                        </div>
-                    ))}
-                </div>
-
-                <p className="text-slate-300 font-sans mb-6 md:mb-8 lg:mb-4 leading-relaxed max-w-2xl lg:max-w-none text-sm md:text-base lg:text-sm">
-                    {regionData.description}
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 md:gap-4 lg:gap-2">
-                    {regionData.species.map((sp, idx) => (
-                        <Link
-                            key={idx}
-                            href={`/product/${sp.productSlug}`}
-                            className="block bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 lg:p-3 group hover:border-theme-accent/30 transition-all"
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className="w-12 h-12 md:w-14 md:h-14 lg:w-10 lg:h-10 bg-gradient-to-br from-slate-700 to-slate-800 rounded-full flex items-center justify-center text-2xl md:text-3xl lg:text-xl shadow-inner border border-white/5 group-hover:scale-110 group-hover:border-theme-accent/50 transition-all flex-shrink-0">
-                                    {sp.emoji}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-white font-bold text-sm md:text-base lg:text-sm tracking-wide mb-1 group-hover:text-theme-accent transition-colors">{sp.name}</h4>
-                                    <p className="text-slate-400 text-xs md:text-sm lg:text-xs leading-snug">{sp.desc}</p>
-                                    <span className="text-theme-accent text-xs font-semibold mt-1 opacity-0 group-hover:opacity-100 transition-opacity inline-block">
-                                        View Product &rarr;
-                                    </span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </div>
-        </div>
-    ) : null;
-
     return (
-        <div className="w-full bg-[#0A192F] rounded-3xl overflow-hidden border border-theme-accent/20 shadow-2xl">
+        <div
+            className="w-full rounded-3xl overflow-hidden relative"
+            style={{ background: "#06111f" }}
+            onClick={(e) => {
+                if (!isMobile) return;
+                const t = e.target as HTMLElement;
+                if (!t.closest("[data-card]") && !t.closest("path")) { setActiveRegion(null); setPinned(false); }
+            }}
+        >
+            {/* Ambient ocean gradient */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: "radial-gradient(ellipse 80% 60% at 60% 50%, rgba(10,40,70,0.5) 0%, transparent 70%)",
+                }}
+            />
 
-            {/* Desktop: Side-by-side layout | Mobile: Stacked */}
-            <div className="flex flex-col lg:flex-row">
-
-                {/* Map Section */}
-                <div className={`relative w-full lg:w-2/3 h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center ${!isMobile ? 'perspective-[1000px]' : ''}`}>
-
-                    {/* Hero Text Overlay */}
-                    <div className="absolute top-6 md:top-10 left-0 w-full z-20 pointer-events-none text-center flex flex-col items-center px-4">
-                        <p className="text-theme-accent text-xs font-bold tracking-[0.3em] uppercase mb-2">Sourcing Map</p>
-                        <h2 className="text-2xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-2 md:mb-4">
-                            Explore Our Waters
+            {/* Header — overlaid top-left */}
+            <div className="absolute top-0 left-0 right-0 z-20 px-6 md:px-10 pt-6 md:pt-8">
+                <div className="flex items-start justify-between">
+                    <div>
+                        <span className="text-[#FF8543] text-[10px] md:text-[11px] font-semibold tracking-[0.35em] uppercase block mb-1.5">
+                            Sourcing Map
+                        </span>
+                        <h2 className="text-2xl md:text-4xl font-serif font-bold text-white leading-tight">
+                            Our Waters
                         </h2>
-                        <p className="hidden sm:block text-slate-300 max-w-lg mx-auto text-xs md:text-sm leading-relaxed backdrop-blur-sm bg-[#0A192F]/50 p-2 md:p-3 rounded-xl border border-white/5">
-                            Discover the premium seafood species we source from the pristine waters around Australia &amp; New Zealand.
-                            <span className="text-white font-semibold"> Tap a region to see what we catch.</span>
-                        </p>
-                        <p className="sm:hidden text-slate-400 text-xs mt-1">Pinch to zoom, drag to pan</p>
-                    </div>
-
-                    {/* Map Container */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-
-                        {/* 3D Transform Wrapper -- flat on mobile, isometric on desktop */}
-                        <div
-                            className="w-full h-full"
-                            style={isMobile ? {} : {
-                                transform: "rotateX(55deg) rotateZ(-30deg) translateZ(0)",
-                                transformStyle: "preserve-3d",
-                                transition: "all 0.5s ease-in-out",
-                            }}
-                        >
-                            {/* Shadow Layer (Faux 3D Depth) -- desktop only */}
-                            {!isMobile && (
-                                <div className="absolute inset-0 translate-y-8 translate-x-4 mix-blend-multiply opacity-50 blur-md pointer-events-none">
-                                    <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                        <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
-                                            <Geographies geography={geoData}>
-                                                {({ geographies }) =>
-                                                    geographies.map((geo, idx) => (
-                                                        <Geography key={`shadow-${geo.rsmKey || idx}`} geography={geo} fill="#000000" stroke="none" />
-                                                    ))
-                                                }
-                                            </Geographies>
-                                        </ZoomableGroup>
-                                    </ComposableMap>
-                                </div>
-                            )}
-
-                            {/* Extrusion / Base Layer (Faux 3D Depth) -- desktop only */}
-                            {!isMobile && (
-                                <div className="absolute inset-0 translate-y-3 translate-x-1.5 pointer-events-none">
-                                    <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                        <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
-                                            <Geographies geography={geoData}>
-                                                {({ geographies }) =>
-                                                    geographies.map((geo, idx) => (
-                                                        <Geography key={`base-${geo.rsmKey || idx}`} geography={geo} fill="#020C1B" stroke="#020C1B" strokeWidth={1} />
-                                                    ))
-                                                }
-                                            </Geographies>
-                                        </ZoomableGroup>
-                                    </ComposableMap>
-                                </div>
-                            )}
-
-                            {/* Interactive Top Layer */}
-                            <div className="absolute inset-0 pointer-events-auto">
-                                <ComposableMap projection="geoMercator" projectionConfig={projConfig} className="w-full h-full">
-                                    <ZoomableGroup center={DEFAULT_CENTER} zoom={zoom} minZoom={1} maxZoom={5} onMoveEnd={handleMoveEnd}>
-                                        <Geographies geography={geoData}>
-                                            {({ geographies }) =>
-                                                geographies.map((geo, idx) => {
-                                                    const regionName = geo.properties.STATE_NAME;
-                                                    const regionCode = regionMapping[regionName] || null;
-                                                    const isActive = activeRegion === regionCode;
-                                                    const isSupported = !!regionCode && !!REGIONAL_DATA[regionCode];
-
-                                                    return (
-                                                        <Geography
-                                                            key={`top-${geo.rsmKey || idx}`}
-                                                            geography={geo}
-                                                            onClick={() => {
-                                                                if (isSupported) setActiveRegion(isActive ? null : regionCode);
-                                                            }}
-                                                            style={{
-                                                                default: {
-                                                                    fill: isActive ? "#FF8543" : "#d1d5db",
-                                                                    stroke: "#0A192F",
-                                                                    strokeWidth: 0.5,
-                                                                    outline: "none",
-                                                                    transform: isActive ? "translateZ(20px)" : "translateZ(0px)",
-                                                                    transition: "all 0.3s ease"
-                                                                },
-                                                                hover: {
-                                                                    fill: isActive ? "#FF8543" : "#e5e7eb",
-                                                                    stroke: "#0A192F",
-                                                                    strokeWidth: 0.5,
-                                                                    outline: "none",
-                                                                    cursor: isSupported ? "pointer" : "default",
-                                                                    transform: isActive ? "translateZ(20px)" : "translateZ(10px)",
-                                                                    transition: "all 0.3s ease"
-                                                                },
-                                                                pressed: {
-                                                                    outline: "none",
-                                                                    transform: "translateZ(5px)"
-                                                                },
-                                                            }}
-                                                        />
-                                                    );
-                                                })
-                                            }
-                                        </Geographies>
-                                    </ZoomableGroup>
-                                </ComposableMap>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    {/* Zoom Controls */}
-                    <div className="absolute bottom-4 right-4 z-30 flex flex-col gap-2">
-                        <button
-                            onClick={handleZoomIn}
-                            className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
-                            aria-label="Zoom in"
-                        >
-                            <Plus size={16} />
-                        </button>
-                        <button
-                            onClick={handleZoomOut}
-                            className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
-                            aria-label="Zoom out"
-                        >
-                            <Minus size={16} />
-                        </button>
-                        <button
-                            onClick={handleReset}
-                            className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-theme-accent/80 hover:border-theme-accent transition-all"
-                            aria-label="Reset zoom"
-                        >
-                            <RotateCcw size={14} />
-                        </button>
-                        <p className="hidden md:block text-slate-500 text-[10px] text-center mt-1 leading-tight max-w-[72px]">
-                            Scroll to zoom<br />Drag to pan
+                        <p className="text-slate-400 text-xs md:text-sm mt-2 max-w-xs leading-relaxed">
+                            Discover the waters we source from across Australia &amp; New Zealand.
                         </p>
                     </div>
-
                 </div>
-
-                {/* Desktop Info Panel — always visible, right side */}
-                <div className="hidden lg:block w-full lg:w-1/3 lg:h-[700px] overflow-y-auto border-l border-white/10">
-                    {infoPanelContent ? (
-                        infoPanelContent
-                    ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center px-6">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/10">
-                                <MapPin size={28} className="text-theme-accent/60" />
-                            </div>
-                            <h3 className="text-white font-serif font-bold text-xl mb-2">Select a Region</h3>
-                            <p className="text-slate-400 text-sm max-w-[200px] leading-relaxed">
-                                Click on any highlighted region on the map to explore the species we source from those waters.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
             </div>
 
-            {/* Mobile Info Panel — below the map with animation */}
-            <div className="lg:hidden">
-                <AnimatePresence>
-                    {activeRegion && regionData && (
+            {/* Map + info card layout */}
+            <div className="relative h-[600px] md:h-[650px]">
+
+                {/* Full-bleed SVG map — z-0 so info card sits above */}
+                <div className="absolute inset-0 z-0">
+                    <ComposableMap
+                        projection="geoMercator"
+                        projectionConfig={{ scale: isMobile ? 450 : 680, center: createCoordinates(148, -29) }}
+                        className="w-full h-full"
+                    >
+                        <Geographies geography={geoData}>
+                            {({ geographies }) =>
+                                geographies.map((geo, idx) => {
+                                    const name = geo.properties.STATE_NAME;
+                                    const code = regionMapping[name] || null;
+                                    const active = activeRegion === code;
+                                    const supported = !!code && !!REGIONAL_DATA[code];
+
+                                    return (
+                                        <Geography
+                                            key={geo.rsmKey || idx}
+                                            geography={geo}
+                                            onClick={() => handleRegion(code)}
+                                            onMouseEnter={() => handleEnter(code)}
+                                            onMouseLeave={handleLeave}
+                                            style={{
+                                                default: {
+                                                    fill: active
+                                                        ? "#FF8543"
+                                                        : supported
+                                                        ? "#112240"
+                                                        : "#0a1830",
+                                                    stroke: active ? "#ffaa75" : "#1a3355",
+                                                    strokeWidth: active ? 1.2 : 0.3,
+                                                    outline: "none",
+                                                    transition: "all 0.3s ease",
+                                                    opacity: active ? 1 : supported ? 0.85 : 0.5,
+                                                },
+                                                hover: {
+                                                    fill: supported ? "#1a3a5c" : "#0a1830",
+                                                    stroke: supported ? "#FF8543" : "#1a3355",
+                                                    strokeWidth: supported ? 0.8 : 0.3,
+                                                    outline: "none",
+                                                    cursor: supported ? "pointer" : "default",
+                                                    opacity: 1,
+                                                },
+                                                pressed: { outline: "none" },
+                                            }}
+                                        />
+                                    );
+                                })
+                            }
+                        </Geographies>
+                    </ComposableMap>
+                </div>
+
+
+                {/* Info card — fixed bottom-left, never clips */}
+                <AnimatePresence mode="wait">
+                    {data && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="overflow-hidden border-t border-white/10"
+                            key={activeRegion}
+                            data-card
+                            initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            className="absolute bottom-6 left-6 md:bottom-8 md:left-10 z-40 w-[280px] md:w-[320px] pointer-events-auto"
+                            onMouseEnter={() => { if (leaveTimer.current) clearTimeout(leaveTimer.current); }}
+                            onMouseLeave={() => { if (!pinned && !isMobile) { leaveTimer.current = setTimeout(() => setActiveRegion(null), 400); } }}
                         >
-                            {infoPanelContent}
+                            <div
+                                className="rounded-2xl overflow-hidden"
+                                style={{
+                                    background: "rgba(8,18,32,0.92)",
+                                    backdropFilter: "blur(20px) saturate(1.2)",
+                                    border: "1px solid rgba(255,133,67,0.12)",
+                                    boxShadow:
+                                        "0 24px 80px rgba(0,0,0,0.6), 0 0 1px rgba(255,255,255,0.05) inset",
+                                }}
+                            >
+                                {/* Accent top line */}
+                                <div
+                                    className="h-[2px]"
+                                    style={{
+                                        background: "linear-gradient(90deg, #FF8543, #FF6B1A 40%, transparent 100%)",
+                                    }}
+                                />
+
+                                <div className="p-5 md:p-6">
+                                    {/* Region header */}
+                                    <div className="flex items-start justify-between mb-1">
+                                        <h3 className="text-white font-serif font-bold text-lg md:text-xl leading-tight">
+                                            {data.name}
+                                        </h3>
+                                        {isMobile && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveRegion(null);
+                                                    setPinned(false);
+                                                }}
+                                                className="p-1.5 -mr-1 -mt-1 hover:bg-white/5 rounded-full transition-colors text-slate-500 hover:text-white"
+                                            >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="text-[#FF8543]/50 text-[11px] md:text-xs tracking-[0.1em] uppercase font-medium mb-4">
+                                        {data.tagline}
+                                    </p>
+
+                                    {/* Species */}
+                                    <div className="flex flex-col gap-1.5">
+                                        {data.species.map((sp, i) => (
+                                            <Link
+                                                key={i}
+                                                href={`/product/${sp.productSlug}`}
+                                                className="group flex items-center gap-3 px-3 py-2.5 -mx-1 rounded-xl transition-all duration-200 hover:bg-white/[0.04]"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <span className="text-lg leading-none">{sp.emoji}</span>
+                                                <span className="text-[13px] md:text-sm text-slate-300 group-hover:text-white font-medium transition-colors flex-1">
+                                                    {sp.name}
+                                                </span>
+                                                <span className="text-[11px] text-[#FF8543] opacity-0 group-hover:opacity-80 transition-all duration-200 translate-x-[-4px] group-hover:translate-x-0">
+                                                    &rarr;
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
 
+                {/* Instruction hint — bottom right, fades when card is shown */}
+                <div
+                    className="absolute bottom-6 right-6 md:bottom-8 md:right-10 z-10 transition-opacity duration-300"
+                    style={{ opacity: data ? 0 : 0.5 }}
+                >
+                    <p className="text-slate-500 text-[11px] md:text-xs tracking-wide text-right">
+                        {isMobile ? "Tap" : "Hover over"} a region<br />
+                        <span className="text-slate-600">to see what we source</span>
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }

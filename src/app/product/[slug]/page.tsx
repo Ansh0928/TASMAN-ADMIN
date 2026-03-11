@@ -20,6 +20,7 @@ function serializeProduct(p: {
     isAvailable: boolean;
     isFeatured: boolean;
     isTodaysSpecial: boolean;
+    countryOfOrigin: string;
     tags: string[];
 }) {
     return {
@@ -37,6 +38,7 @@ function serializeProduct(p: {
         isAvailable: p.isAvailable,
         isFeatured: p.isFeatured,
         isTodaysSpecial: p.isTodaysSpecial,
+        countryOfOrigin: p.countryOfOrigin,
         tags: p.tags,
     };
 }
@@ -210,6 +212,10 @@ export default async function ProductPage({ params }: Props) {
                         brand: {
                             '@type': 'Brand',
                             name: 'Tasman Star Seafoods',
+                        },
+                        countryOfOrigin: {
+                            '@type': 'Country',
+                            name: product.countryOfOrigin,
                         },
                         offers: {
                             '@type': 'Offer',

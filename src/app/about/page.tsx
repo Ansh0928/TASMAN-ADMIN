@@ -61,7 +61,7 @@ export default function AboutPage() {
                                 From a small Gold Coast operation to a complete seafood supply chain — our own trawler fleet, two retail stores, wholesale, and freight across the east coast.
                             </p>
                             <p className="text-theme-text-muted leading-relaxed">
-                                Direct connections to the Sydney Fish Market give us access to the widest range of Australian seafood, backed by over 13 years of experience.
+                                Direct connections to the Sydney Fish Market give us access to the widest range of Australian seafood, backed by over 30 years of experience.
                             </p>
                         </div>
                         <div className="relative">
@@ -69,7 +69,7 @@ export default function AboutPage() {
                                 <img src="/assets/retail-store.jpeg" alt="Tasman Star Seafood Market storefront" className="w-full h-72 object-cover" />
                             </div>
                             <div className="absolute -bottom-5 left-4 md:-left-4 bg-[#0A192F] rounded-xl p-4 shadow-xl border border-[#FF8543]/20">
-                                <p className="text-[#FF8543] font-bold text-2xl">13+</p>
+                                <p className="text-[#FF8543] font-bold text-2xl">30+</p>
                                 <p className="text-slate-300 text-xs">Years of Experience</p>
                             </div>
                         </div>
@@ -132,7 +132,7 @@ export default function AboutPage() {
                                 </div>
                                 <div>
                                     <h3 className="text-white font-bold text-sm mb-0.5">Call Us</h3>
-                                    <p className="text-slate-400 text-xs">+61 7 5529 0844</p>
+                                    <p className="text-slate-400 text-xs">+(0)755 221 221</p>
                                 </div>
                             </div>
                             <div className="flex gap-3 items-start">

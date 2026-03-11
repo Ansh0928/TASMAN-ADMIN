@@ -1,14 +1,13 @@
 'use client';
 
 import { Anchor, Fish, Waves, Phone, Mail } from 'lucide-react';
-import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
 import { CircularTestimonials } from '@/components/ui/circular-testimonials';
 
 const FLEET_GALLERY = [
     {
         name: 'Tasman Star Trawlers',
         designation: 'Commercial Fishing Fleet',
-        quote: 'Our fleet of commercial trawlers operates daily from the Gold Coast, targeting premium species in deep and shallow waters along Australia\'s east coast.',
+        quote: 'Our fleet of commercial trawlers operates daily from the east coast, targeting premium species in deep and shallow waters along Australia\'s east coast.',
         src: '/assets/products/trawlers-tasman-star-peter-k-hq.jpg',
     },
     {
@@ -26,7 +25,7 @@ const FLEET_GALLERY = [
     {
         name: 'Peter K at Sea',
         designation: 'Deep Water Operations',
-        quote: 'Operating in the rich fishing grounds off the Gold Coast, the Peter K brings in premium catches of prawns, snapper, and other east coast species.',
+        quote: 'Operating in the rich fishing grounds off the east coast, the Peter K brings in premium catches of flathead, whiting, prawns, squid, octopus, and other species.',
         src: '/assets/products/trawlers-hq.jpg',
     },
     {
@@ -41,19 +40,24 @@ export default function FishingFleetPage() {
     return (
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
-            {/* Scroll Expansion Hero */}
-            <ScrollExpandMedia
-                mediaType="image"
-                mediaSrc="/assets/products/vessels-hq.png"
-                bgImageSrc="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop"
-                title="Our Fishing Fleet"
-                date="Boat to Plate"
-                scrollToExpand="Scroll to explore"
-                textBlend
-            >
+            {/* Hero — vessels image; 4:3 ratio (1184×864), capped height on large screens */}
+            <section className="relative w-full min-h-[280px] max-h-[60vh] overflow-hidden bg-theme-secondary sm:min-h-[320px]" style={{ aspectRatio: '1184/864' }}>
+                <img
+                    src="/assets/products/vessels-hq.png"
+                    alt="Tasman Star fishing fleet vessels"
+                    width={1184}
+                    height={864}
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                    fetchPriority="high"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                    <h1 className="font-serif text-4xl md:text-6xl font-bold text-white mb-2">Our Fishing Fleet</h1>
+                    <p className="text-white/90 text-lg md:text-xl">Boat to Plate</p>
+                </div>
+            </section>
 
-                {/* ── All page content reveals after scroll expansion ── */}
-                <div className="flex flex-col gap-24 max-w-7xl mx-auto w-full">
+            <div className="flex flex-col gap-24 max-w-7xl mx-auto w-full px-4 py-16 md:py-24">
 
                     {/* Fleet Overview */}
                     <section className="bg-theme-secondary rounded-[2.5rem] shadow-sm border border-theme-border p-10 lg:p-16">
@@ -70,7 +74,7 @@ export default function FishingFleetPage() {
                                     <Anchor size={28} className="text-[#FF8543]" />
                                 </div>
                                 <h3 className="font-bold text-xl text-theme-text mb-2">Our Trawlers</h3>
-                                <p className="text-theme-text-muted">Our fleet of commercial trawlers operates daily from the Gold Coast, targeting premium species in deep and shallow waters.</p>
+                                <p className="text-theme-text-muted">Our fleet of commercial trawlers operates daily from the east coast, targeting premium species in deep and shallow waters.</p>
                             </div>
 
                             <div className="flex flex-col items-center text-center group">
@@ -86,7 +90,7 @@ export default function FishingFleetPage() {
                                     <Fish size={28} className="text-[#FF8543]" />
                                 </div>
                                 <h3 className="font-bold text-xl text-theme-text mb-2">Premium Species</h3>
-                                <p className="text-theme-text-muted">We target wild-caught prawns, snapper, barramundi, mud crab, and other premium species from Australia&apos;s east coast waters.</p>
+                                <p className="text-theme-text-muted">We target flathead, whiting, prawns, squid, octopus, and other species from Australia&apos;s east coast waters.</p>
                             </div>
                         </div>
                     </section>
@@ -165,8 +169,7 @@ export default function FishingFleetPage() {
                         </div>
                     </section>
 
-                </div>
-            </ScrollExpandMedia>
+            </div>
         </div>
     );
 }

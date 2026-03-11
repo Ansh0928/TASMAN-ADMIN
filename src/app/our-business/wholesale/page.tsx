@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ClipboardList, Phone, Mail, Truck, Scissors, Star, MessageSquare } from 'lucide-react';
+import { WholesaleHero } from '@/components/WholesaleHero';
 
 export const metadata: Metadata = {
     title: 'Wholesale Supply',
@@ -18,14 +19,8 @@ export default function WholesalePage() {
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
             {/* Hero */}
-            <div className="w-full h-[40vh] relative overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 bg-black/50 z-10" />
-                <img src="/assets/products/wholesale.webp" className="absolute inset-0 w-full h-full object-cover" alt="Wholesale Fish Market" />
-                <div className="relative z-20 text-center px-6">
-                    <span className="text-[#FF8543] font-bold tracking-widest uppercase text-sm mb-2 block">Our Business</span>
-                    <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-4">Wholesale Supply</h1>
-                    <p className="text-xl text-slate-200 font-light max-w-xl mx-auto">Providing chefs and grocers with uncompromised quality, straight off the boats.</p>
-                </div>
+            <div className="relative overflow-hidden bg-black">
+                <WholesaleHero />
             </div>
 
             <main className="container mx-auto px-4 md:px-8 py-16 max-w-5xl flex flex-col gap-8">
@@ -95,7 +90,7 @@ export default function WholesalePage() {
                                 </div>
                                 <div>
                                     <p className="text-slate-400 text-xs uppercase tracking-wider">Call The Sales Team</p>
-                                    <p className="text-[#FF8543] font-bold text-xl">07 5529 0844</p>
+                                    <p className="text-[#FF8543] font-bold text-xl">0755076712</p>
                                 </div>
                             </a>
                             <a href="mailto:info@tasmanstar.com.au?subject=Wholesale Enquiry" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
@@ -113,7 +108,7 @@ export default function WholesalePage() {
                                 </div>
                                 <div>
                                     <p className="text-slate-400 text-xs uppercase tracking-wider">Email</p>
-                                    <p className="text-white font-medium text-sm">info@tasmanstar.com.au</p>
+                                    <p className="text-white font-medium text-sm">warehouse@tasmanstarseafood.com</p>
                                 </div>
                             </a>
                         </div>

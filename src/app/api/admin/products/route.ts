@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags } = body;
+        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags, countryOfOrigin } = body;
 
         if (!name || !price || !categoryId) {
             return NextResponse.json({ message: 'Name, price, and category are required' }, { status: 400 });
@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
                 isAvailable: isAvailable ?? true,
                 isFeatured: isFeatured ?? false,
                 isTodaysSpecial: isTodaysSpecial ?? false,
+                countryOfOrigin: countryOfOrigin || 'Australia',
                 tags: tags || [],
             },
             include: { category: true },

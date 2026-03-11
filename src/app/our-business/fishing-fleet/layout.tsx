@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Our Fishing Fleet',
-    description: 'Tasman Star Seafoods operates its own trawler fleet, bringing the freshest catch directly from the ocean to the Gold Coast.',
+    description: 'Tasman Star Seafoods operates its own trawler fleet, bringing the freshest catch directly from the ocean to the east coast.',
     alternates: { canonical: '/our-business/fishing-fleet' },
     openGraph: {
         title: 'Our Fishing Fleet | Tasman Star Seafoods',
