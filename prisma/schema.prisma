@@ -169,6 +169,8 @@ model Order {
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
 
+  @@index([createdAt])
+  @@index([status])
   @@map("orders")
 }
 
@@ -199,6 +201,7 @@ model Notification {
   status    String   // "SENT" or "FAILED"
   sentAt    DateTime @default(now()) @map("sent_at")
 
+  @@index([orderId])
   @@map("notifications")
 }
 
@@ -282,6 +285,17 @@ model NewsletterSubscription {
   unsubscribedAt DateTime? @map("unsubscribed_at")
 
   @@map("newsletter_subscriptions")
+}
+
+// ── Webhook Idempotency ──
+
+model ProcessedWebhookEvent {
+  id        String   @id @default(cuid())
+  eventId   String   @unique @map("event_id")
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("processed_webhook_events")
 }
 
 // ── Reviews ──

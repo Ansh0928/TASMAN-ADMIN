@@ -7,7 +7,7 @@ export async function requireAdmin() {
         return { error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }), session: null };
     }
     if (session.user.role !== 'ADMIN') {
-        return { error: NextResponse.json({ message: 'Forbidden - Admin access required' }, { status: 403 }), session: null };
+        return { error: NextResponse.json({ message: 'Not Found' }, { status: 404 }), session: null };
     }
     return { error: null, session };
 }

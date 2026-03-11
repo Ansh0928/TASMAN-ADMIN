@@ -39,7 +39,7 @@ describe('requireAdmin', () => {
         expect(result.error!.status).toBe(401);
     });
 
-    it('returns 403 error when user role is CUSTOMER', async () => {
+    it('returns 404 error when user role is CUSTOMER', async () => {
         mockAuth.mockResolvedValue({
             user: { id: 'user-1', role: 'CUSTOMER', email: 'customer@test.com' },
         });
@@ -49,11 +49,11 @@ describe('requireAdmin', () => {
         expect(result.error).not.toBeNull();
         expect(result.session).toBeNull();
         const body = await result.error!.json();
-        expect(body.message).toBe('Forbidden - Admin access required');
-        expect(result.error!.status).toBe(403);
+        expect(body.message).toBe('Not Found');
+        expect(result.error!.status).toBe(404);
     });
 
-    it('returns 403 error when user role is WHOLESALE', async () => {
+    it('returns 404 error when user role is WHOLESALE', async () => {
         mockAuth.mockResolvedValue({
             user: { id: 'user-2', role: 'WHOLESALE', email: 'wholesale@test.com' },
         });
@@ -63,8 +63,8 @@ describe('requireAdmin', () => {
         expect(result.error).not.toBeNull();
         expect(result.session).toBeNull();
         const body = await result.error!.json();
-        expect(body.message).toBe('Forbidden - Admin access required');
-        expect(result.error!.status).toBe(403);
+        expect(body.message).toBe('Not Found');
+        expect(result.error!.status).toBe(404);
     });
 
     it('returns session with no error when user is ADMIN', async () => {

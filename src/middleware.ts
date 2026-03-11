@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { decode as decodeJwt } from '@auth/core/jwt';
 
 // --- CSRF Configuration ---
 
@@ -119,14 +120,14 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 2. Global rate limit (SEC-09) — API routes only, 200 req/min per IP
+    // 2. Global rate limit (SEC-09) — API routes only, 100 req/min per IP
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
 
     // Only rate-limit API routes — page navigations should never be throttled
     const isApiRoute = pathname.startsWith('/api/');
     const globalResult = isApiRoute
-        ? await upstashRateLimit(`rl:global:${ip}`, 200, 60)
-        : { limited: false, limit: 200, remaining: 200, reset: 0 };
+        ? await upstashRateLimit(`rl:global:${ip}`, 100, 60)
+        : { limited: false, limit: 100, remaining: 100, reset: 0 };
     if (globalResult.limited) {
         const retryAfterSec = Math.max(1, Math.ceil((globalResult.reset - Date.now()) / 1000));
         return NextResponse.json(
@@ -163,19 +164,41 @@ export async function middleware(request: NextRequest) {
 
     // 4. Session check for protected paths (preserving existing logic)
     if (needsSessionCheck(pathname)) {
-        const sessionToken = request.cookies.get('authjs.session-token')?.value ||
-                             request.cookies.get('__Secure-authjs.session-token')?.value;
+        const cookieName = request.cookies.get('__Secure-authjs.session-token')
+            ? '__Secure-authjs.session-token'
+            : 'authjs.session-token';
+        const sessionToken = request.cookies.get(cookieName)?.value;
 
         const isLoggedIn = !!sessionToken;
 
-        // 4a. Admin route protection: redirect unauthenticated users to login
-        // Role check (ADMIN) is handled by the admin layout via useSession()
+        // 4a. Admin route protection: return 404 for non-admin users (SEC-03)
         const isAdminRoute = pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login');
         if (isAdminRoute) {
             if (!sessionToken) {
-                const loginUrl = new URL('/admin/login', request.url);
-                return NextResponse.redirect(loginUrl);
+                return NextResponse.json({ message: 'Not Found' }, { status: 404 });
             }
+
+            // Decode the JWT to check the role
+            try {
+                const secret = process.env.NEXTAUTH_SECRET;
+                if (!secret) {
+                    return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+                }
+
+                const payload = await decodeJwt({
+                    token: sessionToken,
+                    secret,
+                    salt: cookieName,
+                });
+
+                if (!payload || payload.role !== 'ADMIN') {
+                    return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+                }
+            } catch {
+                // JWT decode failure — treat as non-admin
+                return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+            }
+
             return NextResponse.next();
         }
 

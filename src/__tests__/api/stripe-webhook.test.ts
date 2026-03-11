@@ -111,6 +111,9 @@ describe('POST /api/stripe/webhook', () => {
         );
         // Default: no low stock items
         prismaMock.product.findMany.mockResolvedValue([]);
+        // Default: event not yet processed (dedup check passes)
+        prismaMock.processedWebhookEvent.findUnique.mockResolvedValue(null);
+        prismaMock.processedWebhookEvent.create.mockResolvedValue({});
         // Re-set after mock to execute callbacks
         mockAfter.mockImplementation((fn: () => Promise<void>) => fn());
     });
@@ -369,6 +372,7 @@ describe('POST /api/stripe/webhook', () => {
 
     it('handles unknown event types gracefully', async () => {
         const stripeEvent = {
+            id: 'evt_unknown',
             type: 'payment_intent.succeeded',
             data: { object: {} },
         };
@@ -380,6 +384,92 @@ describe('POST /api/stripe/webhook', () => {
 
         expect(response.status).toBe(200);
         expect(data.received).toBe(true);
+    });
+
+    it('detects and skips duplicate webhook events by event.id', async () => {
+        const stripeEvent = {
+            id: 'evt_duplicate_123',
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    payment_status: 'paid',
+                    payment_intent: 'pi_test_123',
+                    metadata: { orderId: 'order-1' },
+                    invoice: null,
+                },
+            },
+        };
+
+        stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+        prismaMock.order.update.mockResolvedValue(mockOrderWithItems);
+        prismaMock.notification.create.mockResolvedValue({});
+
+        // First call: event not yet processed
+        prismaMock.processedWebhookEvent.findUnique.mockResolvedValue(null);
+        prismaMock.processedWebhookEvent.create.mockResolvedValue({});
+
+        const response1 = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
+        const data1 = await response1.json();
+
+        expect(response1.status).toBe(200);
+        expect(data1.received).toBe(true);
+        expect(data1.duplicate).toBeUndefined();
+        expect(prismaMock.order.update).toHaveBeenCalled();
+
+        // Reset call tracking for second request
+        vi.clearAllMocks();
+        // Re-set after mock to execute callbacks
+        mockAfter.mockImplementation((fn: () => Promise<void>) => fn());
+        stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+
+        // Second call: event already processed
+        prismaMock.processedWebhookEvent.findUnique.mockResolvedValue({
+            id: 'pwh-1',
+            eventId: 'evt_duplicate_123',
+            type: 'checkout.session.completed',
+            createdAt: new Date(),
+        });
+
+        const response2 = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
+        const data2 = await response2.json();
+
+        expect(response2.status).toBe(200);
+        expect(data2.received).toBe(true);
+        expect(data2.duplicate).toBe(true);
+        // Verify no order processing happened
+        expect(prismaMock.order.update).not.toHaveBeenCalled();
+        expect(prismaMock.order.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('handles race condition on duplicate event insert via unique constraint', async () => {
+        const stripeEvent = {
+            id: 'evt_race_123',
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    payment_status: 'paid',
+                    payment_intent: 'pi_test_123',
+                    metadata: { orderId: 'order-1' },
+                    invoice: null,
+                },
+            },
+        };
+
+        stripeMock.webhooks.constructEvent.mockReturnValue(stripeEvent);
+
+        // Lookup says not found, but insert fails with unique constraint (race condition)
+        prismaMock.processedWebhookEvent.findUnique.mockResolvedValue(null);
+        prismaMock.processedWebhookEvent.create.mockRejectedValue(
+            Object.assign(new Error('Unique constraint failed'), { code: 'P2002' })
+        );
+
+        const response = await POST(createWebhookRequest(JSON.stringify(stripeEvent)));
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.received).toBe(true);
+        expect(data.duplicate).toBe(true);
+        expect(prismaMock.order.update).not.toHaveBeenCalled();
     });
 
     it('logs notification as FAILED when email sending fails', async () => {

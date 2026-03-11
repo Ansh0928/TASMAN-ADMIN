@@ -34,6 +34,35 @@ export async function POST(request: NextRequest) {
 
     console.log(`Processing Stripe event: ${event.id} (${event.type})`);
 
+    // Idempotency: check if this event has already been processed
+    try {
+        const existing = await prisma.processedWebhookEvent.findUnique({
+            where: { eventId: event.id },
+        });
+        if (existing) {
+            console.log(`Duplicate Stripe event skipped: ${event.id}`);
+            return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+        }
+    } catch (lookupError) {
+        console.error('Webhook dedup lookup error:', lookupError);
+        // Continue processing if lookup fails — better to process twice than not at all
+    }
+
+    // Record the event ID before processing to prevent concurrent duplicates
+    try {
+        await prisma.processedWebhookEvent.create({
+            data: { eventId: event.id, type: event.type },
+        });
+    } catch (insertError: any) {
+        // Unique constraint violation means another request already recorded this event
+        if (insertError?.code === 'P2002') {
+            console.log(`Duplicate Stripe event skipped (race condition): ${event.id}`);
+            return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+        }
+        console.error('Webhook dedup insert error:', insertError);
+        // Continue processing if insert fails for other reasons
+    }
+
     try {
         switch (event.type) {
             case 'checkout.session.completed':

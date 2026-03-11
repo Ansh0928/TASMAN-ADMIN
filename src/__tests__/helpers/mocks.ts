@@ -42,6 +42,10 @@ export const prismaMock = {
         create: vi.fn(),
         count: vi.fn(),
     },
+    processedWebhookEvent: {
+        findUnique: vi.fn(),
+        create: vi.fn(),
+    },
     pushSubscription: {
         findMany: vi.fn(),
         upsert: vi.fn(),

@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+const { mockDecodeJwt } = vi.hoisted(() => ({
+    mockDecodeJwt: vi.fn(),
+}));
+
+vi.mock('@auth/core/jwt', () => ({
+    decode: mockDecodeJwt,
+}));
+
 const originalFetch = global.fetch;
 let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -68,14 +76,18 @@ describe('Middleware', () => {
         // Set Upstash env vars so rate limiters initialize
         process.env.UPSTASH_REDIS_REST_URL = 'https://fake.upstash.io';
         process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
+        process.env.NEXTAUTH_SECRET = 'test-secret';
         // Default: allow rate limit (low count)
         mockFetchPipelineAllowed();
+        // Default: JWT decode returns null (no valid session)
+        mockDecodeJwt.mockResolvedValue(null);
     });
 
     afterEach(() => {
         global.fetch = originalFetch;
         delete process.env.UPSTASH_REDIS_REST_URL;
         delete process.env.UPSTASH_REDIS_REST_TOKEN;
+        delete process.env.NEXTAUTH_SECRET;
     });
 
     describe('CSRF Origin validation (SEC-10)', () => {
@@ -226,6 +238,91 @@ describe('Middleware', () => {
 
             const response = await middleware(request);
             expect(response.status).not.toBe(429);
+        });
+    });
+
+    describe('Admin route protection (SEC-03)', () => {
+        it('returns 404 for admin routes when no session token exists', async () => {
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/products',
+            });
+
+            const response = await middleware(request);
+            expect(response.status).toBe(404);
+            const body = await response.json();
+            expect(body.message).toBe('Not Found');
+        });
+
+        it('returns 404 for admin routes when JWT has CUSTOMER role', async () => {
+            mockDecodeJwt.mockResolvedValue({ role: 'CUSTOMER', id: 'user-1' });
+
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/products',
+                cookies: { 'authjs.session-token': 'some-token' },
+            });
+
+            const response = await middleware(request);
+            expect(response.status).toBe(404);
+            const body = await response.json();
+            expect(body.message).toBe('Not Found');
+        });
+
+        it('returns 404 for admin routes when JWT has WHOLESALE role', async () => {
+            mockDecodeJwt.mockResolvedValue({ role: 'WHOLESALE', id: 'user-2' });
+
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/orders',
+                cookies: { 'authjs.session-token': 'some-token' },
+            });
+
+            const response = await middleware(request);
+            expect(response.status).toBe(404);
+        });
+
+        it('allows admin routes when JWT has ADMIN role', async () => {
+            mockDecodeJwt.mockResolvedValue({ role: 'ADMIN', id: 'admin-1' });
+
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/products',
+                cookies: { 'authjs.session-token': 'valid-admin-token' },
+            });
+
+            const response = await middleware(request);
+            expect(response.status).not.toBe(404);
+            expect(response.status).not.toBe(403);
+        });
+
+        it('returns 404 when JWT decode throws an error', async () => {
+            mockDecodeJwt.mockRejectedValue(new Error('Invalid token'));
+
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/products',
+                cookies: { 'authjs.session-token': 'invalid-token' },
+            });
+
+            const response = await middleware(request);
+            expect(response.status).toBe(404);
+        });
+
+        it('does not block /admin/login route', async () => {
+            const { middleware } = await import('@/middleware');
+
+            const request = createMockRequest({
+                url: 'https://tasman-admin.vercel.app/admin/login',
+            });
+
+            const response = await middleware(request);
+            expect(response.status).not.toBe(404);
         });
     });
 });
