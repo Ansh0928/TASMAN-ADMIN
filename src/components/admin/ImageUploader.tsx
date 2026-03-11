@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, GripVertical, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, GripVertical, Image as ImageIcon, RotateCw } from 'lucide-react';
 
 interface ImageUploaderProps {
     value: string[];
@@ -23,6 +23,35 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
     const [dragOver, setDragOver] = useState(false);
     const [dragIndex, setDragIndex] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
+
+    const rotateImage = useCallback(async (index: number, angle: 90 | 270) => {
+        const url = value[index];
+        setRotatingIndex(index);
+        setError('');
+
+        try {
+            const res = await fetch('/api/admin/products/rotate-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: url, angle }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || 'Failed to rotate image');
+            }
+
+            const { url: newUrl } = await res.json();
+            const newUrls = [...value];
+            newUrls[index] = newUrl;
+            onChange(newUrls);
+        } catch (err: any) {
+            setError(err.message || 'Failed to rotate image');
+        } finally {
+            setRotatingIndex(null);
+        }
+    }, [value, onChange]);
 
     const uploadFile = useCallback(async (file: File) => {
         const id = Math.random().toString(36).slice(2);
@@ -184,10 +213,28 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                             <div className="absolute inset-0 bg-black/40 opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <button
                                     type="button"
+                                    onClick={() => rotateImage(index, 270)}
+                                    disabled={rotatingIndex === index}
+                                    className="text-white hover:text-theme-accent disabled:opacity-50"
+                                    title="Rotate left (CCW)"
+                                >
+                                    <RotateCw size={20} className="scale-x-[-1]" />
+                                </button>
+                                <button
+                                    type="button"
                                     className="cursor-grab active:cursor-grabbing text-white"
                                     title="Drag to reorder"
                                 >
                                     <GripVertical size={20} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => rotateImage(index, 90)}
+                                    disabled={rotatingIndex === index}
+                                    className="text-white hover:text-theme-accent disabled:opacity-50"
+                                    title="Rotate right (CW)"
+                                >
+                                    <RotateCw size={20} />
                                 </button>
                                 <button
                                     type="button"
@@ -198,6 +245,11 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                                     <X size={20} />
                                 </button>
                             </div>
+                            {rotatingIndex === index && (
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
