@@ -5,6 +5,7 @@ import { useCart } from '@/components/CartProvider';
 import { useWishlist } from '@/components/WishlistProvider';
 import { Check, Heart } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export interface ProductCardData {
     id: string;
@@ -58,15 +59,17 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
         <article className={gridMode ? "w-full" : "snap-start flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] lg:w-[240px]"}>
             <Link
                 href={`/product/${product.slug}`}
-                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent active:border-theme-accent transition-all group h-full flex flex-col"
+                className="block bg-theme-secondary rounded-xl overflow-hidden border border-theme-border hover:border-theme-accent/30 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.3)] active:border-theme-accent transition-all group h-full flex flex-col"
             >
                 {/* Image container */}
                 <div className="relative aspect-square bg-theme-tertiary overflow-hidden">
                     {product.imageUrls && product.imageUrls.length > 0 ? (
-                        <img
+                        <Image
                             src={product.imageUrls[0]}
                             alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            sizes="(max-width: 640px) 44vw, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl">🐟</div>
