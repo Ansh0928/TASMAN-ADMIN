@@ -24,12 +24,13 @@ const LEFT_CARDS = [
         title: 'Retail Stores',
         description: 'Visit our stores in Labrador & Varsity Lakes for the freshest daily catch.',
         image: '/assets/retail-store.jpeg',
+        video: '/assets/retail-showreel.mp4',
     },
     {
         href: '/our-business/wholesale',
         title: 'Wholesale',
         description: 'Bulk supply for restaurants, cafes, and independent grocers across the coast.',
-        image: '/assets/wholesale.png',
+        image: '/assets/products/store remake.png',
     },
     {
         href: '/our-business/transport',
@@ -109,12 +110,25 @@ export default function Home() {
                                         href={card.href}
                                         className="group relative flex flex-col h-[14rem] sm:h-[16rem] overflow-hidden rounded-xl"
                                     >
-                                        {/* Image */}
-                                        <img
-                                            src={card.image}
-                                            alt={card.title}
-                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                        />
+                                        {/* Background Media */}
+                                        {card.video ? (
+                                            <video
+                                                autoPlay
+                                                muted
+                                                loop
+                                                playsInline
+                                                poster={card.image}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                            >
+                                                <source src={card.video} type="video/mp4" />
+                                            </video>
+                                        ) : (
+                                            <img
+                                                src={card.image}
+                                                alt={card.title}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                            />
+                                        )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/90 group-hover:via-black/50 group-hover:to-black/30 transition-all duration-500" />
 
                                         {/* Text */}
