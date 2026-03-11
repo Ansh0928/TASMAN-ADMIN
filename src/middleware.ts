@@ -175,7 +175,8 @@ export async function middleware(request: NextRequest) {
         const isAdminRoute = pathname.startsWith('/admin/') && !pathname.startsWith('/admin/login');
         if (isAdminRoute) {
             if (!sessionToken) {
-                return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+                const loginUrl = new URL('/admin/login', request.url);
+                return NextResponse.redirect(loginUrl);
             }
 
             // Decode the JWT to check the role

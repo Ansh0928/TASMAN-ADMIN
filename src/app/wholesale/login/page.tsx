@@ -4,13 +4,11 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import Link from 'next/link';
-import { GoogleIcon } from '@/components/GoogleIcon';
 import { Building2 } from 'lucide-react';
 
 export default function WholesaleLoginPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [fieldError, setFieldError] = useState('');
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -34,8 +32,7 @@ export default function WholesaleLoginPage() {
         }
     };
 
-    const handleGoogle = () => { setIsGoogleLoading(true); signIn('google', { callbackUrl: '/wholesale/prices' }); };
-    const busy = isLoading || isGoogleLoading;
+    const busy = isLoading;
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-theme-primary px-4 py-12">
@@ -55,18 +52,6 @@ export default function WholesaleLoginPage() {
                         {fieldError}
                     </div>
                 )}
-
-                {/* Google */}
-                <button onClick={handleGoogle} disabled={busy}
-                    className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-theme-border rounded-lg bg-theme-secondary text-theme-text font-medium hover:border-blue-400 transition-colors disabled:opacity-50">
-                    <GoogleIcon />
-                    {isGoogleLoading ? 'Redirecting...' : 'Continue with Google'}
-                </button>
-
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-theme-border" /></div>
-                    <div className="relative flex justify-center text-xs"><span className="px-3 bg-theme-primary text-theme-text-muted">or</span></div>
-                </div>
 
                 {/* Email form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
