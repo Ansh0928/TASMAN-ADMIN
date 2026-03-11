@@ -77,11 +77,11 @@ export default function Footer() {
                         <ul className="space-y-4 text-sm">
                             <li className="flex gap-3 items-center">
                                 <Phone className="text-theme-accent shrink-0" size={18} />
-                                <span>+61 7 5529 0844</span>
+                                <span>(07) 5522 1221</span>
                             </li>
                             <li className="flex gap-3 items-center">
                                 <Mail className="text-theme-accent shrink-0" size={18} />
-                                <span>info@tasmanstar.com.au</span>
+                                <span>admin@tasmanstarseafood.com</span>
                             </li>
                         </ul>
                     </div>
@@ -121,7 +121,7 @@ export default function Footer() {
                 <div className="border-t border-theme-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-theme-text-muted/70">
                     <p>&copy; {new Date().getFullYear()} Tasman Star Seafoods. All rights reserved.</p>
                     <div className="flex gap-6">
-                        <a href="#" aria-label="Privacy Policy" className="hover:text-theme-text transition-colors">Privacy Policy</a>
+                        <Link href="/privacy-policy" aria-label="Privacy Policy" className="hover:text-theme-text transition-colors">Privacy Policy</Link>
                         <a href="#" aria-label="Terms of Service" className="hover:text-theme-text transition-colors">Terms of Service</a>
                         <a href="#" aria-label="Shipping Policy" className="hover:text-theme-text transition-colors">Shipping Policy</a>
                     </div>
