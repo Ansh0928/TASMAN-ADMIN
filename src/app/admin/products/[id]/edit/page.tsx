@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, X, Search } from 'lucide-react';
-import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
 
 interface Category {
@@ -45,6 +44,7 @@ export default function EditProduct() {
         isAvailable: true,
         isFeatured: false,
         isTodaysSpecial: false,
+        countryOfOrigin: 'Australia',
         tags: '',
         relatedProductIds: [] as string[],
     });
@@ -68,6 +68,7 @@ export default function EditProduct() {
                 isAvailable: product.isAvailable ?? true,
                 isFeatured: product.isFeatured ?? false,
                 isTodaysSpecial: product.isTodaysSpecial ?? false,
+                countryOfOrigin: product.countryOfOrigin || 'Australia',
                 tags: (product.tags || []).join(', '),
                 relatedProductIds: product.relatedProductIds || [],
             });
@@ -117,6 +118,7 @@ export default function EditProduct() {
                     imageUrls: form.imageUrls,
                     stockQuantity: parseInt(form.stockQuantity, 10),
                     tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    countryOfOrigin: form.countryOfOrigin,
                     relatedProductIds: form.relatedProductIds,
                 }),
             });
@@ -126,7 +128,7 @@ export default function EditProduct() {
                 throw new Error(data.message || 'Failed to update product');
             }
 
-            router.push('/admin/products');
+            router.back();
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -141,9 +143,9 @@ export default function EditProduct() {
     return (
         <>
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/admin/products" className="text-theme-text-muted hover:text-theme-text">
+                <button onClick={() => router.back()} className="text-theme-text-muted hover:text-theme-text">
                     <ArrowLeft size={20} />
-                </Link>
+                </button>
                 <h2 className="text-3xl font-bold text-theme-text">Edit Product</h2>
             </div>
 
@@ -208,6 +210,18 @@ export default function EditProduct() {
                                 <option value="PACK">Pack</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-theme-text-muted text-sm mb-1">Country of Origin</label>
+                        <select
+                            value={form.countryOfOrigin}
+                            onChange={(e) => setForm({ ...form, countryOfOrigin: e.target.value })}
+                            className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                        >
+                            <option value="Australia">Australia</option>
+                            <option value="New Zealand">New Zealand</option>
+                        </select>
                     </div>
 
                     <ImageUploader
@@ -323,9 +337,9 @@ export default function EditProduct() {
                         className="bg-theme-accent text-white px-6 py-2 rounded-lg hover:bg-theme-accent/90 disabled:opacity-50">
                         {saving ? 'Saving...' : 'Save Changes'}
                     </button>
-                    <Link href="/admin/products" className="px-6 py-2 rounded-lg border border-theme-border text-theme-text hover:bg-theme-secondary">
+                    <button type="button" onClick={() => router.back()} className="px-6 py-2 rounded-lg border border-theme-border text-theme-text hover:bg-theme-secondary">
                         Cancel
-                    </Link>
+                    </button>
                 </div>
             </form>
         </>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Search, Star, Clock } from 'lucide-react';
 
 interface Product {
@@ -20,16 +21,34 @@ interface Product {
 }
 
 export default function AdminProducts() {
+    return (
+        <Suspense fallback={<p className="text-theme-text-muted text-center py-8">Loading products...</p>}>
+            <AdminProductsInner />
+        </Suspense>
+    );
+}
+
+function AdminProductsInner() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const fetchProducts = async () => {
+    const page = Number(searchParams.get('page')) || 1;
+
+    const setPage = useCallback((updater: number | ((prev: number) => number)) => {
+        const newPage = typeof updater === 'function' ? updater(page) : updater;
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', newPage.toString());
+        router.replace(`/admin/products?${params.toString()}`);
+    }, [page, searchParams, router]);
+
+    const fetchProducts = async (currentPage: number) => {
         setLoading(true);
         try {
-            const params = new URLSearchParams({ page: page.toString(), limit: '15' });
+            const params = new URLSearchParams({ page: currentPage.toString(), limit: '15' });
             if (search) params.set('search', search);
             const res = await fetch(`/api/admin/products?${params}`);
             if (res.ok) {
@@ -44,12 +63,12 @@ export default function AdminProducts() {
         }
     };
 
-    useEffect(() => { fetchProducts(); }, [page]);
+    useEffect(() => { fetchProducts(page); }, [page]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        fetchProducts();
+        fetchProducts(1);
     };
 
     const handleDelete = async (id: string, name: string) => {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Mail, Phone } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Footer() {
@@ -53,10 +53,8 @@ export default function Footer() {
                             Premium wholesale and retail seafood sourced directly from the finest pristine waters of Australia and beyond.
                         </p>
                         <div className="flex gap-4 mt-2">
-                            {/* TODO: Replace # with real social media URLs */}
-                            <a href="#" aria-label="Facebook" className="w-11 h-11 rounded-full bg-theme-tertiary flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-theme-primary active:text-theme-primary transition-colors"><Facebook size={18} /></a>
-                            <a href="#" aria-label="Instagram" className="w-11 h-11 rounded-full bg-theme-tertiary flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-theme-primary active:text-theme-primary transition-colors"><Instagram size={18} /></a>
-                            <a href="#" aria-label="Twitter" className="w-11 h-11 rounded-full bg-theme-tertiary flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-theme-primary active:text-theme-primary transition-colors"><Twitter size={18} /></a>
+                            <a href="https://www.facebook.com/TasmanStarSeafoodMarket/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-11 h-11 rounded-full bg-theme-tertiary flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-theme-primary active:text-theme-primary transition-colors"><Facebook size={18} /></a>
+                            <a href="https://www.instagram.com/tasmanstarseafoodmarket/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-11 h-11 rounded-full bg-theme-tertiary flex items-center justify-center hover:bg-theme-accent active:bg-theme-accent hover:text-theme-primary active:text-theme-primary transition-colors"><Instagram size={18} /></a>
                         </div>
                     </div>
 

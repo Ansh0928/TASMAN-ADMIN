@@ -24,6 +24,7 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
     const [dragIndex, setDragIndex] = useState<number | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
+    const [cacheBusters, setCacheBusters] = useState<Record<number, number>>({});
 
     const rotateImage = useCallback(async (index: number, angle: 90 | 270) => {
         const url = value[index];
@@ -42,10 +43,11 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                 throw new Error(data.message || 'Failed to rotate image');
             }
 
-            const { url: newUrl } = await res.json();
-            const newUrls = [...value];
-            newUrls[index] = newUrl;
-            onChange(newUrls);
+            await res.json();
+            // Don't modify the URL — use a local cache-buster for display only
+            setCacheBusters(prev => ({ ...prev, [index]: Date.now() }));
+            // Trigger re-render by setting same URLs (forces parent to re-save unchanged URLs)
+            onChange([...value]);
         } catch (err: any) {
             setError(err.message || 'Failed to rotate image');
         } finally {
@@ -189,9 +191,11 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
             {/* Existing images */}
             {value.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {value.map((url, index) => (
+                    {value.map((url, index) => {
+                        const displayUrl = cacheBusters[index] ? `${url}${url.includes('?') ? '&' : '?'}t=${cacheBusters[index]}` : url;
+                        return (
                         <div
-                            key={url}
+                            key={`${url}-${cacheBusters[index] || ''}`}
                             draggable
                             onDragStart={() => handleDragStart(index)}
                             onDragOver={(e) => handleDragOver(e, index)}
@@ -201,7 +205,7 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                             } ${index === 0 ? 'ring-2 ring-theme-accent' : ''}`}
                         >
                             <img
-                                src={url}
+                                src={displayUrl}
                                 alt={`Image ${index + 1}`}
                                 className="w-full h-full object-cover"
                             />
@@ -251,7 +255,8 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                                 </div>
                             )}
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

@@ -33,6 +33,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             isFeatured: product.isFeatured,
             isTodaysSpecial: product.isTodaysSpecial,
             tags: product.tags,
+            countryOfOrigin: product.countryOfOrigin,
             relatedProductIds: product.relatedProductIds,
         });
     } catch (err) {
@@ -49,7 +50,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags, relatedProductIds } = body;
+        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags, countryOfOrigin, relatedProductIds } = body;
 
         const product = await prisma.product.update({
             where: { id },
@@ -58,12 +59,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 ...(description !== undefined && { description }),
                 ...(price && { price: parseFloat(price) }),
                 ...(categoryId && { categoryId }),
-                ...(imageUrls && { imageUrls }),
+                ...(imageUrls && { imageUrls: (imageUrls as string[]).map((u: string) => u.split('?')[0]) }),
                 ...(stockQuantity !== undefined && { stockQuantity }),
                 ...(unit && { unit }),
                 ...(isAvailable !== undefined && { isAvailable }),
                 ...(isFeatured !== undefined && { isFeatured }),
                 ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
+                ...(countryOfOrigin !== undefined && { countryOfOrigin }),
                 ...(tags && { tags }),
                 ...(relatedProductIds !== undefined && { relatedProductIds }),
             },
