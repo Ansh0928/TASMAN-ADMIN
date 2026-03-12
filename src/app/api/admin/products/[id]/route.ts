@@ -32,6 +32,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             isAvailable: product.isAvailable,
             isFeatured: product.isFeatured,
             isTodaysSpecial: product.isTodaysSpecial,
+            discountPercent: product.discountPercent,
             tags: product.tags,
             countryOfOrigin: product.countryOfOrigin,
             relatedProductIds: product.relatedProductIds,
@@ -50,7 +51,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, tags, countryOfOrigin, relatedProductIds } = body;
+        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, discountPercent, tags, countryOfOrigin, relatedProductIds } = body;
 
         const product = await prisma.product.update({
             where: { id },
@@ -65,6 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 ...(isAvailable !== undefined && { isAvailable }),
                 ...(isFeatured !== undefined && { isFeatured }),
                 ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
+                ...(discountPercent !== undefined && { discountPercent: discountPercent ? parseInt(discountPercent, 10) : null }),
                 ...(countryOfOrigin !== undefined && { countryOfOrigin }),
                 ...(tags && { tags }),
                 ...(relatedProductIds !== undefined && { relatedProductIds }),

@@ -44,6 +44,7 @@ export default function EditProduct() {
         isAvailable: true,
         isFeatured: false,
         isTodaysSpecial: false,
+        discountPercent: '',
         countryOfOrigin: 'Australia',
         tags: '',
         relatedProductIds: [] as string[],
@@ -68,6 +69,7 @@ export default function EditProduct() {
                 isAvailable: product.isAvailable ?? true,
                 isFeatured: product.isFeatured ?? false,
                 isTodaysSpecial: product.isTodaysSpecial ?? false,
+                discountPercent: product.discountPercent ? String(product.discountPercent) : '',
                 countryOfOrigin: product.countryOfOrigin || 'Australia',
                 tags: (product.tags || []).join(', '),
                 relatedProductIds: product.relatedProductIds || [],
@@ -325,11 +327,26 @@ export default function EditProduct() {
                         </label>
                         <label className="flex items-center gap-2 text-theme-text">
                             <input type="checkbox" checked={form.isTodaysSpecial}
-                                onChange={(e) => setForm({ ...form, isTodaysSpecial: e.target.checked })}
+                                onChange={(e) => setForm({ ...form, isTodaysSpecial: e.target.checked, ...(!e.target.checked && { discountPercent: '' }) })}
                                 className="accent-theme-accent" />
                             Today&apos;s Special
                         </label>
                     </div>
+
+                    {form.isTodaysSpecial && (
+                        <div>
+                            <label className="block text-theme-text-muted text-sm mb-1">Discount % (optional — shown on deals page)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="99"
+                                placeholder="e.g. 20"
+                                value={form.discountPercent}
+                                onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+                                className="w-full max-w-[200px] px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-3 mt-8">

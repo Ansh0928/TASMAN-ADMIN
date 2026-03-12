@@ -29,6 +29,7 @@ export default function NewProduct() {
         isAvailable: true,
         isFeatured: false,
         isTodaysSpecial: false,
+        discountPercent: '',
         countryOfOrigin: 'Australia',
         tags: '',
     });
@@ -215,12 +216,27 @@ export default function NewProduct() {
                             <input
                                 type="checkbox"
                                 checked={form.isTodaysSpecial}
-                                onChange={(e) => setForm({ ...form, isTodaysSpecial: e.target.checked })}
+                                onChange={(e) => setForm({ ...form, isTodaysSpecial: e.target.checked, ...(!e.target.checked && { discountPercent: '' }) })}
                                 className="accent-theme-accent"
                             />
                             Today&apos;s Special
                         </label>
                     </div>
+
+                    {form.isTodaysSpecial && (
+                        <div>
+                            <label className="block text-theme-text-muted text-sm mb-1">Discount % (optional — shown on deals page)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="99"
+                                placeholder="e.g. 20"
+                                value={form.discountPercent}
+                                onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+                                className="w-full max-w-[200px] px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-3 mt-8">

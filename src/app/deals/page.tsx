@@ -22,20 +22,22 @@ export default async function DealsPage() {
         take: 12,
     });
 
-    const serialized = products.map((p, i) => {
-        const price = Number(p.price);
-        const discount = [10, 15, 20, 25, 30][i % 5];
-        const salePrice = price * (1 - discount / 100);
-        return {
-            slug: p.slug,
-            name: p.name,
-            price: price.toFixed(2),
-            salePrice: salePrice.toFixed(2),
-            discount,
-            imageUrl: p.imageUrls[0] || null,
-            categoryName: p.category?.name || '',
-        };
-    });
+    const serialized = products
+        .filter((p) => p.discountPercent && p.discountPercent > 0)
+        .map((p) => {
+            const price = Number(p.price);
+            const discount = p.discountPercent!;
+            const salePrice = price * (1 - discount / 100);
+            return {
+                slug: p.slug,
+                name: p.name,
+                price: price.toFixed(2),
+                salePrice: salePrice.toFixed(2),
+                discount,
+                imageUrl: p.imageUrls[0] || null,
+                categoryName: p.category?.name || '',
+            };
+        });
 
     return (
         <div className="flex flex-col w-full bg-theme-primary min-h-screen transition-colors duration-300">
