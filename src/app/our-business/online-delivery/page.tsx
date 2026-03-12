@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Globe } from 'lucide-react';
 import OnlineDeliveryProducts from './OnlineDeliveryProducts';
+import DeliveryZones from './DeliveryZones';
 
 export const metadata: Metadata = {
     title: 'Online & Delivery',
@@ -29,6 +30,11 @@ export default function OnlineDeliveryPage() {
                         Premium Australian seafood delivered fresh to your door. Browse, add to cart, and checkout in minutes.
                     </p>
                 </div>
+            </div>
+
+            {/* Delivery Zones */}
+            <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
+                <DeliveryZones />
             </div>
 
             {/* Product Browsing */}
