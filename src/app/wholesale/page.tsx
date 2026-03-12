@@ -76,12 +76,12 @@ export default function WholesalePage() {
                         Contact our wholesale team for enquiries about pricing, minimum orders, or delivery schedules.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-theme-text">
-                        <a href="tel:+61755290844" className="text-theme-accent hover:underline font-medium">
-                            +61 7 5529 0844
+                        <a href="tel:+61755076712" className="text-theme-accent hover:underline font-medium">
+                            07 5507 6712
                         </a>
                         <span className="hidden sm:inline text-theme-text-muted">|</span>
-                        <a href="mailto:info@tasmanstar.com.au" className="text-theme-accent hover:underline font-medium">
-                            info@tasmanstar.com.au
+                        <a href="mailto:wholesale@tasmanstarseafood.com" className="text-theme-accent hover:underline font-medium">
+                            wholesale@tasmanstarseafood.com
                         </a>
                     </div>
                 </div>

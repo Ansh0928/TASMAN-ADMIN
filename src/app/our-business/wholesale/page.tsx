@@ -84,7 +84,7 @@ export default function WholesalePage() {
                             <h2 className="font-serif text-2xl font-bold text-white">Contact Sales</h2>
                         </div>
                         <div className="p-6 flex flex-col flex-grow gap-3">
-                            <a href="tel:+61755290844" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
+                            <a href="tel:+61755076712" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
                                 <div className="w-11 h-11 rounded-full bg-[#FF8543]/10 flex items-center justify-center shrink-0">
                                     <Phone size={20} className="text-[#FF8543]" />
                                 </div>
@@ -93,7 +93,7 @@ export default function WholesalePage() {
                                     <p className="text-[#FF8543] font-bold text-xl">0755076712</p>
                                 </div>
                             </a>
-                            <a href="mailto:info@tasmanstar.com.au?subject=Wholesale Enquiry" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
+                            <a href="mailto:wholesale@tasmanstarseafood.com?subject=Wholesale Enquiry" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
                                 <div className="w-11 h-11 rounded-full bg-[#FF8543]/10 flex items-center justify-center shrink-0">
                                     <MessageSquare size={20} className="text-[#FF8543]" />
                                 </div>

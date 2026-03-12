@@ -122,18 +122,18 @@ export default function WholesalePendingPage() {
 
                         <div className="space-y-3">
                             <a
-                                href="mailto:info@tasmanstar.com.au"
+                                href="mailto:wholesale@tasmanstarseafood.com"
                                 className="flex items-center gap-3 text-theme-text hover:text-theme-accent transition-colors"
                             >
                                 <Mail size={18} className="text-theme-accent" />
-                                <span className="text-sm">info@tasmanstar.com.au</span>
+                                <span className="text-sm">wholesale@tasmanstarseafood.com</span>
                             </a>
                             <a
-                                href="tel:+61755290844"
+                                href="tel:+61755076712"
                                 className="flex items-center gap-3 text-theme-text hover:text-theme-accent transition-colors"
                             >
                                 <Phone size={18} className="text-theme-accent" />
-                                <span className="text-sm">+61 7 5529 0844</span>
+                                <span className="text-sm">07 5507 6712</span>
                             </a>
                         </div>
                     </div>

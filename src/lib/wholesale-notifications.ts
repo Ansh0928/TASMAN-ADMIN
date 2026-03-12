@@ -73,8 +73,8 @@ function buildPriceListUpdatedEmail(name: string): string {
                     </a>
                 </div>
                 <p style="color: #555; margin-top: 24px;">
-                    Questions? Contact us at <a href="mailto:info@tasmanstar.com.au" style="color: #FF8543;">info@tasmanstar.com.au</a>
-                    or call <a href="tel:+61755290844" style="color: #FF8543;">+61 7 5529 0844</a>.
+                    Questions? Contact us at <a href="mailto:wholesale@tasmanstarseafood.com" style="color: #FF8543;">wholesale@tasmanstarseafood.com</a>
+                    or call <a href="tel:+61755076712" style="color: #FF8543;">+61 7 5507 6712</a>.
                 </p>
             </div>
             ${emailFooterHtml()}

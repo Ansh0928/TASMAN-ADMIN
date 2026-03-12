@@ -38,7 +38,7 @@ export function wholesaleApprovedSMS(name: string): string {
 }
 
 export function wholesaleRejectedSMS(name: string): string {
-    return `Hi ${name}, unfortunately we couldn't approve your wholesale application with Tasman Star Seafoods at this time. Please contact us at info@tasmanstar.com.au for more info.`;
+    return `Hi ${name}, unfortunately we couldn't approve your wholesale application with Tasman Star Seafoods at this time. Please contact us at wholesale@tasmanstarseafood.com for more info.`;
 }
 
 export function wholesalePriceListUpdatedSMS(): string {

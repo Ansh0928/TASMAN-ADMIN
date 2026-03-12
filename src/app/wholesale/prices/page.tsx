@@ -259,12 +259,12 @@ export default function WholesalePricesPage() {
                         <h3 className="text-lg font-bold text-theme-text mb-2">Ready to Order?</h3>
                         <p className="text-theme-text-muted mb-4">Contact our wholesale team to place your order</p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <a href="tel:+61755290844" className="text-theme-accent hover:underline font-medium">
-                                +61 7 5529 0844
+                            <a href="tel:+61755076712" className="text-theme-accent hover:underline font-medium">
+                                07 5507 6712
                             </a>
                             <span className="hidden sm:inline text-theme-text-muted">|</span>
-                            <a href="mailto:info@tasmanstar.com.au" className="text-theme-accent hover:underline font-medium">
-                                info@tasmanstar.com.au
+                            <a href="mailto:wholesale@tasmanstarseafood.com" className="text-theme-accent hover:underline font-medium">
+                                wholesale@tasmanstarseafood.com
                             </a>
                         </div>
                     </div>
