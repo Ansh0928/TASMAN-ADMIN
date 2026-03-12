@@ -31,8 +31,16 @@ export async function POST(request: NextRequest) {
         let imageBuffer: Buffer;
 
         if (isLocalImage(cleanUrl)) {
-            // Local file in public/ directory
-            const filePath = path.join(process.cwd(), 'public', cleanUrl);
+            // Local file in public/ directory — validate path stays within public/
+            const publicDir = path.join(process.cwd(), 'public');
+            const filePath = path.resolve(publicDir, cleanUrl.replace(/^\//, ''));
+            if (!filePath.startsWith(publicDir)) {
+                return NextResponse.json({ message: 'Invalid image path' }, { status: 400 });
+            }
+            const ext = path.extname(filePath).toLowerCase();
+            if (!['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+                return NextResponse.json({ message: 'Invalid image type' }, { status: 400 });
+            }
             imageBuffer = await readFile(filePath);
         } else {
             // S3 URL — extract key from hostname-based URL
@@ -48,7 +56,8 @@ export async function POST(request: NextRequest) {
 
         if (isLocalImage(cleanUrl)) {
             // Write back to local file
-            const filePath = path.join(process.cwd(), 'public', cleanUrl);
+            const publicDir = path.join(process.cwd(), 'public');
+            const filePath = path.resolve(publicDir, cleanUrl.replace(/^\//, ''));
             await writeFile(filePath, rotated);
         } else {
             // Re-upload to S3

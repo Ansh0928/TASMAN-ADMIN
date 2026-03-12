@@ -85,7 +85,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
         .map(
             (item) =>
                 `<tr>
-                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${item.product.name}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${escapeHtml(item.product.name)}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${parseFloat(item.unitPrice.toString()).toFixed(2)}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${parseFloat(item.total.toString()).toFixed(2)}</td>
@@ -95,7 +95,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
     const fulfillmentInfo =
         data.fulfillment === 'DELIVERY'
-            ? `<p><strong>Delivery Address:</strong><br/>${data.deliveryStreet}<br/>${data.deliveryCity}, ${data.deliveryState} ${data.deliveryPostcode}</p>`
+            ? `<p><strong>Delivery Address:</strong><br/>${escapeHtml(data.deliveryStreet || '')}<br/>${escapeHtml(data.deliveryCity || '')}, ${escapeHtml(data.deliveryState || '')} ${escapeHtml(data.deliveryPostcode || '')}</p>`
             : `<p><strong>Pickup</strong><br/>We'll notify you when your order is ready for pickup at our store.</p>`;
 
     const html = `
@@ -456,7 +456,7 @@ export async function sendNewOrderAdminEmail(data: {
         .map(
             (item) =>
                 `<tr>
-                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${item.product.name}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">${escapeHtml(item.product.name)}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${parseFloat(item.unitPrice.toString()).toFixed(2)}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right;">$${parseFloat(item.total.toString()).toFixed(2)}</td>
@@ -466,7 +466,7 @@ export async function sendNewOrderAdminEmail(data: {
 
     const fulfillmentInfo =
         data.fulfillment === 'DELIVERY'
-            ? `<p style="margin: 0;"><strong>Delivery Address:</strong><br/>${data.deliveryStreet}<br/>${data.deliveryCity}, ${data.deliveryState} ${data.deliveryPostcode}</p>`
+            ? `<p style="margin: 0;"><strong>Delivery Address:</strong><br/>${escapeHtml(data.deliveryStreet || '')}<br/>${escapeHtml(data.deliveryCity || '')}, ${escapeHtml(data.deliveryState || '')} ${escapeHtml(data.deliveryPostcode || '')}</p>`
             : `<p style="margin: 0;"><strong>Pickup</strong>${data.pickupTime ? `<br/>Requested time: ${new Date(data.pickupTime).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })}` : ''}</p>`;
 
     const html = `
@@ -555,7 +555,7 @@ export async function sendLowStockAlertEmail(data: {
         .map(
             (p) =>
                 `<tr>
-                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #333;">${p.name}</td>
+                    <td style="padding: 8px 12px; border-bottom: 1px solid #eee; color: #333;">${escapeHtml(p.name)}</td>
                     <td style="padding: 8px 12px; border-bottom: 1px solid #eee; text-align: center; color: ${p.stockQuantity <= 2 ? '#dc2626' : '#d97706'}; font-weight: bold;">${p.stockQuantity} left</td>
                 </tr>`
         )
