@@ -18,9 +18,10 @@ import { auth } from '@/lib/auth';
 import { Toaster } from 'sonner';
 import { NAV_LINKS } from '@/lib/nav-links';
 import Link from 'next/link';
+import Image from 'next/image';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair', display: 'swap' })
 
 export const metadata: Metadata = {
   title: {
@@ -66,6 +67,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} data-theme="dark" suppressHydrationWarning>
+      <head>
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href={`https://${process.env.AWS_S3_BUCKET_NAME || 'tasman-star-seafood'}.s3.${process.env.AWS_S3_REGION || 'ap-southeast-2'}.amazonaws.com`} crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://js.stripe.com" crossOrigin="anonymous" />
+      </head>
       <body className="bg-theme-primary text-theme-secondary font-sans min-h-screen flex justify-center selection:bg-theme-accent/30 selection:text-white antialiased">
         <SessionProvider>
         <ThemeProvider>
@@ -74,13 +80,13 @@ export default async function RootLayout({
             <div className="w-full bg-theme-primary min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-300">
 
               {/* Header */}
-              <header className="sticky top-0 z-50 w-full bg-theme-header backdrop-blur-md border-b border-theme-accent/20 transition-colors duration-300">
+              <header className="sticky top-0 z-50 w-full bg-theme-header/95 supports-[backdrop-filter]:backdrop-blur-md border-b border-theme-accent/20 transition-colors duration-300">
                 <div className="container mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2">
 
                   {/* Logo */}
                   <div className="flex items-center gap-2 shrink-0">
                     <Link href="/" aria-label="Go to homepage" className="h-12 sm:h-16 w-auto flex items-center bg-theme-primary rounded-xl px-2 transition-colors duration-300">
-                      <img src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" className="h-9 sm:h-12 w-auto object-contain" />
+                      <Image src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" width={120} height={48} className="h-9 sm:h-12 w-auto object-contain" priority />
                     </Link>
                   </div>
 
