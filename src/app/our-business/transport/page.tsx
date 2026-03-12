@@ -53,7 +53,7 @@ export default function TransportPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-xl text-theme-text mb-2">Refrigerated Fleet</h3>
-                                    <p className="text-theme-text-muted leading-relaxed text-lg">Every vehicle is purpose-built with commercial-grade refrigeration maintaining 0-4°C throughout transit.</p>
+                                    <p className="text-theme-text-muted leading-relaxed text-lg">Every vehicle is purpose-built with commercial-grade refrigeration maintaining -20 to 4°C throughout transit.</p>
                                 </div>
                             </div>
 
@@ -73,7 +73,7 @@ export default function TransportPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-xl text-theme-text mb-2">Interstate Freight</h3>
-                                    <p className="text-theme-text-muted leading-relaxed text-lg">We freight fresh seafood to markets across QLD, NSW, VIC and beyond with guaranteed cold-chain integrity.</p>
+                                    <p className="text-theme-text-muted leading-relaxed text-lg">We freight fresh seafood to markets across QLD and NSW beyond with guaranteed cold-chain integrity.</p>
                                 </div>
                             </div>
                         </div>
@@ -92,15 +92,15 @@ export default function TransportPage() {
                             <p className="text-theme-text-muted text-lg">Refrigerated Vehicles</p>
                         </div>
                         <div className="flex flex-col items-center text-center">
-                            <span className="text-5xl font-bold text-[#FF8543] mb-2">6</span>
+                            <span className="text-5xl font-bold text-[#FF8543] mb-2">7</span>
                             <p className="text-theme-text-muted text-lg">Days a Week</p>
                         </div>
                         <div className="flex flex-col items-center text-center">
-                            <span className="text-5xl font-bold text-[#FF8543] mb-2">5</span>
+                            <span className="text-5xl font-bold text-[#FF8543] mb-2">2</span>
                             <p className="text-theme-text-muted text-lg">States Covered</p>
                         </div>
                         <div className="flex flex-col items-center text-center">
-                            <span className="text-5xl font-bold text-[#FF8543] mb-2">0-4°C</span>
+                            <span className="text-5xl font-bold text-[#FF8543] mb-2">-20 to 4°C</span>
                             <p className="text-theme-text-muted text-lg">Guaranteed Temp</p>
                         </div>
                     </div>
@@ -114,9 +114,10 @@ export default function TransportPage() {
                         <p className="text-xl text-slate-300 mb-10">Need bulk seafood freight to your business or market? Get in touch.</p>
                         <div className="flex flex-col sm:flex-row gap-6 justify-center">
                             <a href="tel:+61755290844" className="flex items-center justify-center gap-3 bg-white text-[#0A192F] px-8 py-4 rounded-full font-bold text-lg hover:bg-slate-100 transition-colors shadow-lg">
-                                <Phone size={20} /> 07 5529 0844
+                                <Phone size={20} /> (07) 5522 1221
+
                             </a>
-                            <a href="mailto:info@tasmanstar.com.au" className="flex items-center justify-center gap-3 bg-transparent border border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-colors">
+                            <a href="mailto:admin@tasmanstarseafood.com.au" className="flex items-center justify-center gap-3 bg-transparent border border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-colors">
                                 <Mail size={20} /> Contact Us
                             </a>
                         </div>
