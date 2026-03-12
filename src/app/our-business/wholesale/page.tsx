@@ -102,13 +102,13 @@ export default function WholesalePage() {
                                     <p className="text-white font-medium text-sm">Send an enquiry</p>
                                 </div>
                             </a>
-                            <a href="mailto:info@tasmanstar.com.au" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
+                            <a href="mailto:wholesale@tasmanstarseafood.com" className="flex items-center gap-4 bg-[#0A192F] rounded-2xl p-5 hover:bg-[#112240] transition-colors group">
                                 <div className="w-11 h-11 rounded-full bg-[#FF8543]/10 flex items-center justify-center shrink-0">
                                     <Mail size={20} className="text-[#FF8543]" />
                                 </div>
                                 <div>
                                     <p className="text-slate-400 text-xs uppercase tracking-wider">Email</p>
-                                    <p className="text-white font-medium text-sm">warehouse@tasmanstarseafood.com</p>
+                                    <p className="text-white font-medium text-sm">wholesale@tasmanstarseafood.com</p>
                                 </div>
                             </a>
                         </div>
