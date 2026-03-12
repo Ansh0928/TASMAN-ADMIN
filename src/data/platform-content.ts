@@ -299,7 +299,11 @@ export const categoryPage = {
                 { value: 'oysters', label: 'Oysters', count: 4 },
                 { value: 'shellfish-molluscs', label: 'Shellfish & Molluscs', count: 7 },
                 { value: 'squid-octopus-cuttlefish', label: 'Squid, Octopus & Cuttlefish', count: 10 },
-                { value: 'prepared-meals-sushi', label: 'Prepared Meals & Sushi', count: 4 },
+                { value: 'prepared-meals', label: 'Prepared Meals', count: 2 },
+                { value: 'sushi', label: 'Sushi', count: 2 },
+                { value: 'sashimi', label: 'Sashimi', count: 0 },
+                { value: 'frozen-traded', label: 'Frozen Traded', count: 0 },
+                { value: 'sauces-condiments', label: 'Sauces & Condiments', count: 0 },
             ],
         },
         {

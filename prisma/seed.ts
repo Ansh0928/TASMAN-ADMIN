@@ -52,7 +52,11 @@ async function main() {
         { name: 'Oysters', slug: 'oysters', imageUrl: IMG('pacific-plate-oyster.webp'), sortOrder: 8 },
         { name: 'Shellfish & Molluscs', slug: 'shellfish-molluscs', imageUrl: IMG('tasmania-scallops-meat.webp'), sortOrder: 9 },
         { name: 'Squid, Octopus & Cuttlefish', slug: 'squid-octopus-cuttlefish', imageUrl: IMG('cleaned-octoupus-2.webp'), sortOrder: 10 },
-        { name: 'Prepared Meals & Sushi', slug: 'prepared-meals-sushi', imageUrl: IMG('nigiri-setsushi.webp'), sortOrder: 11 },
+        { name: 'Prepared Meals', slug: 'prepared-meals', imageUrl: IMG('stir-fried-pre-made-meal.webp'), sortOrder: 11 },
+        { name: 'Sushi', slug: 'sushi', imageUrl: IMG('sushi-nigiri-set.webp'), sortOrder: 12 },
+        { name: 'Sashimi', slug: 'sashimi', imageUrl: IMG('sashimi-platter.webp'), sortOrder: 13 },
+        { name: 'Frozen Traded', slug: 'frozen-traded', imageUrl: IMG('marinaria-mix.webp'), sortOrder: 14 },
+        { name: 'Sauces & Condiments', slug: 'sauces-condiments', imageUrl: IMG('img3304.webp'), sortOrder: 15 },
     ];
 
     const categoryMap: Record<string, string> = {};
@@ -1120,43 +1124,47 @@ async function main() {
         },
 
         // ═══════════════════════════════════════
-        // PREPARED MEALS & SUSHI
+        // PREPARED MEALS
         // ═══════════════════════════════════════
         {
             name: 'Housemade Salads',
             slug: 'housemade-salads',
             price: 15.00,
-            categorySlug: 'prepared-meals-sushi',
+            categorySlug: 'prepared-meals',
             imageUrls: [IMG('housemade-salads.webp')],
             unit: 'PIECE',
             tags: [],
             description: 'Housemade seafood salads — freshly prepared salads featuring premium seafood. A healthy, convenient lunch option from Tasman Star Seafoods.',
         },
         {
+            name: 'Stir Fry Seafood Meal',
+            slug: 'stir-fry-seafood-meal',
+            price: 18.00,
+            categorySlug: 'prepared-meals',
+            imageUrls: [IMG('stir-fried-pre-made-meal.webp')],
+            unit: 'PIECE',
+            tags: [],
+            description: 'Stir fry seafood meal — a ready-to-heat meal packed with fresh seafood and vegetables. Quick, delicious and convenient for busy weeknights.',
+        },
+
+        // ═══════════════════════════════════════
+        // SUSHI
+        // ═══════════════════════════════════════
+        {
             name: 'Nigiri Sushi Set',
             slug: 'nigiri-sushi-set',
             price: 22.00,
-            categorySlug: 'prepared-meals-sushi',
+            categorySlug: 'sushi',
             imageUrls: [IMG('nigiri-setsushi.webp')],
             unit: 'PIECE',
             tags: [],
             description: 'Nigiri sushi set — hand-pressed sushi featuring premium fresh fish atop seasoned rice. Made fresh daily at Tasman Star Seafoods on the Gold Coast.',
         },
         {
-            name: 'Stir Fry Seafood Meal',
-            slug: 'stir-fry-seafood-meal',
-            price: 18.00,
-            categorySlug: 'prepared-meals-sushi',
-            imageUrls: [IMG('stir-fried-pre-made-meal.webp')],
-            unit: 'PIECE',
-            tags: [],
-            description: 'Stir fry seafood meal — a ready-to-heat meal packed with fresh seafood and vegetables. Quick, delicious and convenient for busy weeknights.',
-        },
-        {
             name: 'Sushi Platter',
             slug: 'sushi-platter',
             price: 25.00,
-            categorySlug: 'prepared-meals-sushi',
+            categorySlug: 'sushi',
             imageUrls: [IMG('sushi.webp')],
             unit: 'PIECE',
             tags: [],
