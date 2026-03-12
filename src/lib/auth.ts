@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import { prisma } from './prisma';
 import bcrypt from 'bcryptjs';
+import { captureError } from '@/lib/error';
 import { authConfig } from './auth.config';
 
 import type { Provider } from 'next-auth/providers';
@@ -108,7 +109,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     }
                     return true;
                 } catch (error) {
-                    console.error('Google sign-in error:', error);
+                    captureError(error, 'Google sign-in error');
                     return false;
                 }
             }

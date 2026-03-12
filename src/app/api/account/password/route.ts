@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
             try {
                 await sendPasswordChangedEmail({ email: updatedUser.email, name: updatedUser.name || 'Customer' });
             } catch (e) {
-                console.error('Password changed notification error:', e);
+                captureError(e, 'Password changed notification error');
             }
         }
     });

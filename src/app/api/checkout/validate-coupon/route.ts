@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
+import { captureError } from '@/lib/error';
 
 export async function POST(request: NextRequest) {
     try {
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
             { status: 200 }
         );
     } catch (error) {
-        console.error('Coupon validation error:', error);
+        captureError(error, 'Coupon validation error');
         return NextResponse.json(
             { valid: false, message: 'Failed to validate code' },
             { status: 500 }

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function GET(request: NextRequest) {
     const { error } = await requireAdmin();
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
             pagination: { page, limit, total, pages: Math.ceil(total / limit) },
         });
     } catch (err) {
-        console.error('Admin orders error:', err);
+        captureError(err, 'Admin orders error');
         return NextResponse.json({ message: 'Failed to fetch orders' }, { status: 500 });
     }
 }

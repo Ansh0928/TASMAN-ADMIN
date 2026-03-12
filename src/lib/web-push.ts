@@ -1,4 +1,5 @@
 import webpush from 'web-push';
+import { captureError } from '@/lib/error';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
@@ -48,7 +49,7 @@ export async function sendPushNotification(
         return { success: true };
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown push error';
-        console.error('Push notification failed:', message);
+        captureError(err, 'Push notification failed');
         return { success: false, error: message };
     }
 }

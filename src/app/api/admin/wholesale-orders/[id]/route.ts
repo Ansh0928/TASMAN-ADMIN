@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { resend, EMAIL_FROM } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse, after } from 'next/server';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -69,7 +70,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                             });
                         }
                     } catch (err) {
-                        console.error('Wholesale order notification error:', err);
+                        captureError(err, 'Wholesale order notification error');
                     }
                 });
             }
@@ -77,7 +78,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         return NextResponse.json({ order });
     } catch (err) {
-        console.error('Update wholesale order error:', err);
+        captureError(err, 'Update wholesale order error');
         return NextResponse.json({ message: 'Failed to update order' }, { status: 500 });
     }
 }

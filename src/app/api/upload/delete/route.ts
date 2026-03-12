@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { deleteObject } from '@/lib/s3';
 
 const ALLOWED_PREFIXES = ['products/', 'categories/', 'banners/'];
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
         await deleteObject(key);
         return NextResponse.json({ success: true });
     } catch (err) {
-        console.error('Failed to delete from S3:', err);
+        captureError(err, 'Failed to delete from S3');
         return NextResponse.json({ message: 'Failed to delete image' }, { status: 500 });
     }
 }

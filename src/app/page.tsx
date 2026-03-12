@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import ProductCarousel from '@/components/ProductCarousel';
 import ProductCard, { type ProductCardData } from '@/components/ProductCard';
 import RegionalMapLazy from '@/components/map/RegionalMapLazy';
@@ -53,6 +54,53 @@ const ONLINE_STORE = {
     image: '/assets/storefront.jpg',
 };
 
+function LazyVideo({ src, poster, className }: { src: string; poster: string; className: string }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: '200px' }
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div ref={containerRef} className={className}>
+            {isVisible ? (
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    poster={poster}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                >
+                    <source src={src} type="video/mp4" />
+                </video>
+            ) : (
+                <Image
+                    src={poster}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover"
+                />
+            )}
+        </div>
+    );
+}
+
 export default function Home() {
     const [bestBuys, setBestBuys] = useState<ProductCardData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,8 +111,8 @@ export default function Home() {
                 const res = await fetch('/api/products?featured=true&limit=10');
                 const data = await res.json();
                 setBestBuys(data.products || []);
-            } catch (error) {
-                console.error('Failed to fetch best buys:', error);
+            } catch {
+                // Sentry captures this
             } finally {
                 setLoading(false);
             }
@@ -96,7 +144,7 @@ export default function Home() {
 
                         {/* Left 2x2 Grid */}
                         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5">
-                            {LEFT_CARDS.map((card) => (
+                            {LEFT_CARDS.map((card, index) => (
                                 <div key={card.href} className="relative rounded-2xl border-[0.75px] border-white/[0.08] p-1.5">
                                     <GlowingEffect
                                         spread={40}
@@ -108,25 +156,24 @@ export default function Home() {
                                     />
                                     <Link
                                         href={card.href}
+                                        prefetch={false}
                                         className="group relative flex flex-col h-[14rem] sm:h-[16rem] overflow-hidden rounded-xl"
                                     >
                                         {/* Background Media */}
                                         {card.video ? (
-                                            <video
-                                                autoPlay
-                                                muted
-                                                loop
-                                                playsInline
+                                            <LazyVideo
+                                                src={card.video}
                                                 poster={card.image}
-                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                            >
-                                                <source src={card.video} type="video/mp4" />
-                                            </video>
+                                                className="absolute inset-0"
+                                            />
                                         ) : (
-                                            <img
+                                            <Image
                                                 src={card.image}
                                                 alt={card.title}
-                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                                priority={index === 0}
                                             />
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/90 group-hover:via-black/50 group-hover:to-black/30 transition-all duration-500" />
@@ -160,13 +207,17 @@ export default function Home() {
                             />
                             <Link
                                 href={ONLINE_STORE.href}
+                                prefetch={false}
                                 className="group relative flex flex-col h-[28rem] sm:h-[32rem] lg:h-full overflow-hidden rounded-xl"
                             >
                                 {/* Image */}
-                                <img
+                                <Image
                                     src={ONLINE_STORE.image}
                                     alt={ONLINE_STORE.title}
-                                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                    fill
+                                    sizes="(max-width: 1024px) 100vw, 33vw"
+                                    className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+                                    priority
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/90 group-hover:via-black/50 group-hover:to-black/30 transition-all duration-500" />
 
@@ -199,11 +250,13 @@ export default function Home() {
 
                 {/* Best Buys */}
                 {loading ? (
-                    <section className="container mx-auto max-w-7xl pb-16 px-4">
-                        <div className="animate-pulse py-8">
-                            <div className="h-8 bg-theme-secondary rounded w-48 mb-2"></div>
-                            <div className="h-4 bg-theme-secondary rounded w-32 mb-6"></div>
-                            <div className="flex gap-3 overflow-hidden">
+                    <section className="container mx-auto max-w-7xl pb-16">
+                        <div className="animate-pulse py-4 md:py-8">
+                            <div className="px-4 md:px-0 mb-6">
+                                <div className="h-8 bg-theme-secondary rounded w-48 mb-2"></div>
+                                <div className="h-4 bg-theme-secondary rounded w-32"></div>
+                            </div>
+                            <div className="flex gap-3 md:gap-4 overflow-hidden px-4 md:px-0 pb-4">
                                 {[1, 2, 3, 4, 5].map((i) => (
                                     <div key={i} className="flex-shrink-0 w-[200px]">
                                         <div className="aspect-square bg-theme-secondary rounded-xl mb-3"></div>

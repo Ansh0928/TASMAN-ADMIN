@@ -1,4 +1,5 @@
 import twilio from 'twilio';
+import { captureError } from '@/lib/error';
 
 let _client: twilio.Twilio | null = null;
 
@@ -22,7 +23,7 @@ export async function sendSMS(to: string, body: string) {
         const message = await getTwilio().messages.create({ to, from, body });
         return { success: true, sid: message.sid };
     } catch (error) {
-        console.error('Failed to send SMS:', error);
+        captureError(error, 'Failed to send SMS');
         return { success: false, error };
     }
 }

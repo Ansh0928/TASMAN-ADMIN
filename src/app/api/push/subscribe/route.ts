@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { captureError } from '@/lib/error';
 import { auth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, id: subscription.id });
     } catch (err) {
-        console.error('Push subscribe error:', err);
+        captureError(err, 'Push subscribe error');
         return NextResponse.json(
             { message: 'Failed to save push subscription' },
             { status: 500 }

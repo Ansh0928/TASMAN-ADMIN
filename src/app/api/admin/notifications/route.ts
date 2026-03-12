@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (err) {
-        console.error('Admin notifications error:', err);
+        captureError(err, 'Admin notifications error');
         return NextResponse.json({ message: 'Failed to fetch notifications' }, { status: 500 });
     }
 }

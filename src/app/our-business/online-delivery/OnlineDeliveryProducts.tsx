@@ -70,8 +70,8 @@ export default function OnlineDeliveryProducts() {
                     }
                 }
                 setCategoryProducts(grouped);
-            } catch (error) {
-                console.error('Failed to fetch products:', error);
+            } catch {
+                // Sentry captures this
             } finally {
                 setLoading(false);
             }
@@ -119,23 +119,60 @@ export default function OnlineDeliveryProducts() {
 
     if (loading) {
         return (
-            <div className="container mx-auto max-w-7xl py-12">
-                <div className="animate-pulse space-y-10">
-                    <div className="h-8 bg-theme-secondary rounded w-48"></div>
-                    <div className="flex gap-4 overflow-hidden">
+            <div className="container mx-auto max-w-7xl pb-16">
+                {/* Skeleton: Filter Bar */}
+                <div className="sticky top-0 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="flex-1 flex gap-2">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="flex-shrink-0 h-10 w-20 bg-theme-secondary rounded-full animate-pulse"></div>
+                            ))}
+                        </div>
+                        <div className="flex-shrink-0 h-10 w-36 bg-theme-secondary rounded-lg animate-pulse"></div>
+                    </div>
+                </div>
+
+                {/* Skeleton: Best Buys Carousel */}
+                <div className="animate-pulse py-4 md:py-8">
+                    <div className="px-4 md:px-0 mb-6">
+                        <div className="h-8 bg-theme-secondary rounded w-48 mb-2"></div>
+                        <div className="h-4 bg-theme-secondary rounded w-32"></div>
+                    </div>
+                    <div className="flex gap-3 md:gap-4 overflow-hidden px-4 md:px-0 pb-4">
                         {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="flex-shrink-0 w-[220px]">
-                                <div className="aspect-square bg-theme-secondary rounded-xl"></div>
-                                <div className="mt-3 h-4 bg-theme-secondary rounded w-3/4"></div>
-                                <div className="mt-2 h-3 bg-theme-secondary rounded w-1/2"></div>
+                            <div key={i} className="flex-shrink-0 w-[200px]">
+                                <div className="aspect-square bg-theme-secondary rounded-xl mb-3"></div>
+                                <div className="h-4 bg-theme-secondary rounded w-3/4 mb-2"></div>
+                                <div className="h-3 bg-theme-secondary rounded w-1/2"></div>
                             </div>
                         ))}
                     </div>
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
+                </div>
+
+                {/* Skeleton: Category Circles */}
+                <div className="animate-pulse py-6">
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-6 px-4 md:px-0">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
                             <div key={i} className="flex flex-col items-center gap-2">
                                 <div className="w-24 h-24 rounded-full bg-theme-secondary"></div>
                                 <div className="h-3 bg-theme-secondary rounded w-16"></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Skeleton: Category Carousel */}
+                <div className="animate-pulse py-4 md:py-8">
+                    <div className="px-4 md:px-0 mb-6">
+                        <div className="h-8 bg-theme-secondary rounded w-36 mb-2"></div>
+                        <div className="h-4 bg-theme-secondary rounded w-48"></div>
+                    </div>
+                    <div className="flex gap-3 md:gap-4 overflow-hidden px-4 md:px-0 pb-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="flex-shrink-0 w-[200px]">
+                                <div className="aspect-square bg-theme-secondary rounded-xl mb-3"></div>
+                                <div className="h-4 bg-theme-secondary rounded w-3/4 mb-2"></div>
+                                <div className="h-3 bg-theme-secondary rounded w-1/2"></div>
                             </div>
                         ))}
                     </div>

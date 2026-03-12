@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeProduct(p: any) {
@@ -144,7 +145,7 @@ export async function POST(request: NextRequest) {
             recommendations: results.map(serializeProduct),
         });
     } catch (err) {
-        console.error('Cart recommendations API error:', err);
+        captureError(err, 'Cart recommendations API error');
         return NextResponse.json({ message: 'Failed to fetch recommendations' }, { status: 500 });
     }
 }

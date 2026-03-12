@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { resend, EMAIL_FROM } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ emailsSent, smsSent, failures, totalRecipients: wholesalers.length });
     } catch (err) {
-        console.error('Broadcast error:', err);
+        captureError(err, 'Broadcast error');
         return NextResponse.json({ message: 'Failed to send broadcast' }, { status: 500 });
     }
 }

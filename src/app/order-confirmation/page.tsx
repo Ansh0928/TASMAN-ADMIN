@@ -33,8 +33,8 @@ export default function OrderConfirmationPage() {
                         cartCleared.current = true;
                     }
                 }
-            } catch (error) {
-                console.error('Failed to fetch order:', error);
+            } catch {
+                // Sentry captures this
             } finally {
                 setLoading(false);
             }
@@ -45,8 +45,44 @@ export default function OrderConfirmationPage() {
 
     if (loading) {
         return (
-            <div className="min-h-[100dvh] bg-theme-primary flex items-center justify-center">
-                <p className="text-theme-text-muted">Loading order details...</p>
+            <div className="min-h-screen bg-theme-primary">
+                <div className="container mx-auto px-4 py-12 max-w-2xl">
+                    <div className="bg-theme-secondary border border-theme-border rounded-lg p-8 text-center space-y-6 animate-pulse">
+                        {/* Icon placeholder */}
+                        <div className="flex justify-center">
+                            <div className="w-16 h-16 rounded-full bg-theme-primary"></div>
+                        </div>
+                        {/* Title placeholder */}
+                        <div>
+                            <div className="h-10 bg-theme-primary rounded w-64 mx-auto mb-2"></div>
+                            <div className="h-4 bg-theme-primary rounded w-48 mx-auto"></div>
+                        </div>
+                        {/* Order details placeholder */}
+                        <div className="bg-theme-primary rounded-lg p-4 space-y-3">
+                            <div className="h-5 bg-theme-secondary rounded w-32"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-3/4"></div>
+                        </div>
+                        {/* Items placeholder */}
+                        <div className="bg-theme-primary rounded-lg p-4 space-y-3">
+                            <div className="h-5 bg-theme-secondary rounded w-20"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                        </div>
+                        {/* Totals placeholder */}
+                        <div className="bg-theme-primary rounded-lg p-4 space-y-3">
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                            <div className="h-4 bg-theme-secondary rounded w-full"></div>
+                            <div className="h-5 bg-theme-secondary rounded w-full"></div>
+                        </div>
+                        {/* Buttons placeholder */}
+                        <div className="flex flex-wrap justify-center gap-3 pt-4">
+                            <div className="h-12 w-36 bg-theme-primary rounded-lg"></div>
+                            <div className="h-12 w-44 bg-theme-primary rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

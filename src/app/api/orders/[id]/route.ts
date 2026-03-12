@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function GET(
     request: NextRequest,
@@ -69,7 +70,7 @@ export async function GET(
             createdAt: order.createdAt,
         });
     } catch (error) {
-        console.error('Order fetch error:', error);
+        captureError(error, 'Order fetch error');
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }

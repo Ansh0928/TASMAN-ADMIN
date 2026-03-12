@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { NextRequest } from 'next/server';
+import { captureError } from '@/lib/error';
 
 function escapeCsv(value: string): string {
     if (value.includes(',') || value.includes('"') || value.includes('\n')) {
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (err) {
-        console.error('Orders export error:', err);
+        captureError(err, 'Orders export error');
         return new Response('Failed to export orders', { status: 500 });
     }
 }

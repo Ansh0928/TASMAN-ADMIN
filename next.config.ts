@@ -6,11 +6,13 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     localPatterns: [
       { pathname: '/assets/**', search: '' },
+      { pathname: '/**', search: '' },
     ],
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '/**' },
       { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
       { protocol: 'https', hostname: `${process.env.AWS_S3_BUCKET_NAME || 'tasman-star-seafood'}.s3.${process.env.AWS_S3_REGION || 'ap-southeast-2'}.amazonaws.com`, pathname: '/**' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '/**' },
     ],
   },
   async headers() {

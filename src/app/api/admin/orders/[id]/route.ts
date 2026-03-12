@@ -4,6 +4,7 @@ import { sendPushNotification } from '@/lib/web-push';
 import { sendOrderStatusEmail } from '@/lib/resend';
 import { sendSMS, sendOrderStatusSMS } from '@/lib/twilio';
 import { NextRequest, NextResponse, after } from 'next/server';
+import { captureError } from '@/lib/error';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
     PENDING: ['CONFIRMED', 'CANCELLED'],
@@ -38,7 +39,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
         return NextResponse.json({ order });
     } catch (err) {
-        console.error('Get order error:', err);
+        captureError(err, 'Get order error');
         return NextResponse.json({ message: 'Failed to fetch order' }, { status: 500 });
     }
 }
@@ -105,7 +106,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                         url: `/order-confirmation?order_id=${order.id}`,
                     }
                 ).catch((err) => {
-                    console.error('Push notification send error:', err);
+                    captureError(err, 'Push notification send error');
                 });
             }
         }
@@ -160,14 +161,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                         });
                     }
                 } catch (err) {
-                    console.error('Order status notification error:', err);
+                    captureError(err, 'Order status notification error');
                 }
             });
         }
 
         return NextResponse.json({ order });
     } catch (err) {
-        console.error('Update order error:', err);
+        captureError(err, 'Update order error');
         return NextResponse.json({ message: 'Failed to update order' }, { status: 500 });
     }
 }

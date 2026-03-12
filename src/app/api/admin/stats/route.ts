@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -139,7 +140,7 @@ export async function GET() {
             lowStockList,
         });
     } catch (error) {
-        console.error('Admin stats error:', error);
+        captureError(error, 'Admin stats error');
         return NextResponse.json({ message: 'Failed to fetch stats' }, { status: 500 });
     }
 }

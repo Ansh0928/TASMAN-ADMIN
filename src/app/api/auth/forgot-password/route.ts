@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server';
+import { captureError } from '@/lib/error';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { resend, EMAIL_FROM } from '@/lib/resend';
@@ -87,14 +88,14 @@ export async function POST(request: NextRequest) {
                     });
                     console.log('Password reset email sent to', userEmail);
                 } catch (err) {
-                    console.error('Failed to send password reset email:', err);
+                    captureError(err, 'Failed to send password reset email');
                 }
             });
         }
 
         return NextResponse.json({ message: genericMessage });
     } catch (error) {
-        console.error('Forgot password error:', error);
+        captureError(error, 'Forgot password error');
         return NextResponse.json(
             { message: "If an account exists with this email, you'll receive a reset link." }
         );

@@ -1,6 +1,7 @@
 import { prisma } from './prisma';
 import { resend, EMAIL_FROM, emailHeaderHtml, emailFooterHtml } from './resend';
 import { sendSMS, wholesalePriceListUpdatedSMS } from './twilio';
+import { captureError } from '@/lib/error';
 
 export async function notifyWholesalersOfUpdate() {
     try {
@@ -51,7 +52,7 @@ export async function notifyWholesalersOfUpdate() {
 
         return { emailsSent, smsSent };
     } catch (error) {
-        console.error('Failed to send wholesale update notifications:', error);
+        captureError(error, 'Failed to send wholesale update notifications');
         return { emailsSent: 0, smsSent: 0 };
     }
 }

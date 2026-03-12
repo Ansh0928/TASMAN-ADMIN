@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { captureError } from '@/lib/error';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -63,7 +64,7 @@ export async function GET() {
             { status: 200 }
         );
     } catch (error) {
-        console.error('Wholesale prices error:', error);
+        captureError(error, 'Wholesale prices error');
         return NextResponse.json(
             { message: 'Failed to fetch prices' },
             { status: 500 }

@@ -4,6 +4,7 @@ import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
 import { sendOrderConfirmationEmail, sendNewOrderAdminEmail, sendPaymentFailureEmail, sendRefundNotificationEmail, sendLowStockAlertEmail } from '@/lib/resend';
 import { sendSMS } from '@/lib/twilio';
+import { captureError } from '@/lib/error';
 
 export async function POST(request: NextRequest) {
     const body = await request.text();
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
                                 });
 
                             } catch (invoiceError) {
-                                console.error(`Order ${orderId}: Failed to retrieve invoice:`, invoiceError);
+                                captureError(invoiceError, `Order ${orderId}: Failed to retrieve invoice`);
                             }
                         }
 
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
                                 }
                             });
                         } catch (stockError: any) {
-                            console.error(`Order ${order.id}: Stock decrement failed - ${stockError.message}`);
+                            captureError(stockError, `Order ${order.id}: Stock decrement failed`);
                         }
 
                         // Check for low stock after decrement — use after() to avoid blocking response
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
                                         },
                                     });
                                 } catch (err) {
-                                    console.error('Low stock alert email error:', err);
+                                    captureError(err, 'Low stock alert email error');
                                 }
                             });
                         }
@@ -221,7 +222,7 @@ export async function POST(request: NextRequest) {
                                         },
                                     });
                                 } catch (err) {
-                                    console.error('Order confirmation SMS error:', err);
+                                    captureError(err, 'Order confirmation SMS error');
                                 }
                             });
                         }
@@ -253,7 +254,7 @@ export async function POST(request: NextRequest) {
                                     },
                                 });
                             } catch (err) {
-                                console.error('Admin new order email error:', err);
+                                captureError(err, 'Admin new order email error');
                             }
                         });
                     }
@@ -287,7 +288,7 @@ export async function POST(request: NextRequest) {
                                     },
                                 });
                             } catch (err) {
-                                console.error('Payment failure SMS error:', err);
+                                captureError(err, 'Payment failure SMS error');
                             }
                         });
                     }
@@ -313,7 +314,7 @@ export async function POST(request: NextRequest) {
                                     },
                                 });
                             } catch (err) {
-                                console.error('Payment failure email error:', err);
+                                captureError(err, 'Payment failure email error');
                             }
                         });
                     }
@@ -370,7 +371,7 @@ export async function POST(request: NextRequest) {
                                         },
                                     });
                                 } catch (err) {
-                                    console.error('Refund SMS error:', err);
+                                    captureError(err, 'Refund SMS error');
                                 }
                             });
                         }
@@ -398,7 +399,7 @@ export async function POST(request: NextRequest) {
                                         },
                                     });
                                 } catch (err) {
-                                    console.error('Refund notification email error:', err);
+                                    captureError(err, 'Refund notification email error');
                                 }
                             });
                         }
@@ -411,7 +412,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ received: true }, { status: 200 });
     } catch (error) {
-        console.error('Webhook error:', error);
+        captureError(error, 'Webhook error');
         return NextResponse.json(
             { message: 'Webhook processing failed' },
             { status: 500 }

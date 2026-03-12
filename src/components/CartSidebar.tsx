@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useCart } from './CartProvider';
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 
@@ -68,7 +69,7 @@ export default function CartSidebar() {
                                 {/* Image */}
                                 <div className="w-20 h-20 bg-theme-tertiary rounded-xl overflow-hidden shrink-0 relative">
                                     {item.image ? (
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full bg-theme-tertiary" />
                                     )}

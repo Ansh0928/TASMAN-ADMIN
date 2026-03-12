@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { sendWholesaleStatusEmail } from '@/lib/resend';
 import { sendSMS, wholesaleApprovedSMS, wholesaleRejectedSMS } from '@/lib/twilio';
 import { NextRequest, NextResponse, after } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -118,14 +119,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                         });
                     }
                 } catch (err) {
-                    console.error('Wholesale status notification error:', err);
+                    captureError(err, 'Wholesale status notification error');
                 }
             });
         }
 
         return NextResponse.json({ user });
     } catch (err) {
-        console.error('Update customer error:', err);
+        captureError(err, 'Update customer error');
         return NextResponse.json({ message: 'Failed to update customer' }, { status: 500 });
     }
 }
@@ -158,7 +159,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
         return NextResponse.json({ message: `Customer "${customer.name}" deleted successfully` });
     } catch (err) {
-        console.error('Delete customer error:', err);
+        captureError(err, 'Delete customer error');
         return NextResponse.json({ message: 'Failed to delete customer' }, { status: 500 });
     }
 }

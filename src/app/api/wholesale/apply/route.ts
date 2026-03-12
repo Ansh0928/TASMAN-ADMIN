@@ -6,6 +6,7 @@ import { sendSMS, wholesaleApplicationReceivedSMS } from '@/lib/twilio';
 import { rateLimit, apiLimiter, getClientIp } from '@/lib/rate-limit';
 import { validatePassword } from '@/lib/password-validation';
 import { after } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function POST(request: NextRequest) {
     try {
@@ -74,13 +75,13 @@ export async function POST(request: NextRequest) {
             try {
                 await sendWholesaleApplicationReceivedEmail(emailData);
             } catch (e) {
-                console.error('Wholesale application email error:', e);
+                captureError(e, 'Wholesale application email error');
             }
 
             try {
                 await sendWholesaleNewApplicationAdminEmail(emailData);
             } catch (e) {
-                console.error('Wholesale admin notification error:', e);
+                captureError(e, 'Wholesale admin notification error');
             }
 
             if (phone) {
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
                         },
                     });
                 } catch (e) {
-                    console.error('Wholesale application SMS error:', e);
+                    captureError(e, 'Wholesale application SMS error');
                 }
             }
         });
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
             { status: 201 }
         );
     } catch (error) {
-        console.error('Wholesale apply error:', error);
+        captureError(error, 'Wholesale apply error');
         return NextResponse.json(
             { message: 'Failed to submit application' },
             { status: 500 }

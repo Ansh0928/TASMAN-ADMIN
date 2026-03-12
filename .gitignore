@@ -55,3 +55,24 @@ public/assets/*.dmg
 next-env.d.ts
 
 /src/generated/prisma
+
+# AI/agent development tooling
+.agent/
+.agents/
+.superpowers/
+.planning/
+docs/superpowers/
+skills-lock.json
+.claude/worktrees/
+.claude/skills/
+
+# Legacy media directories
+public/video/
+public/Product Images/
+
+# Office lock files
+.~lock*
+*.xlsx#
+
+# Allow .env.example
+!.env.example

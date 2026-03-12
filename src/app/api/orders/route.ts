@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
             totalPages,
         });
     } catch (error) {
-        console.error('Customer orders fetch error:', error);
+        captureError(error, 'Customer orders fetch error');
         return NextResponse.json(
             { message: 'Failed to fetch orders' },
             { status: 500 }

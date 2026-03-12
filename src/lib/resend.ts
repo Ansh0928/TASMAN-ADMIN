@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/security';
+import { captureError } from '@/lib/error';
 
 let _resend: Resend | null = null;
 
@@ -203,7 +204,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send order confirmation email:', error);
+        captureError(error, 'Failed to send order confirmation email');
         return { success: false, error };
     }
 }
@@ -307,7 +308,7 @@ export async function sendOrderStatusEmail(data: OrderStatusEmailData) {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send order status email:', error);
+        captureError(error, 'Failed to send order status email');
         return { success: false, error };
     }
 }
@@ -369,7 +370,7 @@ export async function sendRefundNotificationEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send refund notification email:', error);
+        captureError(error, 'Failed to send refund notification email');
         return { success: false, error };
     }
 }
@@ -427,7 +428,7 @@ export async function sendPaymentFailureEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send payment failure email:', error);
+        captureError(error, 'Failed to send payment failure email');
         return { success: false, error };
     }
 }
@@ -538,7 +539,7 @@ export async function sendNewOrderAdminEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send new order admin email:', error);
+        captureError(error, 'Failed to send new order admin email');
         return { success: false, error };
     }
 }
@@ -607,7 +608,7 @@ export async function sendLowStockAlertEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send low stock alert email:', error);
+        captureError(error, 'Failed to send low stock alert email');
         return { success: false, error };
     }
 }
@@ -667,7 +668,7 @@ export async function sendWholesaleApplicationReceivedEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send wholesale application received email:', error);
+        captureError(error, 'Failed to send wholesale application received email');
         return { success: false, error };
     }
 }
@@ -729,7 +730,7 @@ export async function sendWholesaleNewApplicationAdminEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send wholesale admin notification email:', error);
+        captureError(error, 'Failed to send wholesale admin notification email');
         return { success: false, error };
     }
 }
@@ -773,7 +774,7 @@ export async function sendPasswordChangedEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send password changed email:', error);
+        captureError(error, 'Failed to send password changed email');
         return { success: false, error };
     }
 }
@@ -835,7 +836,7 @@ export async function sendWholesaleStatusEmail(data: {
         });
         return { success: true, id: result.data?.id };
     } catch (error) {
-        console.error('Failed to send wholesale status email:', error);
+        captureError(error, 'Failed to send wholesale status email');
         return { success: false, error };
     }
 }

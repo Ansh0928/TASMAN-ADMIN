@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 function serializeProduct(p: {
     id: string;
@@ -198,7 +199,7 @@ export async function GET(
             youMayAlsoLike: youMayAlsoLike.map(serializeProduct),
         });
     } catch (err) {
-        console.error('Recommendations API error:', err);
+        captureError(err, 'Recommendations API error');
         return NextResponse.json({ message: 'Failed to fetch recommendations' }, { status: 500 });
     }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
 import { generateImageKey, generatePresignedUploadUrl, getPublicUrl } from '@/lib/s3';
+import { captureError } from '@/lib/error';
 
 export async function POST(req: NextRequest) {
     const { error } = await requireAdmin();
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ uploadUrl, publicUrl, key });
     } catch (err) {
-        console.error('Failed to generate presigned URL:', err);
+        captureError(err, 'Failed to generate presigned URL');
         return NextResponse.json({ message: 'Failed to generate upload URL' }, { status: 500 });
     }
 }

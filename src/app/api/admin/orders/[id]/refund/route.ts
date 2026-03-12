@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { stripe } from '@/lib/stripe';
 import { sendRefundNotificationEmail } from '@/lib/resend';
 import { NextRequest, NextResponse, after } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                         },
                     });
                 } catch (err) {
-                    console.error('Refund email error:', err);
+                    captureError(err, 'Refund email error');
                 }
             });
         }
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             isFullRefund,
         });
     } catch (err: any) {
-        console.error('Refund error:', err);
+        captureError(err, 'Refund error');
         const message = err?.raw?.message || err?.message || 'Failed to process refund';
         return NextResponse.json({ message }, { status: 500 });
     }

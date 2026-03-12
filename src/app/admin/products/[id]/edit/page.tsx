@@ -75,8 +75,7 @@ export default function EditProduct() {
                 relatedProductIds: product.relatedProductIds || [],
             });
             setLoading(false);
-        }).catch((err) => {
-            console.error(err);
+        }).catch(() => {
             setError('Failed to load product');
             setLoading(false);
         });

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function GET(request: NextRequest) {
     try {
@@ -37,12 +38,29 @@ export async function GET(request: NextRequest) {
             where.isTodaysSpecial = true;
         }
 
-        // Fetch products
+        // Fetch products with only needed fields
         const [products, total] = await Promise.all([
             prisma.product.findMany({
                 where,
-                include: {
-                    category: true,
+                select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    description: true,
+                    price: true,
+                    imageUrls: true,
+                    unit: true,
+                    stockQuantity: true,
+                    isFeatured: true,
+                    isTodaysSpecial: true,
+                    tags: true,
+                    category: {
+                        select: {
+                            id: true,
+                            name: true,
+                            slug: true,
+                        },
+                    },
                 },
                 orderBy: { createdAt: 'desc' },
                 skip,
@@ -51,7 +69,7 @@ export async function GET(request: NextRequest) {
             prisma.product.count({ where }),
         ]);
 
-        return NextResponse.json(
+        const response = NextResponse.json(
             {
                 products: products.map((p) => ({
                     id: p.id,
@@ -80,8 +98,15 @@ export async function GET(request: NextRequest) {
             },
             { status: 200 }
         );
+
+        response.headers.set(
+            'Cache-Control',
+            'public, s-maxage=60, stale-while-revalidate=300'
+        );
+
+        return response;
     } catch (error) {
-        console.error('Products API error:', error);
+        captureError(error, 'Products API error');
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }

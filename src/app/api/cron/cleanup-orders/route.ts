@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { captureError } from '@/lib/error';
 
 export async function GET(request: NextRequest) {
     // Verify cron secret
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
             message: `Cleaned up ${result.count} abandoned orders`,
         });
     } catch (error) {
-        console.error('Cleanup orders error:', error);
+        captureError(error, 'Cleanup orders error');
         return NextResponse.json({ message: 'Failed to clean up orders' }, { status: 500 });
     }
 }

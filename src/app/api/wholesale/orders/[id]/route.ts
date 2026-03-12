@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -31,7 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
         return NextResponse.json(order);
     } catch (err) {
-        console.error('Fetch wholesale order error:', err);
+        captureError(err, 'Fetch wholesale order error');
         return NextResponse.json({ message: 'Failed to fetch order' }, { status: 500 });
     }
 }

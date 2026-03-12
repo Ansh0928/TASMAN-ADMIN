@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 import Decimal from 'decimal.js';
 
@@ -27,7 +28,7 @@ export async function GET() {
 
         return NextResponse.json(orders);
     } catch (err) {
-        console.error('Fetch wholesale orders error:', err);
+        captureError(err, 'Fetch wholesale orders error');
         return NextResponse.json({ message: 'Failed to fetch orders' }, { status: 500 });
     }
 }
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(order, { status: 201 });
     } catch (err: any) {
-        console.error('Create wholesale order error:', err);
+        captureError(err, 'Create wholesale order error');
         return NextResponse.json({ message: 'Failed to create order' }, { status: 500 });
     }
 }

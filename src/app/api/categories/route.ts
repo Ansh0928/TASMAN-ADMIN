@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 
 export async function GET() {
     try {
@@ -19,7 +20,7 @@ export async function GET() {
             { status: 200 }
         );
     } catch (error) {
-        console.error('Categories API error:', error);
+        captureError(error, 'Categories API error');
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }

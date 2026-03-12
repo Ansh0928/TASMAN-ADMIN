@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { MapPin, Clock, Phone } from 'lucide-react';
 import { StaggerTestimonials } from '@/components/ui/stagger-testimonials';
 
@@ -19,7 +20,7 @@ export default function RetailStoresPage() {
 
             {/* Header Banner */}
             <div className="w-full h-[50vh] relative overflow-hidden bg-[#0A192F]">
-                <img src="/assets/products/store remake.png" alt="Tasman Star Retail Store" className="w-full h-full object-cover" />
+                <Image src="/assets/products/store remake.png" alt="Tasman Star Retail Store" fill sizes="100vw" className="object-cover" priority />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-10 z-10">
                     <div className="container mx-auto px-6 text-center">
@@ -35,8 +36,8 @@ export default function RetailStoresPage() {
 
                 {/* Labrador Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
-                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px]">
-                        <img src="/assets/products/labrador store.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
+                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px] relative">
+                        <Image src="/assets/products/labrador store.jpg" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" alt="Labrador Store Market Fresh Fish" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
                         <div className="inline-block bg-[#FF8543]/10 text-[#FF8543] border border-[#FF8543]/20 text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Local Branch</div>
@@ -61,8 +62,8 @@ export default function RetailStoresPage() {
 
                 {/* Varsity Lakes Store */}
                 <section className="bg-theme-secondary rounded-3xl shadow-sm border border-theme-border overflow-hidden flex flex-col md:flex-row group">
-                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px] order-1 md:order-2">
-                        <img src="/assets/products/storefront-flagship.webp" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Flagship Store - Staff with Premium Crab Display" />
+                    <div className="w-full md:w-1/2 overflow-hidden min-h-[240px] order-1 md:order-2 relative">
+                        <Image src="/assets/products/storefront-flagship.webp" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" alt="Varsity Lakes Flagship Store - Staff with Premium Crab Display" />
                     </div>
                     <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center order-2 md:order-1">
                         <div className="inline-block bg-[#FF8543] text-white text-xs font-bold px-3 py-1 uppercase rounded mb-4 w-max">Flagship Store</div>

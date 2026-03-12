@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
@@ -50,7 +51,7 @@ export async function PUT(
 
         return NextResponse.json({ category });
     } catch (err) {
-        console.error('Update category error:', err);
+        captureError(err, 'Update category error');
         return NextResponse.json({ message: 'Failed to update category' }, { status: 500 });
     }
 }
@@ -90,7 +91,7 @@ export async function DELETE(
         await prisma.category.delete({ where: { id } });
         return NextResponse.json({ message: 'Category deleted' });
     } catch (err) {
-        console.error('Delete category error:', err);
+        captureError(err, 'Delete category error');
         return NextResponse.json({ message: 'Failed to delete category' }, { status: 500 });
     }
 }

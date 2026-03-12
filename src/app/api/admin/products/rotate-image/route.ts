@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin-auth';
 import { getObject, putObject } from '@/lib/s3';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 import { readFile, writeFile } from 'fs/promises';
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
         // Return clean URL (no query string — Next.js Image doesn't allow it on local images)
         return NextResponse.json({ url: cleanUrl });
     } catch (err) {
-        console.error('Rotate image error:', err);
+        captureError(err, 'Rotate image error');
         return NextResponse.json({ message: 'Failed to rotate image' }, { status: 500 });
     }
 }

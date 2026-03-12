@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ComposableMap, Geographies, Geography, createCoordinates } from "@vnedyalk0v/react19-simple-maps";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+// Static import — bundled & gzip-compressed by Next.js (~586KB → ~80KB gzipped)
+import australiaGeoData from "../../data/australia.json";
 
 const regionMapping: Record<string, string> = {
     Queensland: "QLD",
@@ -95,8 +97,6 @@ const REGIONAL_DATA: Record<
 };
 
 export default function RegionalMap() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [geoData, setGeoData] = useState<any>(null);
     const [activeRegion, setActiveRegion] = useState<string | null>(null);
     const [pinned, setPinned] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -107,13 +107,6 @@ export default function RegionalMap() {
         check();
         window.addEventListener("resize", check);
         return () => window.removeEventListener("resize", check);
-    }, []);
-
-    useEffect(() => {
-        fetch("/australia.geojson")
-            .then((r) => r.json())
-            .then(setGeoData)
-            .catch(console.error);
     }, []);
 
     // Click pins the card open so user can interact with it
@@ -146,19 +139,6 @@ export default function RegionalMap() {
     }, [isMobile, pinned]);
 
     const data = activeRegion ? REGIONAL_DATA[activeRegion] : null;
-
-    if (!geoData) {
-        return (
-            <div className="w-full rounded-3xl overflow-hidden" style={{ background: "#06111f" }}>
-                <div className="h-[600px] md:h-[650px] flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 rounded-full border-2 border-[#FF8543]/20 border-t-[#FF8543] animate-spin" />
-                        <span className="text-[11px] tracking-[0.3em] uppercase text-slate-500">Loading map</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div
@@ -205,7 +185,7 @@ export default function RegionalMap() {
                         projectionConfig={{ scale: isMobile ? 450 : 680, center: createCoordinates(148, -29) }}
                         className="w-full h-full"
                     >
-                        <Geographies geography={geoData}>
+                        <Geographies geography={australiaGeoData}>
                             {({ geographies }) =>
                                 geographies.map((geo, idx) => {
                                     const name = geo.properties.STATE_NAME;

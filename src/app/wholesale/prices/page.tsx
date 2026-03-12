@@ -50,8 +50,7 @@ export default function WholesalePricesPage() {
                     const data = await res.json();
                     setError(data.message || 'Unable to load wholesale prices');
                 }
-            } catch (err) {
-                console.error('Failed to fetch prices:', err);
+            } catch {
                 setError('Failed to load prices. Please try again.');
             } finally {
                 setLoading(false);

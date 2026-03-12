@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -17,7 +18,7 @@ export async function GET() {
 
         return NextResponse.json({ orders });
     } catch (err) {
-        console.error('Admin wholesale orders error:', err);
+        captureError(err, 'Admin wholesale orders error');
         return NextResponse.json({ message: 'Failed to fetch wholesale orders' }, { status: 500 });
     }
 }

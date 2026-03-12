@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Facebook, Instagram, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
@@ -47,7 +48,7 @@ export default function Footer() {
                     {/* Brand Info */}
                     <div className="flex flex-col gap-4">
                         <Link href="/" className="h-12 flex items-center bg-theme-primary rounded-xl px-2 w-max mb-2">
-                            <img src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" className="h-8 w-auto object-contain" />
+                            <Image src="/assets/tasman-star-logo.png" alt="Tasman Star Seafoods" width={120} height={32} className="h-8 w-auto object-contain" />
                         </Link>
                         <p className="text-sm text-theme-text-muted">
                             Premium wholesale and retail seafood sourced directly from the finest pristine waters of Australia and beyond.

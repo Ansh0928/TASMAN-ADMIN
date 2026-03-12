@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { captureError } from '@/lib/error';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@/lib/auth';
 import Decimal from 'decimal.js';
@@ -311,7 +312,7 @@ export async function POST(request: NextRequest) {
             { status: 200 }
         );
     } catch (error: any) {
-        console.error('Checkout error:', error);
+        captureError(error, 'Checkout error');
         const message = error?.raw?.message || error?.message || 'Failed to create checkout session';
         return NextResponse.json(
             { message },

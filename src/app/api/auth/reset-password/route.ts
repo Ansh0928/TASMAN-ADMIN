@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { validatePassword } from '@/lib/password-validation';
@@ -50,12 +51,12 @@ export async function POST(request: NextRequest) {
         // Notify user that password was changed
         if (user.email) {
             sendPasswordChangedEmail({ email: user.email, name: user.name || 'Customer' })
-                .catch((e) => console.error('Password changed notification error:', e));
+                .catch((e) => captureError(e, 'Password changed notification error'));
         }
 
         return NextResponse.json({ message: 'Password reset successfully' });
     } catch (error) {
-        console.error('Reset password error:', error);
+        captureError(error, 'Reset password error');
         return NextResponse.json({ message: 'Something went wrong. Please try again.' }, { status: 500 });
     }
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { Truck, Snowflake, ShieldCheck, Route, Phone, Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function TransportPage() {
         <div className="min-h-screen bg-theme-primary flex flex-col transition-colors duration-300">
 
             <div className="w-full h-[60vh] relative overflow-hidden bg-[#0A192F]">
-                <img src="/assets/products/tasman-star-fleet-hero.webp" alt="Tasman Star Transport Fleet" className="w-full h-full object-cover object-center" />
+                <Image src="/assets/products/tasman-star-fleet-hero.webp" alt="Tasman Star Transport Fleet" fill sizes="100vw" className="object-cover object-center" priority />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0A192F]/90 via-[#0A192F]/50 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-10 z-10 lg:bottom-10 lg:left-10">
                     <div className="container mx-auto px-6 max-w-6xl">
@@ -73,13 +74,13 @@ export default function TransportPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-xl text-theme-text mb-2">Interstate Freight</h3>
-                                    <p className="text-theme-text-muted leading-relaxed text-lg">We freight fresh seafood to markets across QLD and NSW beyond with guaranteed cold-chain integrity.</p>
+                                    <p className="text-theme-text-muted leading-relaxed text-lg">We freight fresh seafood to markets across QLD, VIC  and NSW beyond with guaranteed cold-chain integrity.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="w-full lg:w-1/2 min-h-[400px]">
-                        <img src="/assets/products/sydney-fish-market-truck.webp" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Refrigerated Transport Vehicles" />
+                    <div className="w-full lg:w-1/2 min-h-[400px] relative">
+                        <Image src="/assets/products/sydney-fish-market-truck.webp" fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-105" alt="Refrigerated Transport Vehicles" />
                     </div>
                 </section>
 
@@ -96,7 +97,7 @@ export default function TransportPage() {
                             <p className="text-theme-text-muted text-lg">Days a Week</p>
                         </div>
                         <div className="flex flex-col items-center text-center">
-                            <span className="text-5xl font-bold text-[#FF8543] mb-2">2</span>
+                            <span className="text-5xl font-bold text-[#FF8543] mb-2">3</span>
                             <p className="text-theme-text-muted text-lg">States Covered</p>
                         </div>
                         <div className="flex flex-col items-center text-center">

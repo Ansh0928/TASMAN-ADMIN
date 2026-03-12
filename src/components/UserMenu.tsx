@@ -1,6 +1,7 @@
 'use client';
 
 import { logout } from '@/app/actions/auth';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { User, LogOut, ShoppingBag, Building2, LayoutDashboard, ChevronDown } from 'lucide-react';
@@ -75,7 +76,7 @@ export function UserMenu({ user }: UserMenuProps) {
             >
                 {/* Avatar */}
                 {user.image ? (
-                    <img src={user.image} alt="" className="w-8 h-8 rounded-full object-cover" />
+                    <Image src={user.image || ''} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                     <div className="w-8 h-8 rounded-full bg-theme-accent/20 flex items-center justify-center text-theme-accent text-xs font-bold">
                         {initials}

@@ -38,7 +38,7 @@ export default function NewProduct() {
         fetch('/api/categories')
             .then(r => r.json())
             .then(data => setCategories(data.categories || data))
-            .catch(console.error);
+            .catch(() => {});
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {

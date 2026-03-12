@@ -61,9 +61,8 @@ export default function WholesaleApplyPage() {
             }
 
             setSubmitted(true);
-        } catch (err) {
+        } catch {
             setError('An error occurred. Please try again.');
-            console.error(err);
         } finally {
             setLoading(false);
         }

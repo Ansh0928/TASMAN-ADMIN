@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 export interface CategoryData {
@@ -33,11 +34,13 @@ export default function CategoryCircles({ categories }: CategoryCirclesProps) {
                         href={`/our-products?category=${category.slug}`}
                         className="flex flex-col items-center gap-2 group py-2"
                     >
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-theme-border group-hover:border-theme-accent transition-all shadow-md group-hover:shadow-lg group-hover:scale-105">
-                            <img
-                                src={category.imageUrl}
+                        <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-theme-border group-hover:border-theme-accent transition-all shadow-md group-hover:shadow-lg group-hover:scale-105">
+                            <Image
+                                src={category.imageUrl!}
                                 alt={category.name}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="96px"
+                                className="object-cover"
                             />
                         </div>
                         <span className="text-theme-text text-xs md:text-sm font-medium text-center leading-tight group-hover:text-theme-accent transition-colors">

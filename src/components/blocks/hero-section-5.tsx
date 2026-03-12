@@ -6,7 +6,7 @@ import { InfiniteSlider } from '@/components/ui/infinite-slider'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import { cn } from '@/lib/utils'
 import { Menu, X, ChevronRight } from 'lucide-react'
-import { useScroll, motion } from 'motion/react'
+import { useScroll, motion } from 'framer-motion'
 
 export function HeroSection() {
     return (
@@ -49,6 +49,8 @@ export function HeroSection() {
                                 loop
                                 muted
                                 playsInline
+                                preload="metadata"
+                                poster="/assets/products/vessels-hq.png"
                                 className="size-full object-cover opacity-50 invert dark:opacity-35 dark:invert-0 dark:lg:opacity-75"
                                 src="/assets/wholesale.mp4"></video>
                         </div>

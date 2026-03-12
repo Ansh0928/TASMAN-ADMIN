@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
             pagination: { page, limit, total, pages: Math.ceil(total / limit) },
         });
     } catch (err) {
-        console.error('Admin products error:', err);
+        captureError(err, 'Admin products error');
         return NextResponse.json({ message: 'Failed to fetch products' }, { status: 500 });
     }
 }
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ product }, { status: 201 });
     } catch (err) {
-        console.error('Create product error:', err);
+        captureError(err, 'Create product error');
         return NextResponse.json({ message: 'Failed to create product' }, { status: 500 });
     }
 }

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
 
         return NextResponse.json({ categories });
     } catch (err) {
-        console.error('Admin wholesale error:', err);
+        captureError(err, 'Admin wholesale error');
         return NextResponse.json({ message: 'Failed to fetch wholesale data' }, { status: 500 });
     }
 }
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ message: 'Invalid type. Use "category" or "item".' }, { status: 400 });
     } catch (err) {
-        console.error('Create wholesale error:', err);
+        captureError(err, 'Create wholesale error');
         return NextResponse.json({ message: 'Failed to create wholesale entry' }, { status: 500 });
     }
 }

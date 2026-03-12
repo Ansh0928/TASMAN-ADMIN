@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -38,7 +39,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             relatedProductIds: product.relatedProductIds,
         });
     } catch (err) {
-        console.error('Get product error:', err);
+        captureError(err, 'Get product error');
         return NextResponse.json({ message: 'Failed to fetch product' }, { status: 500 });
     }
 }
@@ -76,7 +77,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
         return NextResponse.json({ product });
     } catch (err) {
-        console.error('Update product error:', err);
+        captureError(err, 'Update product error');
         return NextResponse.json({ message: 'Failed to update product' }, { status: 500 });
     }
 }
@@ -91,7 +92,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
         await prisma.product.delete({ where: { id } });
         return NextResponse.json({ message: 'Product deleted' });
     } catch (err) {
-        console.error('Delete product error:', err);
+        captureError(err, 'Delete product error');
         return NextResponse.json({ message: 'Failed to delete product' }, { status: 500 });
     }
 }

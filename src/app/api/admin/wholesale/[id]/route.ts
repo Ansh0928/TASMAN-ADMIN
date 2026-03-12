@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -45,7 +46,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
         return NextResponse.json({ message: 'Invalid type' }, { status: 400 });
     } catch (err) {
-        console.error('Update wholesale error:', err);
+        captureError(err, 'Update wholesale error');
         return NextResponse.json({ message: 'Failed to update' }, { status: 500 });
     }
 }
@@ -69,7 +70,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         await prisma.wholesalePriceItem.delete({ where: { id } });
         return NextResponse.json({ message: 'Item deleted' });
     } catch (err) {
-        console.error('Delete wholesale error:', err);
+        captureError(err, 'Delete wholesale error');
         return NextResponse.json({ message: 'Failed to delete' }, { status: 500 });
     }
 }

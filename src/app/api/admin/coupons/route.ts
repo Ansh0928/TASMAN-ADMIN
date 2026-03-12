@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin-auth';
 import { stripe } from '@/lib/stripe';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -31,7 +32,7 @@ export async function GET() {
 
         return NextResponse.json({ coupons });
     } catch (err) {
-        console.error('Admin coupons list error:', err);
+        captureError(err, 'Admin coupons list error');
         return NextResponse.json({ message: 'Failed to fetch coupons' }, { status: 500 });
     }
 }
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ promo }, { status: 201 });
     } catch (err: any) {
-        console.error('Admin coupon create error:', err);
+        captureError(err, 'Admin coupon create error');
         const msg = err?.raw?.message || err?.message || 'Failed to create coupon';
         return NextResponse.json({ message: msg }, { status: 500 });
     }

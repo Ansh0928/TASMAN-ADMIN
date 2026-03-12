@@ -98,7 +98,6 @@ export default function PushNotificationPrompt() {
             setState('success');
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Something went wrong';
-            console.error('Push subscription error:', message);
             setState('error');
             setErrorMessage(message);
         }

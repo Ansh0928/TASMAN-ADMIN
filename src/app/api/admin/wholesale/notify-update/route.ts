@@ -1,5 +1,6 @@
 import { requireAdmin } from '@/lib/admin-auth';
 import { notifyWholesalersOfUpdate } from '@/lib/wholesale-notifications';
+import { captureError } from '@/lib/error';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
@@ -10,7 +11,7 @@ export async function POST() {
         const result = await notifyWholesalersOfUpdate();
         return NextResponse.json({ success: true, ...result });
     } catch (err) {
-        console.error('Notify wholesalers error:', err);
+        captureError(err, 'Notify wholesalers error');
         return NextResponse.json({ message: 'Failed to send notifications' }, { status: 500 });
     }
 }

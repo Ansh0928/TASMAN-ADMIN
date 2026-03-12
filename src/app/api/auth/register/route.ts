@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { captureError } from '@/lib/error';
 import bcrypt from 'bcryptjs';
 import { rateLimit, authLimiter, getClientIp } from '@/lib/rate-limit';
 import { validatePassword } from '@/lib/password-validation';
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
             { status: 201 }
         );
     } catch (error) {
-        console.error('Registration error:', error);
+        captureError(error, 'Registration error');
         return NextResponse.json(
             { message: 'Internal server error' },
             { status: 500 }

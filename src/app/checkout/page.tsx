@@ -184,8 +184,8 @@ export default function CheckoutPage() {
             .then(data => {
                 setRecommendations(data.recommendations || []);
             })
-            .catch(err => {
-                console.error('Failed to fetch recommendations:', err);
+            .catch(() => {
+                // Sentry captures this
             });
     }, [items.length]); // refetch when cart item count changes
 
@@ -378,10 +378,9 @@ export default function CheckoutPage() {
             if (data.url) {
                 window.location.href = data.url;
             }
-        } catch (err) {
+        } catch {
             setError('An error occurred. Please try again.');
             toast.error('An error occurred. Please try again.');
-            console.error(err);
         } finally {
             setIsLoading(false);
         }

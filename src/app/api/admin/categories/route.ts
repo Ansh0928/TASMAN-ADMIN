@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
+import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
 
         return NextResponse.json({ categories });
     } catch (err) {
-        console.error('Admin categories error:', err);
+        captureError(err, 'Admin categories error');
         return NextResponse.json({ message: 'Failed to fetch categories' }, { status: 500 });
     }
 }
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ category }, { status: 201 });
     } catch (err) {
-        console.error('Create category error:', err);
+        captureError(err, 'Create category error');
         return NextResponse.json({ message: 'Failed to create category' }, { status: 500 });
     }
 }

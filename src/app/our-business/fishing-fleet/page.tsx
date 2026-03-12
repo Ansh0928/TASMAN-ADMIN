@@ -1,7 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { Anchor, Fish, Waves, Phone, Mail } from 'lucide-react';
-import { CircularTestimonials } from '@/components/ui/circular-testimonials';
+import dynamic from 'next/dynamic';
+const CircularTestimonials = dynamic(() => import('@/components/ui/circular-testimonials').then(mod => ({ default: mod.CircularTestimonials })), { ssr: false });
 
 const FLEET_GALLERY = [
     {
@@ -42,13 +44,13 @@ export default function FishingFleetPage() {
 
             {/* Hero — vessels image; 4:3 ratio (1184×864), capped height on large screens */}
             <section className="relative w-full min-h-[280px] max-h-[60vh] overflow-hidden bg-theme-secondary sm:min-h-[320px]" style={{ aspectRatio: '1184/864' }}>
-                <img
+                <Image
                     src="/assets/products/vessels-hq.png"
                     alt="Tasman Star fishing fleet vessels"
-                    width={1184}
-                    height={864}
-                    className="absolute inset-0 w-full h-full object-cover object-center"
-                    fetchPriority="high"
+                    fill
+                    sizes="100vw"
+                    className="object-cover object-center"
+                    priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">

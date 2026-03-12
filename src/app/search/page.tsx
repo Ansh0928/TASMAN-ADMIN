@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, SearchX } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
@@ -62,7 +63,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                                 >
                                     <div className="aspect-[4/3] w-full bg-theme-tertiary overflow-hidden relative">
                                         {image ? (
-                                            <img src={image} alt={product.name} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-transform duration-700" />
+                                            <Image src={image} alt={product.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" className="object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-transform duration-700" />
                                         ) : (
                                             <div className="w-full h-full bg-theme-tertiary flex items-center justify-center text-theme-text-muted text-4xl">🐟</div>
                                         )}
