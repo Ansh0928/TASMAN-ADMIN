@@ -322,7 +322,7 @@ describe('Admin Customers API', () => {
             };
             prismaMock.user.update.mockResolvedValue(updatedUser);
 
-            const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED' });
+            const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED', sendNotification: true });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
             await flushAfterCallbacks();
 
@@ -351,7 +351,7 @@ describe('Admin Customers API', () => {
             };
             prismaMock.user.update.mockResolvedValue(updatedUser);
 
-            const req = createMockRequest('PATCH', { wholesaleStatus: 'REJECTED' });
+            const req = createMockRequest('PATCH', { wholesaleStatus: 'REJECTED', sendNotification: true });
             const res = await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
             await flushAfterCallbacks();
 
@@ -380,7 +380,7 @@ describe('Admin Customers API', () => {
             };
             prismaMock.user.update.mockResolvedValue(updatedUser);
 
-            const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED' });
+            const req = createMockRequest('PATCH', { wholesaleStatus: 'APPROVED', sendNotification: true });
             await PATCH(req as any, { params: Promise.resolve({ id: 'user-1' }) });
             await flushAfterCallbacks();
 

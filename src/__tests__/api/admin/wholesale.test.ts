@@ -206,7 +206,7 @@ describe('Admin Wholesale API', () => {
             });
         });
 
-        it('triggers wholesaler notifications when creating an item', async () => {
+        it('does not trigger wholesaler notifications when creating an item (manual send only)', async () => {
             adminOk();
             prismaMock.wholesalePriceItem.create.mockResolvedValue({
                 id: 'wpi-new',
@@ -226,7 +226,7 @@ describe('Admin Wholesale API', () => {
             await POST(req as any);
             await flushAfterCallbacks();
 
-            expect(mockNotifyWholesalersOfUpdate).toHaveBeenCalled();
+            expect(mockNotifyWholesalersOfUpdate).not.toHaveBeenCalled();
         });
 
         it('does not trigger notifications when creating a category', async () => {
@@ -318,7 +318,7 @@ describe('Admin Wholesale API', () => {
             });
         });
 
-        it('triggers wholesaler notifications when updating an item', async () => {
+        it('does not trigger wholesaler notifications when updating an item (manual send only)', async () => {
             adminOk();
             prismaMock.wholesalePriceItem.update.mockResolvedValue({ id: 'wpi-1', name: 'X' });
 
@@ -326,7 +326,7 @@ describe('Admin Wholesale API', () => {
             await PUT(req as any, { params: Promise.resolve({ id: 'wpi-1' }) });
             await flushAfterCallbacks();
 
-            expect(mockNotifyWholesalersOfUpdate).toHaveBeenCalled();
+            expect(mockNotifyWholesalersOfUpdate).not.toHaveBeenCalled();
         });
 
         it('returns 400 for invalid type', async () => {

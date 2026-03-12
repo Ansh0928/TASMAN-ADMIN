@@ -40,7 +40,7 @@ describe('Twilio SMS templates', () => {
         const result = wholesaleRejectedSMS('Bob');
         expect(result).toContain('Hi Bob');
         expect(result).toContain("couldn't approve");
-        expect(result).toContain('info@tasmanstar.com.au');
+        expect(result).toContain('wholesale@tasmanstarseafood.com');
     });
 
     it('wholesalePriceListUpdatedSMS returns the update notification', () => {

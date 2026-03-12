@@ -224,7 +224,7 @@ describe('Admin Wholesale Orders API', () => {
             const order = makeUpdatedOrder('CONFIRMED');
             prismaMock.wholesaleOrder.update.mockResolvedValue(order);
 
-            const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
+            const req = createMockRequest('PATCH', { status: 'CONFIRMED', sendNotification: true });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
             await flushAfterCallbacks();
 
@@ -241,7 +241,7 @@ describe('Admin Wholesale Orders API', () => {
             const order = makeUpdatedOrder('REJECTED');
             prismaMock.wholesaleOrder.update.mockResolvedValue(order);
 
-            const req = createMockRequest('PATCH', { status: 'REJECTED' });
+            const req = createMockRequest('PATCH', { status: 'REJECTED', sendNotification: true });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
             await flushAfterCallbacks();
 
@@ -258,7 +258,7 @@ describe('Admin Wholesale Orders API', () => {
             const order = makeUpdatedOrder('COMPLETED');
             prismaMock.wholesaleOrder.update.mockResolvedValue(order);
 
-            const req = createMockRequest('PATCH', { status: 'COMPLETED' });
+            const req = createMockRequest('PATCH', { status: 'COMPLETED', sendNotification: true });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
             await flushAfterCallbacks();
 
@@ -275,7 +275,7 @@ describe('Admin Wholesale Orders API', () => {
             const order = makeUpdatedOrder('CONFIRMED', true);
             prismaMock.wholesaleOrder.update.mockResolvedValue(order);
 
-            const req = createMockRequest('PATCH', { status: 'CONFIRMED' });
+            const req = createMockRequest('PATCH', { status: 'CONFIRMED', sendNotification: true });
             await PATCH(req as any, { params: Promise.resolve({ id: 'wo-1' }) });
             await flushAfterCallbacks();
 

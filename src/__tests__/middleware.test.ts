@@ -242,7 +242,7 @@ describe('Middleware', () => {
     });
 
     describe('Admin route protection (SEC-03)', () => {
-        it('returns 404 for admin routes when no session token exists', async () => {
+        it('redirects to /admin/login for admin routes when no session token exists', async () => {
             const { middleware } = await import('@/middleware');
 
             const request = createMockRequest({
@@ -250,9 +250,8 @@ describe('Middleware', () => {
             });
 
             const response = await middleware(request);
-            expect(response.status).toBe(404);
-            const body = await response.json();
-            expect(body.message).toBe('Not Found');
+            expect(response.status).toBe(307);
+            expect(response.headers.get('location')).toContain('/admin/login');
         });
 
         it('returns 404 for admin routes when JWT has CUSTOMER role', async () => {
