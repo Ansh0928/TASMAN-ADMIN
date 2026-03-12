@@ -45,6 +45,10 @@ export default function AdminWholesale() {
     const [broadcastSending, setBroadcastSending] = useState(false);
     const [broadcastResult, setBroadcastResult] = useState<string | null>(null);
 
+    // One-click notify
+    const [notifySending, setNotifySending] = useState(false);
+    const [notifyResult, setNotifyResult] = useState<string | null>(null);
+
     const fetchData = async () => {
         try {
             const res = await fetch('/api/admin/wholesale');
@@ -140,6 +144,25 @@ export default function AdminWholesale() {
         }
     };
 
+    const sendPriceListUpdate = async () => {
+        setNotifySending(true);
+        setNotifyResult(null);
+        try {
+            const res = await fetch('/api/admin/wholesale/notify-update', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                setNotifyResult(`Sent ${data.emailsSent || 0} emails, ${data.smsSent || 0} SMS`);
+                setTimeout(() => setNotifyResult(null), 4000);
+            } else {
+                setNotifyResult(data.message || 'Failed to send');
+            }
+        } catch {
+            setNotifyResult('Failed to send notifications');
+        } finally {
+            setNotifySending(false);
+        }
+    };
+
     const sendBroadcast = async () => {
         if (!broadcastForm.subject || !broadcastForm.message) return;
         setBroadcastSending(true);
@@ -205,12 +228,22 @@ export default function AdminWholesale() {
                     <h2 className="text-3xl font-bold text-theme-text">Wholesale Price List</h2>
                     <p className="text-theme-text-muted mt-1">Manage your wholesale price sheet. Approved wholesale users see this as a read-only list.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    {notifyResult && (
+                        <span className="text-sm text-green-400">{notifyResult}</span>
+                    )}
+                    <button
+                        onClick={sendPriceListUpdate}
+                        disabled={notifySending}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 font-medium"
+                    >
+                        <Send size={18} /> {notifySending ? 'Sending...' : 'Send Price List Update'}
+                    </button>
                     <button
                         onClick={() => setShowBroadcast(true)}
                         className="border border-theme-border text-theme-text px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-theme-secondary"
                     >
-                        <Send size={18} /> Notify Wholesalers
+                        <Send size={18} /> Custom Message
                     </button>
                     <button
                         onClick={() => setShowNewCategory(true)}

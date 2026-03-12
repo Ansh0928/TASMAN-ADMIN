@@ -84,8 +84,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             },
         });
 
-        // Send notifications when wholesale status changes to APPROVED or REJECTED
-        if (wholesaleStatus === 'APPROVED' || wholesaleStatus === 'REJECTED') {
+        // Send notifications only when explicitly requested by admin
+        if (body.sendNotification && (wholesaleStatus === 'APPROVED' || wholesaleStatus === 'REJECTED')) {
             const userName = user.name;
             const userEmail = user.email;
             const userPhone = user.phone;

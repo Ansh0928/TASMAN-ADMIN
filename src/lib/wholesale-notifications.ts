@@ -49,9 +49,10 @@ export async function notifyWholesalersOfUpdate() {
             }
         }
 
-        // Notifications sent: emailsSent emails, smsSent SMS
+        return { emailsSent, smsSent };
     } catch (error) {
         console.error('Failed to send wholesale update notifications:', error);
+        return { emailsSent: 0, smsSent: 0 };
     }
 }
 

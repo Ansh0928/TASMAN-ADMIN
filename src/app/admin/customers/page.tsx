@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, CheckCircle, XCircle, Clock, Pencil, Trash2, X, Save, Download } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Pencil, Trash2, X, Save, Download, Mail } from 'lucide-react';
 
 interface Customer {
     id: string;
@@ -87,6 +87,21 @@ export default function AdminCustomers() {
             }
         } catch (err) {
             console.error('Failed to update:', err);
+        }
+    };
+
+    const sendStatusNotification = async (customerId: string, wholesaleStatus: string) => {
+        try {
+            const res = await fetch(`/api/admin/customers/${customerId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ wholesaleStatus, sendNotification: true }),
+            });
+            if (res.ok) {
+                alert('Notification sent!');
+            }
+        } catch (err) {
+            console.error('Failed to send notification:', err);
         }
     };
 
@@ -303,15 +318,26 @@ export default function AdminCustomers() {
                                             </span>
                                         </td>
                                         <td className="p-4">
-                                            {c.wholesaleStatus && (
-                                                <span className={`text-xs px-2 py-1 rounded-full ${
-                                                    c.wholesaleStatus === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
-                                                    c.wholesaleStatus === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                    'bg-red-500/20 text-red-400'
-                                                }`}>
-                                                    {c.wholesaleStatus}
-                                                </span>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {c.wholesaleStatus && (
+                                                    <span className={`text-xs px-2 py-1 rounded-full ${
+                                                        c.wholesaleStatus === 'APPROVED' ? 'bg-green-500/20 text-green-400' :
+                                                        c.wholesaleStatus === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                        'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                        {c.wholesaleStatus}
+                                                    </span>
+                                                )}
+                                                {c.wholesaleStatus && (c.wholesaleStatus === 'APPROVED' || c.wholesaleStatus === 'REJECTED') && (
+                                                    <button
+                                                        onClick={() => sendStatusNotification(c.id, c.wholesaleStatus!)}
+                                                        className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                                                        title="Send status notification email"
+                                                    >
+                                                        <Mail size={13} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4 text-center text-theme-text">{c.orderCount}</td>
                                         <td className="p-4 text-theme-text-muted text-sm">

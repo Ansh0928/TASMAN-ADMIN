@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params;
 
     try {
-        const { status, adminNotes } = await req.json();
+        const { status, adminNotes, sendNotification } = await req.json();
 
         const validStatuses = ['PENDING', 'CONFIRMED', 'REJECTED', 'COMPLETED'];
         if (status && !validStatuses.includes(status)) {
@@ -30,8 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             },
         });
 
-        // Notify wholesaler on status change
-        if (status && order.user) {
+        // Notify wholesaler only when explicitly requested by admin
+        if (sendNotification && status && order.user) {
             const statusLabels: Record<string, string> = {
                 CONFIRMED: 'confirmed',
                 REJECTED: 'declined',

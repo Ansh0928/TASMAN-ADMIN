@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Clock, Package, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Package, ChevronDown, Mail } from 'lucide-react';
 
 interface WholesaleOrder {
     id: string;
@@ -48,6 +48,19 @@ export default function AdminWholesaleOrders() {
             if (res.ok) fetchOrders();
         } catch (err) {
             console.error('Failed to update order:', err);
+        }
+    };
+
+    const notifyCustomer = async (orderId: string, status: string) => {
+        try {
+            const res = await fetch(`/api/admin/wholesale-orders/${orderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, adminNotes: adminNotes[orderId] || undefined, sendNotification: true }),
+            });
+            if (res.ok) alert('Notification sent!');
+        } catch (err) {
+            console.error('Failed to notify customer:', err);
         }
     };
 
@@ -191,6 +204,12 @@ export default function AdminWholesaleOrders() {
                                                         }
                                                     }}
                                                         className="px-3 py-2 bg-red-500/10 text-red-400 rounded text-sm hover:bg-red-500/20 border border-red-500/20">Cancel Order</button>
+                                                )}
+                                                {order.status !== 'PENDING' && (
+                                                    <button onClick={() => notifyCustomer(order.id, order.status)}
+                                                        className="flex items-center gap-1 px-3 py-2 bg-blue-500/10 text-blue-400 rounded text-sm hover:bg-blue-500/20 border border-blue-500/20">
+                                                        <Mail size={14} /> Notify Customer
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>

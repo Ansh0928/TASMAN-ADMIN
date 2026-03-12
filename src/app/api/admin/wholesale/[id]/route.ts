@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
-import { notifyWholesalersOfUpdate } from '@/lib/wholesale-notifications';
-import { NextRequest, NextResponse, after } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -40,14 +39,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                     ...(sortOrder !== undefined && { sortOrder }),
                     ...(categoryId && { categoryId }),
                 },
-            });
-            // Notify wholesalers
-            after(async () => {
-                try {
-                    await notifyWholesalersOfUpdate();
-                } catch (err) {
-                    console.error('Wholesale update notification error:', err);
-                }
             });
             return NextResponse.json({ item });
         }
