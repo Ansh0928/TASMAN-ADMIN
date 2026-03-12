@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Globe } from 'lucide-react';
 import OnlineDeliveryProducts from './OnlineDeliveryProducts';
-import DeliveryZones from './DeliveryZones';
-
 export const metadata: Metadata = {
     title: 'Online & Delivery',
     description: 'Order premium seafood online and get it delivered fresh to your door on the Gold Coast. Free delivery on orders over $150.',
@@ -26,15 +24,39 @@ export default function OnlineDeliveryPage() {
                         <Globe size={14} /> Online Store
                     </div>
                     <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-3">Shop Fresh Seafood</h1>
-                    <p className="text-lg text-slate-300 font-light max-w-2xl mx-auto">
+                    <p className="text-lg text-slate-300 font-light max-w-2xl mx-auto mb-6">
                         Premium Australian seafood delivered fresh to your door. Browse, add to cart, and checkout in minutes.
                     </p>
-                </div>
-            </div>
 
-            {/* Delivery Zones */}
-            <div className="container mx-auto px-4 md:px-6 py-8 md:py-12">
-                <DeliveryZones />
+                    {/* Delivery Zones */}
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <div
+                            className="rounded-[14px] text-center px-5 py-4 sm:px-6 sm:py-4"
+                            style={{
+                                background: 'rgba(255,255,255,0.04)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(255,133,67,0.15)',
+                            }}
+                        >
+                            <div className="text-white text-sm font-semibold mb-1">Gold Coast</div>
+                            <div className="text-[13px] font-medium tracking-wide text-[#FF8543]">Mon · Tue · Fri</div>
+                        </div>
+                        <div
+                            className="rounded-[14px] text-center px-5 py-4 sm:px-6 sm:py-4"
+                            style={{
+                                background: 'rgba(255,255,255,0.04)',
+                                backdropFilter: 'blur(20px)',
+                                WebkitBackdropFilter: 'blur(20px)',
+                                border: '1px solid rgba(79,195,247,0.15)',
+                            }}
+                        >
+                            <div className="text-white text-sm font-semibold mb-1">Northern Rivers</div>
+                            <div className="text-[13px] font-medium tracking-wide text-[#4fc3f7]">Tue · Fri</div>
+                        </div>
+                    </div>
+                    <p className="text-slate-500 text-xs mt-3">We deliver fresh to these regions</p>
+                </div>
             </div>
 
             {/* Product Browsing */}

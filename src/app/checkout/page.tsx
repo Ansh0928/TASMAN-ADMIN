@@ -490,6 +490,12 @@ export default function CheckoutPage() {
                                         />
                                         <span className="text-theme-text font-medium">Delivery (+$10)</span>
                                     </label>
+                                    {fulfillment === 'DELIVERY' && (
+                                        <div className="ml-8 text-sm text-theme-text-muted space-y-1">
+                                            <p><span className="text-theme-accent font-medium">Gold Coast:</span> Mon, Tue, Fri</p>
+                                            <p><span className="text-[#4fc3f7] font-medium">Northern Rivers:</span> Tue, Fri</p>
+                                        </div>
+                                    )}
                                     <label className={`flex items-center gap-3 cursor-pointer py-3 px-4 rounded-lg border transition-colors ${fulfillment === 'PICKUP' ? 'border-theme-accent bg-theme-accent/5' : 'border-theme-border'}`}>
                                         <input
                                             type="radio"

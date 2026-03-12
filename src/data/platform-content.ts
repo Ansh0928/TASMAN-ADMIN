@@ -85,7 +85,7 @@ export const homepage = {
             cta: { label: 'Shop Now', href: '/our-business/online-delivery' },
             image: '/assets/hero/hero-fresh-catch.jpg',
             bgGradient: 'from-[#0A192F] via-[#0A192F]/90 to-transparent',
-            badge: 'Same Day Delivery',
+            badge: 'Gold Coast & Northern Rivers Delivery',
         },
         {
             id: 'hero-2',
@@ -228,7 +228,7 @@ export const homepage = {
             id: 'tp3',
             icon: 'Truck',
             title: 'Free Delivery Over $150',
-            description: 'Free insulated delivery across the Gold Coast for orders over $150. Same-day delivery available for orders placed before 10am.',
+            description: 'Free insulated delivery for orders over $150. Gold Coast: Mon, Tue, Fri. Northern Rivers: Tue, Fri.',
         },
     ],
 
@@ -1178,7 +1178,7 @@ export const flagshipPDP = {
         // Trust bar
         trustBar: [
             { icon: 'Thermometer', label: 'Cold Chain Guaranteed' },
-            { icon: 'Clock', label: 'Same Day Delivery' },
+            { icon: 'Clock', label: 'Scheduled Delivery' },
             { icon: 'Shield', label: 'Freshness Promise' },
             { icon: 'Leaf', label: 'Sustainably Sourced' },
         ],
@@ -1204,13 +1204,9 @@ export const flagshipPDP = {
 export const delivery = {
     freeDeliveryThreshold: 150,
     deliveryFee: 12.50,
-    sameDayCutoff: '10:00 AM',
-    deliveryAreas: [
-        'Gold Coast',
-        'Tweed Heads',
-        'Northern Rivers',
-        'Logan',
-        'Brisbane South',
+    deliveryZones: [
+        { name: 'Gold Coast', days: ['Monday', 'Tuesday', 'Friday'] },
+        { name: 'Northern Rivers', days: ['Tuesday', 'Friday'] },
     ],
     deliveryPromise:
         'All orders are packed in insulated boxes with ice packs to maintain cold chain integrity. Your seafood arrives at the same temperature as it left our store.',

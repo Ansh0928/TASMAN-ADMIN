@@ -80,7 +80,7 @@ export default function ProductDetailClient({
     const trustBadges = [
         { icon: '🚢', label: 'Own Fleet Caught' },
         { icon: '❄️', label: 'Cold Chain Delivery' },
-        { icon: '📦', label: 'Same Day Available' },
+        { icon: '📦', label: 'Scheduled Delivery' },
         { icon: '⭐', label: 'Premium Grade' },
     ];
 
