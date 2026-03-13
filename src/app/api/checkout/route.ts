@@ -285,11 +285,13 @@ export async function POST(request: NextRequest) {
             stripeCustomerId = newCustomer.id;
         }
 
+        const baseUrl = process.env.NEXTAUTH_URL || new URL(request.url).origin;
+
         const sessionParams: any = {
             line_items: lineItems,
             mode: 'payment',
-            success_url: `${process.env.NEXTAUTH_URL}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
-            cancel_url: `${process.env.NEXTAUTH_URL}/checkout`,
+            success_url: `${baseUrl}/order-confirmation?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
+            cancel_url: `${baseUrl}/checkout`,
             customer: stripeCustomerId,
             invoice_creation: { enabled: true },
             metadata: {
