@@ -43,11 +43,14 @@ export default function ImageUploader({ value, onChange, maxFiles = 10, folder }
                 throw new Error(data.message || 'Failed to rotate image');
             }
 
-            await res.json();
-            // Don't modify the URL — use a local cache-buster for display only
+            const data = await res.json();
+            // Update URL if the server returned a new one (e.g. local image migrated to S3)
+            const newUrls = [...value];
+            if (data.url && data.url !== url.split('?')[0]) {
+                newUrls[index] = data.url;
+            }
             setCacheBusters(prev => ({ ...prev, [index]: Date.now() }));
-            // Trigger re-render by setting same URLs (forces parent to re-save unchanged URLs)
-            onChange([...value]);
+            onChange(newUrls);
         } catch (err: any) {
             setError(err.message || 'Failed to rotate image');
         } finally {
