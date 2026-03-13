@@ -4,10 +4,15 @@ import { NextRequest } from 'next/server';
 import { captureError } from '@/lib/error';
 
 function escapeCsv(value: string): string {
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-        return `"${value.replace(/"/g, '""')}"`;
+    // Prevent CSV formula injection (M-4): prefix dangerous chars with single quote
+    let safe = value;
+    if (/^[=+\-@\t\r]/.test(safe)) {
+        safe = `'${safe}`;
     }
-    return value;
+    if (safe.includes(',') || safe.includes('"') || safe.includes('\n')) {
+        return `"${safe.replace(/"/g, '""')}"`;
+    }
+    return safe;
 }
 
 export async function GET(request: NextRequest) {

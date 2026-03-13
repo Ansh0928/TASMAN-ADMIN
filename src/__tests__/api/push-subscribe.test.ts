@@ -22,14 +22,37 @@ function createRequest(body: any): NextRequest {
     });
 }
 
+const authenticatedSession = {
+    user: { id: 'user-1', email: 'test@test.com', role: 'CUSTOMER' },
+};
+
 describe('POST /api/push/subscribe', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockAuth.mockResolvedValue(null);
+        // Default: authenticated (M-7: auth required)
+        mockAuth.mockResolvedValue(authenticatedSession);
     });
 
-    it('saves push subscription for anonymous user', async () => {
-        const subscription = factories.pushSubscription({ userId: null });
+    it('returns 401 for unauthenticated users', async () => {
+        mockAuth.mockResolvedValue(null);
+
+        const response = await POST(
+            createRequest({
+                endpoint: 'https://fcm.googleapis.com/fcm/send/test',
+                keys: {
+                    p256dh: 'test-p256dh-key',
+                    auth: 'test-auth-key',
+                },
+            })
+        );
+        const data = await response.json();
+
+        expect(response.status).toBe(401);
+        expect(data.message).toBe('Authentication required for push notifications');
+    });
+
+    it('saves push subscription for authenticated user', async () => {
+        const subscription = factories.pushSubscription({ userId: 'user-1' });
         prismaMock.pushSubscription.upsert.mockResolvedValue(subscription);
 
         const response = await POST(
@@ -51,44 +74,15 @@ describe('POST /api/push/subscribe', () => {
             update: {
                 p256dh: 'test-p256dh-key',
                 auth: 'test-auth-key',
-                userId: null,
+                userId: 'user-1',
             },
             create: {
                 endpoint: 'https://fcm.googleapis.com/fcm/send/test',
                 p256dh: 'test-p256dh-key',
                 auth: 'test-auth-key',
-                userId: null,
+                userId: 'user-1',
             },
         });
-    });
-
-    it('associates subscription with user if logged in', async () => {
-        mockAuth.mockResolvedValue({
-            user: { id: 'user-1', email: 'test@test.com', role: 'CUSTOMER' },
-        });
-
-        const subscription = factories.pushSubscription({ userId: 'user-1' });
-        prismaMock.pushSubscription.upsert.mockResolvedValue(subscription);
-
-        const response = await POST(
-            createRequest({
-                endpoint: 'https://fcm.googleapis.com/fcm/send/test',
-                keys: {
-                    p256dh: 'test-p256dh-key',
-                    auth: 'test-auth-key',
-                },
-            })
-        );
-        const data = await response.json();
-
-        expect(response.status).toBe(200);
-        expect(data.success).toBe(true);
-        expect(prismaMock.pushSubscription.upsert).toHaveBeenCalledWith(
-            expect.objectContaining({
-                update: expect.objectContaining({ userId: 'user-1' }),
-                create: expect.objectContaining({ userId: 'user-1' }),
-            })
-        );
     });
 
     it('returns 400 when endpoint is missing', async () => {

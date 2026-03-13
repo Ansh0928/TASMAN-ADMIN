@@ -15,9 +15,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user is logged in
+        // Require authentication for push subscriptions (M-7)
         const session = await auth();
-        const userId = session?.user?.id || null;
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { message: 'Authentication required for push notifications' },
+                { status: 401 }
+            );
+        }
+        const userId = session.user.id;
 
         // Upsert by endpoint — update if exists, create if new
         const subscription = await prisma.pushSubscription.upsert({

@@ -197,7 +197,7 @@ export default async function ProductPage({ params }: Props) {
                 suggestedProducts={suggestedProducts.map(serializeProduct)}
             />
 
-            {/* JSON-LD Product Structured Data */}
+            {/* JSON-LD Product Structured Data (M-3: escape </script> breakout) */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -231,7 +231,7 @@ export default async function ProductPage({ params }: Props) {
                             },
                             priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         },
-                    }),
+                    }).replace(/</g, '\\u003c'),
                 }}
             />
 
@@ -248,7 +248,7 @@ export default async function ProductPage({ params }: Props) {
                             ...(product.category ? [{ '@type': 'ListItem', position: 3, name: product.category.name, item: `https://tasman-admin.vercel.app/our-products?category=${product.category.slug}` }] : []),
                             { '@type': 'ListItem', position: product.category ? 4 : 3, name: product.name },
                         ],
-                    }),
+                    }).replace(/</g, '\\u003c'),
                 }}
             />
         </>

@@ -115,8 +115,27 @@ export async function middleware(request: NextRequest) {
                         { status: 403 }
                     );
                 }
+            } else {
+                // No Origin header — fall back to Referer check (M-1)
+                const referer = request.headers.get('referer');
+                if (referer) {
+                    try {
+                        const refererHost = new URL(referer).host;
+                        if (refererHost !== host) {
+                            return NextResponse.json(
+                                { message: 'Invalid request origin' },
+                                { status: 403 }
+                            );
+                        }
+                    } catch {
+                        return NextResponse.json(
+                            { message: 'Invalid request origin' },
+                            { status: 403 }
+                        );
+                    }
+                }
+                // No Origin or Referer => allow through (same-origin non-browser requests)
             }
-            // No Origin header => allow through (same-origin requests may omit Origin)
         }
     }
 

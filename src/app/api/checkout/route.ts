@@ -51,6 +51,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Validate email format (M-2)
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (typeof guestEmail !== 'string' || !emailRegex.test(guestEmail)) {
+            return NextResponse.json(
+                { message: 'Please enter a valid email address' },
+                { status: 400 }
+            );
+        }
+
         if (!fulfillment || !['DELIVERY', 'PICKUP'].includes(fulfillment)) {
             return NextResponse.json(
                 { message: 'Invalid fulfillment type' },

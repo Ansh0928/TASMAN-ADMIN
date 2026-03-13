@@ -63,6 +63,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             if (!validRoles.includes(role)) {
                 return NextResponse.json({ message: 'Invalid role' }, { status: 400 });
             }
+            // M-6: Require explicit confirmation for ADMIN role escalation
+            if (role === 'ADMIN' && !body.confirmAdminEscalation) {
+                return NextResponse.json(
+                    { message: 'Admin role escalation requires explicit confirmation (confirmAdminEscalation: true)' },
+                    { status: 400 }
+                );
+            }
             data.role = role;
         }
 
