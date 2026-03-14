@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function DealsPage() {
     const products = await prisma.product.findMany({
         where: { isTodaysSpecial: true, isAvailable: true },
-        include: { category: true },
+        include: { categories: { include: { category: true } } },
         take: 12,
     });
 
@@ -35,7 +35,7 @@ export default async function DealsPage() {
                 salePrice: salePrice.toFixed(2),
                 discount,
                 imageUrl: p.imageUrls[0] || null,
-                categoryName: p.category?.name || '',
+                categoryName: (p.categories.find(c => c.isPrimary)?.category ?? p.categories[0]?.category)?.name || '',
             };
         });
 

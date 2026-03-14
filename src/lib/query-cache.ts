@@ -6,17 +6,24 @@ export const getCachedFeaturedProducts = unstable_cache(
   async (limit: number = 10) => {
     const products = await prisma.product.findMany({
       where: { isAvailable: true, isFeatured: true },
-      select: {
-        id: true, name: true, slug: true, description: true,
-        price: true, imageUrls: true, unit: true, stockQuantity: true,
-        isFeatured: true, isTodaysSpecial: true, tags: true,
-        category: { select: { id: true, name: true, slug: true } },
+      include: {
+        categories: {
+          include: { category: { select: { id: true, name: true, slug: true } } },
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
-    // Serialize Decimal to string for client components
-    return products.map(p => ({ ...p, price: p.price.toString() }));
+    // Serialize Decimal + extract primary category for client components
+    return products.map(p => {
+      const primaryCat = p.categories.find(c => c.isPrimary)?.category ?? p.categories[0]?.category;
+      const { categories: _cats, ...rest } = p;
+      return {
+        ...rest,
+        price: p.price.toString(),
+        category: primaryCat ? { id: primaryCat.id, name: primaryCat.name, slug: primaryCat.slug } : { id: '', name: '', slug: '' },
+      };
+    });
   },
   ['featured-products'],
   { revalidate: 60, tags: ['products'] }

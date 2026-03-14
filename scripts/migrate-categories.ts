@@ -36,7 +36,7 @@ async function main() {
 
     // 3. Reassign products from old category
     if (oldCat) {
-        const products = await prisma.product.findMany({ where: { categoryId: oldCat.id } });
+        const products = await prisma.product.findMany({ where: { categories: { some: { categoryId: oldCat.id } } } });
         console.log(`\nFound ${products.length} products in old category:`);
 
         for (const product of products) {
@@ -45,7 +45,7 @@ async function main() {
             const newCatSlug = isSushi ? 'sushi' : 'prepared-meals';
             await prisma.product.update({
                 where: { id: product.id },
-                data: { categoryId: catMap[newCatSlug] },
+                data: { categories: { updateMany: { where: { isPrimary: true }, data: { categoryId: catMap[newCatSlug] } } } },
             });
             console.log(`  → "${product.name}" → ${newCatSlug}`);
         }

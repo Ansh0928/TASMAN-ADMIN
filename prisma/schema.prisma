@@ -100,44 +100,56 @@ model Address {
 // ── Products ──
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String            @unique
   description String?
-  imageUrl    String?   @map("image_url")
-  sortOrder   Int       @default(0) @map("sort_order")
-  products    Product[]
+  imageUrl    String?           @map("image_url")
+  sortOrder   Int               @default(0) @map("sort_order")
+  products    ProductCategory[]
 
   @@map("categories")
 }
 
+model ProductCategory {
+  id         String   @id @default(cuid())
+  productId  String   @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String   @map("category_id")
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isPrimary  Boolean  @default(false) @map("is_primary")
+
+  @@unique([productId, categoryId])
+  @@index([categoryId])
+  @@index([productId])
+  @@map("product_categories")
+}
+
 model Product {
-  id                String      @id @default(cuid())
+  id                String            @id @default(cuid())
   name              String
-  slug              String      @unique
+  slug              String            @unique
   description       String?
-  imageUrls         String[]    @map("image_urls")
-  categoryId        String      @map("category_id")
-  category          Category    @relation(fields: [categoryId], references: [id])
-  price             Decimal     @db.Decimal(10, 2)
-  stockQuantity     Int         @default(0) @map("stock_quantity")
-  unit              Unit        @default(PIECE)
-  isAvailable       Boolean     @default(true) @map("is_available")
-  isFeatured        Boolean     @default(false) @map("is_featured")
-  isTodaysSpecial   Boolean     @default(false) @map("is_todays_special")
-  discountPercent   Int?        @map("discount_percent")
-  countryOfOrigin   String      @default("Australia") @map("country_of_origin")
+  imageUrls         String[]          @map("image_urls")
+  categories        ProductCategory[]
+  price             Decimal           @db.Decimal(10, 2)
+  stockQuantity     Int               @default(0) @map("stock_quantity")
+  unit              Unit              @default(PIECE)
+  isAvailable       Boolean           @default(true) @map("is_available")
+  isFeatured        Boolean           @default(false) @map("is_featured")
+  isTodaysSpecial   Boolean           @default(false) @map("is_todays_special")
+  discountPercent   Int?              @map("discount_percent")
+  countryOfOrigin   String            @default("Australia") @map("country_of_origin")
   tags              String[]
-  relatedProductIds String[]    @map("related_product_ids")
-  createdAt         DateTime    @default(now()) @map("created_at")
-  updatedAt         DateTime    @updatedAt @map("updated_at")
+  relatedProductIds String[]          @map("related_product_ids")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
   orderItems        OrderItem[]
   reviews           Review[]
 
   @@index([isAvailable])
   @@index([isFeatured])
   @@index([isTodaysSpecial])
-  @@index([categoryId])
   @@index([isAvailable, isFeatured])
   @@index([isAvailable, isTodaysSpecial])
   @@index([createdAt])

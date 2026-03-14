@@ -65,7 +65,7 @@ describe('POST /api/products/recommendations', () => {
         // Cart products with their categories
         prismaMock.product.findMany
             // First call: get cart products categories
-            .mockResolvedValueOnce([{ categoryId: 'cat-1' }])
+            .mockResolvedValueOnce([{ categories: [{ categoryId: 'cat-1' }] }])
             // Second call: featured fallback (different categories)
             .mockResolvedValueOnce([])
             // Third call: co-occurrence products
@@ -111,7 +111,7 @@ describe('POST /api/products/recommendations', () => {
 
         // Cart products categories
         prismaMock.product.findMany
-            .mockResolvedValueOnce([{ categoryId: 'cat-1' }])
+            .mockResolvedValueOnce([{ categories: [{ categoryId: 'cat-1' }] }])
             // Featured fallback (different categories)
             .mockResolvedValueOnce([featuredProduct])
             // Featured from same categories
@@ -156,7 +156,7 @@ describe('POST /api/products/recommendations', () => {
         });
 
         prismaMock.product.findMany
-            .mockResolvedValueOnce([{ categoryId: 'cat-1' }])
+            .mockResolvedValueOnce([{ categories: [{ categoryId: 'cat-1' }] }])
             .mockResolvedValueOnce([product])
             .mockResolvedValueOnce([]);
 
