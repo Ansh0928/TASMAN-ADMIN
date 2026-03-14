@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useCart } from './CartProvider';
+import CartRecommendations from './CartRecommendations';
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 
 export default function CartSidebar() {
@@ -50,6 +51,9 @@ export default function CartSidebar() {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+                    {items.length > 0 && (
+                        <CartRecommendations productIds={items.map(i => i.productId)} />
+                    )}
                     {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center text-theme-text-muted space-y-4">
                             <div className="w-20 h-20 bg-theme-tertiary rounded-full flex items-center justify-center">

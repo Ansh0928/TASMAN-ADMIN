@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import ProductCarousel from '@/components/ProductCarousel';
 import ProductCard, { type ProductCardData } from '@/components/ProductCard';
+import RecentlyViewed from '@/components/RecentlyViewed';
 
 interface Product {
     id: string;
@@ -46,6 +47,31 @@ export default function ProductDetailClient({
     const inWishlist = isInWishlist(product.id);
     const isOutOfStock = product.stockQuantity <= 0 || !product.isAvailable;
     const maxQuantity = product.stockQuantity;
+
+    // Track recently viewed products in localStorage
+    useEffect(() => {
+        try {
+            const MAX_RECENT = 10;
+            const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            const updated = [
+                {
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                    imageUrls: product.imageUrls,
+                    unit: product.unit,
+                    category: product.category,
+                    stockQuantity: product.stockQuantity,
+                },
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ...stored.filter((p: any) => p.slug !== product.slug),
+            ].slice(0, MAX_RECENT);
+            localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+        } catch {
+            // localStorage unavailable
+        }
+    }, [product.id, product.slug, product.name, product.price, product.imageUrls, product.unit, product.category, product.stockQuantity]);
 
     // Sticky CTA: observe main Add to Cart button visibility
     useEffect(() => {
@@ -319,6 +345,8 @@ export default function ProductDetailClient({
                         </ProductCarousel>
                     </div>
                 )}
+
+                <RecentlyViewed excludeSlug={product.slug} />
             </div>
 
             {/* Mobile Sticky CTA */}

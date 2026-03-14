@@ -1,7 +1,10 @@
 import RegionalMapLazy from '@/components/map/RegionalMapLazy';
 import HomeBusinessCards from '@/components/HomeBusinessCards';
 import HomeBestBuys from '@/components/HomeBestBuys';
+import HomeForYouSection from '@/components/HomeForYouSection';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import { getCachedFeaturedProducts } from '@/lib/query-cache';
+import { Suspense } from 'react';
 
 export default async function Home() {
   const bestBuys = await getCachedFeaturedProducts(10);
@@ -24,6 +27,11 @@ export default async function Home() {
 
       <main className="flex flex-col w-full">
 
+        {/* For You / Popular This Week */}
+        <Suspense fallback={null}>
+          <HomeForYouSection />
+        </Suspense>
+
         {/* Business Cards */}
         <section className="container mx-auto px-4 md:px-8 py-16 max-w-6xl">
           <HomeBusinessCards />
@@ -36,6 +44,9 @@ export default async function Home() {
 
         {/* Best Buys */}
         <HomeBestBuys products={bestBuys} />
+
+        {/* Recently Viewed */}
+        <RecentlyViewed />
 
       </main>
     </div>
