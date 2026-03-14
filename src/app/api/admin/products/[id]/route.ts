@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
+import { deleteCached } from '@/lib/redis-cache';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     try {
         const product = await prisma.product.findUnique({
             where: { id },
-            include: { category: true },
+            include: { categories: { include: { category: true }, orderBy: { isPrimary: 'desc' } } },
         });
 
         if (!product) {
@@ -27,8 +28,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             description: product.description,
             price: product.price.toString(),
             imageUrls: product.imageUrls,
-            categoryId: product.categoryId,
-            category: { id: product.category.id, name: product.category.name },
+            categories: product.categories.map(pc => ({
+                id: pc.category.id,
+                name: pc.category.name,
+                slug: pc.category.slug,
+                isPrimary: pc.isPrimary,
+            })),
+            primaryCategoryId: product.categories.find(pc => pc.isPrimary)?.category.id || '',
             stockQuantity: product.stockQuantity,
             unit: product.unit,
             isAvailable: product.isAvailable,
@@ -53,30 +59,60 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
         const body = await request.json();
-        const { name, description, price, categoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, discountPercent, tags, countryOfOrigin, relatedProductIds } = body;
+        const { name, description, price, categoryIds, primaryCategoryId, imageUrls, stockQuantity, unit, isAvailable, isFeatured, isTodaysSpecial, discountPercent, tags, countryOfOrigin, relatedProductIds } = body;
 
-        const product = await prisma.product.update({
-            where: { id },
-            data: {
-                ...(name && { name }),
-                ...(description !== undefined && { description }),
-                ...(price && { price: parseFloat(price) }),
-                ...(categoryId && { categoryId }),
-                ...(imageUrls && { imageUrls: (imageUrls as string[]).map((u: string) => u.split('?')[0]) }),
-                ...(stockQuantity !== undefined && { stockQuantity }),
-                ...(unit && { unit }),
-                ...(isAvailable !== undefined && { isAvailable }),
-                ...(isFeatured !== undefined && { isFeatured }),
-                ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
-                ...(discountPercent !== undefined && { discountPercent: discountPercent ? parseInt(discountPercent, 10) : null }),
-                ...(countryOfOrigin !== undefined && { countryOfOrigin }),
-                ...(tags && { tags }),
-                ...(relatedProductIds !== undefined && { relatedProductIds }),
-            },
-            include: { category: true },
+        // Validate category fields: if one is provided, both must be
+        if ((categoryIds && !primaryCategoryId) || (!categoryIds && primaryCategoryId)) {
+            return NextResponse.json({ message: 'Both categoryIds and primaryCategoryId must be provided together' }, { status: 400 });
+        }
+        if (categoryIds) {
+            if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+                return NextResponse.json({ message: 'categoryIds must be a non-empty array' }, { status: 400 });
+            }
+            if (!categoryIds.includes(primaryCategoryId)) {
+                return NextResponse.json({ message: 'primaryCategoryId must be included in categoryIds' }, { status: 400 });
+            }
+        }
+
+        const product = await prisma.$transaction(async (tx) => {
+            const updated = await tx.product.update({
+                where: { id },
+                data: {
+                    ...(name && { name }),
+                    ...(description !== undefined && { description }),
+                    ...(price && { price: parseFloat(price) }),
+                    ...(imageUrls && { imageUrls: (imageUrls as string[]).map((u: string) => u.split('?')[0]) }),
+                    ...(stockQuantity !== undefined && { stockQuantity }),
+                    ...(unit && { unit }),
+                    ...(isAvailable !== undefined && { isAvailable }),
+                    ...(isFeatured !== undefined && { isFeatured }),
+                    ...(isTodaysSpecial !== undefined && { isTodaysSpecial }),
+                    ...(discountPercent !== undefined && { discountPercent: discountPercent ? parseInt(discountPercent, 10) : null }),
+                    ...(countryOfOrigin !== undefined && { countryOfOrigin }),
+                    ...(tags && { tags }),
+                    ...(relatedProductIds !== undefined && { relatedProductIds }),
+                },
+            });
+
+            if (categoryIds) {
+                await tx.productCategory.deleteMany({ where: { productId: id } });
+                await tx.productCategory.createMany({
+                    data: categoryIds.map((catId: string) => ({
+                        productId: id,
+                        categoryId: catId,
+                        isPrimary: catId === primaryCategoryId,
+                    })),
+                });
+            }
+
+            return tx.product.findUnique({
+                where: { id },
+                include: { categories: { include: { category: true } } },
+            });
         });
 
         revalidateTag('products', 'max');
+        await deleteCached('categories');
         return NextResponse.json({ product });
     } catch (err) {
         captureError(err, 'Update product error');
