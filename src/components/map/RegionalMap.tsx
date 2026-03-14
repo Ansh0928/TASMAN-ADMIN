@@ -41,17 +41,18 @@ const REGIONAL_DATA: Record<
         name: "New South Wales",
         tagline: "Deep canyons & pristine estuaries",
         species: [
-            { name: "Pacific Oyster", emoji: "🦪", productSlug: "pacific-plate-oyster" },
             { name: "Kingfish", emoji: "🐟", productSlug: "kingfish" },
-            { name: "Snapper", emoji: "🐠", productSlug: "local-snapper-whole" },
+            { name: "Rock Oysters", emoji: "🦪", productSlug: "sydney-rock-plate-oysters" },
+            { name: "King Prawns", emoji: "🦐", productSlug: "large-cooked-king-prawns" },
         ],
     },
     SA: {
         name: "South Australia",
         tagline: "The Great Australian Bight",
         species: [
-            { name: "Crayfish", emoji: "🦞", productSlug: "wa-crayfish-cooked" },
-            { name: "King George Whiting", emoji: "🐟", productSlug: "king-george-whiting-whole" },
+            { name: "Pacific Oysters", emoji: "🦪", productSlug: "pacific-plate-oyster" },
+            { name: "Black Mussels", emoji: "🦪", productSlug: "fresh-black-mussels" },
+            { name: "Kingfish", emoji: "🐟", productSlug: "kingfish" },
         ],
     },
     TAS: {
@@ -67,7 +68,10 @@ const REGIONAL_DATA: Record<
         name: "Western Australia",
         tagline: "Wild rugged coastline",
         species: [
-            { name: "Rock Lobster", emoji: "🦞", productSlug: "wa-crayfish-live" },
+            { name: "Crayfish", emoji: "🦞", productSlug: "wa-crayfish-live" },
+            { name: "Half Shell Scallop", emoji: "🦪", productSlug: "tasmanian-scallop-meat" },
+            { name: "Variety of Reef Fish", emoji: "🐟", productSlug: "mixed-bin-reef-fish" },
+            { name: "Goldband Snapper", emoji: "🐠", productSlug: "gold-band-snapper-whole" },
         ],
     },
     VIC: {
@@ -81,17 +85,18 @@ const REGIONAL_DATA: Record<
         name: "Northern Territory",
         tagline: "Arafura Sea & tidal rivers",
         species: [
-            { name: "Spanish Mackerel", emoji: "🐟", productSlug: "spanish-mackerel-fillet" },
+            { name: "Variety of Reef Fish", emoji: "🐟", productSlug: "mixed-bin-reef-fish" },
             { name: "Goldband Snapper", emoji: "🐠", productSlug: "gold-band-snapper-whole" },
-            { name: "Mud Crab", emoji: "🦀", productSlug: "live-mud-crabs" },
         ],
     },
     NZ: {
         name: "New Zealand",
         tagline: "Crystal waters & world-class shellfish",
         species: [
-            { name: "Mussels", emoji: "🦪", productSlug: "fresh-black-mussels" },
-            { name: "Crayfish", emoji: "🦞", productSlug: "wa-crayfish-cooked" },
+            { name: "Variety of Fish & Fillets", emoji: "🐟", productSlug: "sand-flounder-nz" },
+            { name: "Snapper Fillet", emoji: "🐠", productSlug: "red-snapper-fillet" },
+            { name: "Blueeye Cod", emoji: "🐟", productSlug: "blue-cod" },
+            { name: "NZ Flounder", emoji: "🐟", productSlug: "sand-flounder-nz" },
         ],
     },
 };

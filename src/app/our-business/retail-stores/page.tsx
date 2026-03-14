@@ -50,7 +50,7 @@ export default function RetailStoresPage() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Clock size={20} className="text-[#FF8543] shrink-0" />
-                                <p>Open Daily: 6:00 AM - 5:00 PM</p>
+                                <p>Open Daily: 7:00 AM - 6:00 PM</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone size={20} className="text-[#FF8543] shrink-0" />
@@ -76,7 +76,7 @@ export default function RetailStoresPage() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Clock size={20} className="text-[#FF8543] shrink-0" />
-                                <p>Tuesday - Sunday: 8:00 AM - 6:00 PM</p>
+                                <p>Open Daily: 7:00 AM - 6:00 PM</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone size={20} className="text-[#FF8543] shrink-0" />
@@ -113,7 +113,7 @@ export default function RetailStoresPage() {
                                 postalCode: '4215',
                                 addressCountry: 'AU',
                             },
-                            openingHours: 'Mo-Su 06:00-17:00',
+                            openingHours: 'Mo-Su 07:00-18:00',
                         },
                         {
                             '@context': 'https://schema.org',
@@ -129,7 +129,7 @@ export default function RetailStoresPage() {
                                 postalCode: '4227',
                                 addressCountry: 'AU',
                             },
-                            openingHours: 'Tu-Su 08:00-18:00',
+                            openingHours: 'Mo-Su 07:00-18:00',
                         },
                     ]),
                 }}

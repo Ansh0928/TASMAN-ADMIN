@@ -16,23 +16,21 @@ interface GalleryItem {
 
 const storePhotos: GalleryItem[] = [
   { src: '/assets/products/oyster-opening.jpg', alt: 'Fresh oyster opening', caption: 'Fresh Oyster Opening' },
-  { src: '/assets/products/carl.jpg', alt: 'Carl at work', caption: 'Carl at Work', rotateLeftFull: true },
+  { src: '/assets/products/carl.jpg', alt: 'Kyle at work', caption: 'Kyle at Work', rotateLeftFull: true },
   { src: '/assets/products/store.webp', alt: 'Store interior', caption: 'Fresh Daily Selection' },
   { src: '/assets/products/tuna-tail-cut.jpg', alt: 'Tuna tail cut', caption: 'Tuna Tail Cut' },
   { src: '/assets/products/img0821.webp', alt: 'Ocean perch and snapper display', caption: 'Ocean Perch & Snapper' },
   { src: '/assets/products/yellow-fin-tuna-whole.jpg', alt: 'Yellow Fin Tuna whole', caption: 'Yellow Fin Tuna Whole' },
   { src: '/assets/products/store-2.webp', alt: 'Fresh fish display', caption: 'Premium Fish Display' },
   { src: '/assets/products/storefront-flagship.webp', alt: 'Staff with premium crab display', caption: 'Our Famous Crab Mountain' },
-  { src: '/assets/products/store-4.webp', alt: 'Seafood counter', caption: 'Seafood Counter' },
   { src: '/assets/products/img0866.webp', alt: 'Oysters Kilpatrick and Mornay', caption: 'Oysters Kilpatrick & Mornay' },
-  { src: '/assets/products/store-5.webp', alt: 'Store shelves', caption: 'Ready to Cook Range' },
   { src: '/assets/products/img3505.webp', alt: 'Sashimi and premium cuts counter', caption: 'Sashimi & Premium Cuts' },
   { src: '/assets/products/store-6.webp', alt: 'Fresh catch display', caption: 'Fresh Catch Display' },
   { src: '/assets/products/img0089.webp', alt: 'Whole fresh fish on ice', caption: 'Whole Fresh Fish' },
   { src: '/assets/products/store-8.webp', alt: 'Premium seafood selection', caption: 'Premium Seafood' },
   { src: '/assets/products/img0362.webp', alt: 'Tasman Star trucks at Sydney Fish Market', caption: 'Direct from Sydney Fish Market' },
   { src: '/assets/products/store-pic-9.webp', alt: 'Store atmosphere', caption: 'Our Welcoming Store' },
-  { src: '/assets/products/img0881.webp', alt: 'Vibrant red fish display', caption: 'Vibrant Red Fish' },
+  { src: '/assets/products/img0881.webp', alt: 'Vibrant Alfonsino display', caption: 'Vibrant Alfonsino' },
   { src: '/assets/products/christmas-shop.webp', alt: 'Christmas at Tasman Star', caption: 'Christmas at Tasman Star' },
 ];
 

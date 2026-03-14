@@ -32,13 +32,13 @@ export const brand = {
         {
             name: 'Labrador Store',
             address: '213 Brisbane Rd, Labrador QLD 4215',
-            hours: 'Mon–Sat 7am–6pm, Sun 7am–3pm',
+            hours: 'Open Daily 7am–6pm',
             coordinates: { lat: -27.7503, lng: 153.3937 },
         },
         {
             name: 'Varsity Lakes Store',
             address: '201 Varsity Parade, Varsity Lakes QLD 4227',
-            hours: 'Mon–Sat 7am–6pm, Sun 7am–3pm',
+            hours: 'Open Daily 7am–6pm',
             coordinates: { lat: -28.0825, lng: 153.4127 },
         },
     ],
