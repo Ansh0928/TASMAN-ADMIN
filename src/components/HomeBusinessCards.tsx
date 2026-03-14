@@ -181,7 +181,7 @@ export default function HomeBusinessCards() {
 
                         {/* Explore CTA — visible on hover */}
                         <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                            <span className="bg-[#FF8543] text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-lg">
+                            <span className="bg-[#FF8543] text-[#1a0600] text-sm font-bold px-5 py-2.5 rounded-full shadow-lg">
                                 Explore
                             </span>
                         </div>

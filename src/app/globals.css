@@ -22,6 +22,8 @@
   --accent: #FF8543;
   --accent-hover: #E2743A;
   --accent-coral: #FF7F50;
+  /* Text ON accent-coloured backgrounds — dark for 7:1 contrast vs #FF8543 */
+  --text-on-accent: #1a0600;
   --search-bg: #112240;
   --search-bg-hover: #1A365D;
   --toggle-bg: rgba(255, 255, 255, 0.05);
@@ -31,8 +33,19 @@
   --promo-to: #0A192F;
 }
 
+/* Text on accent backgrounds — dark text for WCAG contrast on #FF8543 orange */
+.text-on-accent {
+  color: var(--text-on-accent, #1a0600);
+}
+
+/* Global: buttons/spans with bg-theme-accent use dark text for 7:1 contrast */
+.bg-theme-accent {
+  color: var(--text-on-accent, #1a0600);
+}
+
 /* ===== LIGHT THEME ===== */
 [data-theme="light"] {
+  --text-on-accent: #1a0600;
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
