@@ -9,7 +9,6 @@ interface ProductWithCategory {
   price: any;
   imageUrls: string[];
   category: { id: string; name: string; slug: string };
-  categoryId: string;
   unit: string;
   stockQuantity: number;
   isAvailable: boolean;
@@ -22,12 +21,16 @@ interface ProductWithCategory {
 }
 
 function mapPrimaryCategory(p: any): ProductWithCategory {
-  const primary = p.categories?.[0];
+  const primary = p.categories?.find((c: any) => c.isPrimary) ?? p.categories?.[0];
   return {
     ...p,
     category: primary?.category ?? { id: '', name: '', slug: '' },
-    categoryId: primary?.categoryId ?? '',
   };
+}
+
+function getPrimaryCategoryId(p: any): string {
+  const primary = p.categories?.find((c: any) => c.isPrimary) ?? p.categories?.[0];
+  return primary?.categoryId ?? '';
 }
 
 export async function getProductRecommendations(
@@ -132,7 +135,7 @@ export async function getProductRecommendations(
   const suggestedProducts: ProductWithCategory[] = [];
   for (const p of coOccurrenceProducts) {
     if (suggestedProducts.length >= MAX_ITEMS) break;
-    if (!ymalSeen.has(p.id) && p.categoryId !== categoryId) {
+    if (!ymalSeen.has(p.id) && getPrimaryCategoryId(p) !== categoryId) {
       ymalSeen.add(p.id); suggestedProducts.push(p);
     }
   }

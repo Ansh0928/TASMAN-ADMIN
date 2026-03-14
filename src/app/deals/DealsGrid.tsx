@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Tag } from 'lucide-react';
 
 interface Deal {
@@ -58,7 +59,7 @@ export function DealsGrid({ deals }: { deals: Deal[] }) {
                                     {deal.discount}% OFF
                                 </div>
                                 {deal.imageUrl ? (
-                                    <img src={deal.imageUrl} alt={deal.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                    <Image src={deal.imageUrl} alt={deal.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                                 ) : (
                                     <div className="w-full h-full bg-theme-tertiary flex items-center justify-center text-theme-text-muted text-4xl">🐟</div>
                                 )}

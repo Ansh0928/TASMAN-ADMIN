@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { Anchor, Users, Truck, ShieldCheck, Clock, MapPin, Phone, Cpu, Heart } from 'lucide-react';
 import type { TeamMember } from '@/components/ui/team-showcase';
 import TeamShowcase from '@/components/ui/team-showcase';
@@ -66,7 +67,7 @@ export default function AboutPage() {
                         </div>
                         <div className="relative">
                             <div className="rounded-2xl overflow-hidden shadow-xl border border-theme-border">
-                                <img src="/assets/retail-store.jpeg" alt="Tasman Star Seafood Market storefront" className="w-full h-72 object-cover" />
+                                <Image src="/assets/retail-store.jpeg" alt="Tasman Star Seafood Market storefront" width={600} height={288} className="w-full h-72 object-cover" />
                             </div>
                             <div className="absolute -bottom-5 left-4 md:-left-4 bg-[#0A192F] rounded-xl p-4 shadow-xl border border-[#FF8543]/20">
                                 <p className="text-[#FF8543] font-bold text-2xl">30+</p>

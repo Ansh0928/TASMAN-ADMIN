@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
         const categorySlug = searchParams.get('category');
         const featured = searchParams.get('featured') === 'true';
         const todaysSpecial = searchParams.get('todaysSpecial') === 'true';
-        const limit = parseInt(searchParams.get('limit') || '12', 10);
-        const page = parseInt(searchParams.get('page') || '1', 10);
+        const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '12', 10) || 12));
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
 
         const skip = (page - 1) * limit;
 
