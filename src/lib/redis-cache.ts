@@ -10,10 +10,14 @@ function getRedis(): Redis | null {
     return null;
   }
   if (!_redis) {
-    _redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    try {
+      _redis = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL.trim(),
+        token: process.env.UPSTASH_REDIS_REST_TOKEN.trim(),
+      });
+    } catch {
+      return null;
+    }
   }
   return _redis;
 }
