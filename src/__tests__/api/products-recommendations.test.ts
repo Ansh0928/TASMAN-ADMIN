@@ -46,19 +46,26 @@ describe('POST /api/products/recommendations', () => {
     });
 
     it('returns co-occurrence products when orders exist', async () => {
-        const cartProduct = factories.product({ id: 'prod-1', categoryId: 'cat-1' });
+        const cartProduct = factories.product({ id: 'prod-1' });
         const recommendedProduct = factories.product({
             id: 'prod-2',
             name: 'Barramundi',
             slug: 'barramundi',
-            categoryId: 'cat-2',
-            category: { id: 'cat-2', name: 'Premium Fish', slug: 'premium-fish' },
+            categories: [
+                {
+                    id: 'pc-2',
+                    productId: 'prod-2',
+                    categoryId: 'cat-2',
+                    isPrimary: true,
+                    category: { id: 'cat-2', name: 'Premium Fish', slug: 'premium-fish' },
+                },
+            ],
         });
 
         // Cart products with their categories
         prismaMock.product.findMany
             // First call: get cart products categories
-            .mockResolvedValueOnce([{ categoryId: cartProduct.categoryId }])
+            .mockResolvedValueOnce([{ categoryId: 'cat-1' }])
             // Second call: featured fallback (different categories)
             .mockResolvedValueOnce([])
             // Third call: co-occurrence products
@@ -91,8 +98,15 @@ describe('POST /api/products/recommendations', () => {
             name: 'King Prawns',
             slug: 'king-prawns',
             isFeatured: true,
-            categoryId: 'cat-2',
-            category: { id: 'cat-2', name: 'Shellfish', slug: 'shellfish' },
+            categories: [
+                {
+                    id: 'pc-3',
+                    productId: 'prod-3',
+                    categoryId: 'cat-2',
+                    isPrimary: true,
+                    category: { id: 'cat-2', name: 'Shellfish', slug: 'shellfish' },
+                },
+            ],
         });
 
         // Cart products categories
@@ -130,8 +144,15 @@ describe('POST /api/products/recommendations', () => {
             isFeatured: true,
             isTodaysSpecial: false,
             tags: ['fresh', 'premium'],
-            categoryId: 'cat-2',
-            category: { id: 'cat-2', name: 'Premium', slug: 'premium' },
+            categories: [
+                {
+                    id: 'pc-4',
+                    productId: 'prod-4',
+                    categoryId: 'cat-2',
+                    isPrimary: true,
+                    category: { id: 'cat-2', name: 'Premium', slug: 'premium' },
+                },
+            ],
         });
 
         prismaMock.product.findMany

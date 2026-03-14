@@ -57,7 +57,7 @@ describe('Admin Products API', () => {
 
         it('POST /api/admin/products rejects non-admin', async () => {
             adminForbidden();
-            const req = createMockRequest('POST', { name: 'Test', price: '10', categoryId: 'cat-1' });
+            const req = createMockRequest('POST', { name: 'Test', price: '10', categoryIds: ['cat-1'], primaryCategoryId: 'cat-1' });
             const res = await POST(req as any);
             expect(res.status).toBe(403);
         });
@@ -149,11 +149,13 @@ describe('Admin Products API', () => {
             prismaMock.product.findUnique.mockResolvedValue(null); // slug not taken
             const created = factories.product();
             prismaMock.product.create.mockResolvedValue(created);
+            prismaMock.productCategory.createMany.mockResolvedValue({ count: 1 });
 
             const req = createMockRequest('POST', {
                 name: 'Atlantic Salmon',
                 price: '29.99',
-                categoryId: 'cat-1',
+                categoryIds: ['cat-1'],
+                primaryCategoryId: 'cat-1',
                 description: 'Fresh Atlantic Salmon',
                 imageUrls: ['https://example.com/salmon.jpg'],
                 stockQuantity: 50,
@@ -175,9 +177,7 @@ describe('Admin Products API', () => {
                         name: 'Atlantic Salmon',
                         slug: 'atlantic-salmon',
                         price: 29.99,
-                        categoryId: 'cat-1',
                     }),
-                    include: { category: true },
                 })
             );
         });
@@ -186,11 +186,13 @@ describe('Admin Products API', () => {
             adminOk();
             prismaMock.product.findUnique.mockResolvedValue(factories.product()); // slug taken
             prismaMock.product.create.mockResolvedValue(factories.product());
+            prismaMock.productCategory.createMany.mockResolvedValue({ count: 1 });
 
             const req = createMockRequest('POST', {
                 name: 'Atlantic Salmon',
                 price: '29.99',
-                categoryId: 'cat-1',
+                categoryIds: ['cat-1'],
+                primaryCategoryId: 'cat-1',
             });
 
             await POST(req as any);
@@ -206,7 +208,7 @@ describe('Admin Products API', () => {
 
         it('returns 400 when name is missing', async () => {
             adminOk();
-            const req = createMockRequest('POST', { price: '10', categoryId: 'cat-1' });
+            const req = createMockRequest('POST', { price: '10', categoryIds: ['cat-1'], primaryCategoryId: 'cat-1' });
             const res = await POST(req as any);
             expect(res.status).toBe(400);
             const data = await res.json();
@@ -215,12 +217,12 @@ describe('Admin Products API', () => {
 
         it('returns 400 when price is missing', async () => {
             adminOk();
-            const req = createMockRequest('POST', { name: 'Test', categoryId: 'cat-1' });
+            const req = createMockRequest('POST', { name: 'Test', categoryIds: ['cat-1'], primaryCategoryId: 'cat-1' });
             const res = await POST(req as any);
             expect(res.status).toBe(400);
         });
 
-        it('returns 400 when categoryId is missing', async () => {
+        it('returns 400 when categoryIds is missing', async () => {
             adminOk();
             const req = createMockRequest('POST', { name: 'Test', price: '10' });
             const res = await POST(req as any);

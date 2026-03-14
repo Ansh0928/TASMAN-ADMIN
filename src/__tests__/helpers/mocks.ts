@@ -76,6 +76,11 @@ export const prismaMock = {
     wholesaleOrderItem: {
         createMany: vi.fn(),
     },
+    productCategory: {
+        create: vi.fn(),
+        createMany: vi.fn(),
+        deleteMany: vi.fn(),
+    },
     address: {
         findMany: vi.fn(),
         delete: vi.fn(),
@@ -180,8 +185,15 @@ export const factories = {
         description: 'Fresh Atlantic Salmon',
         price: '29.99',
         imageUrls: ['https://example.com/salmon.jpg'],
-        categoryId: 'cat-1',
-        category: { id: 'cat-1', name: 'Fish', slug: 'fish' },
+        categories: [
+            {
+                id: 'pc-1',
+                productId: 'prod-1',
+                categoryId: 'cat-1',
+                isPrimary: true,
+                category: { id: 'cat-1', name: 'Fish', slug: 'fish' },
+            },
+        ],
         unit: 'KG',
         stockQuantity: 50,
         isAvailable: true,
