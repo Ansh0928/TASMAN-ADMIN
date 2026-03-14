@@ -38,6 +38,8 @@ yarn-error.log*
 .vercel
 
 # Raw source images (converted to WebP in public/assets/products/)
+public/*.HEIC
+public/*.heic
 public/assets/*.HEIC
 public/assets/*.heic
 public/assets/*.JPEG
