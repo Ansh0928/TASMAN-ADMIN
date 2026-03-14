@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const product = await prisma.product.findUnique({
         where: { slug },
-        include: { category: true },
+        include: { categories: { include: { category: true } } },
     });
 
     if (!product) {
@@ -72,20 +72,24 @@ export default async function ProductPage({ params }: Props) {
     const { slug } = await params;
     const product = await prisma.product.findUnique({
         where: { slug },
-        include: { category: true },
+        include: { categories: { include: { category: true } } },
     });
 
     if (!product) {
         notFound();
     }
 
+    const primaryCat = product.categories.find(pc => pc.isPrimary)?.category || product.categories[0]?.category;
+    const primaryCategoryId = product.categories.find(pc => pc.isPrimary)?.categoryId || product.categories[0]?.categoryId || '';
+
     const { relatedProducts, suggestedProducts } = await getProductRecommendations(
         product.id,
-        product.categoryId,
+        primaryCategoryId,
         product.relatedProductIds,
     );
 
-    const serialized = serializeProduct(product);
+    const productWithCategory = { ...product, category: primaryCat || null };
+    const serialized = serializeProduct(productWithCategory);
 
     return (
         <>
@@ -106,7 +110,7 @@ export default async function ProductPage({ params }: Props) {
                         description: product.description || `Fresh ${product.name} from Tasman Star Seafoods`,
                         image: product.imageUrls.length > 0 ? product.imageUrls : undefined,
                         sku: product.id,
-                        category: product.category?.name,
+                        category: primaryCat?.name,
                         brand: {
                             '@type': 'Brand',
                             name: 'Tasman Star Seafoods',
@@ -143,8 +147,8 @@ export default async function ProductPage({ params }: Props) {
                         itemListElement: [
                             { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://tasman-admin.vercel.app' },
                             { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://tasman-admin.vercel.app/our-business/online-delivery' },
-                            ...(product.category ? [{ '@type': 'ListItem', position: 3, name: product.category.name, item: `https://tasman-admin.vercel.app/our-products?category=${product.category.slug}` }] : []),
-                            { '@type': 'ListItem', position: product.category ? 4 : 3, name: product.name },
+                            ...(primaryCat ? [{ '@type': 'ListItem', position: 3, name: primaryCat.name, item: `https://tasman-admin.vercel.app/our-products?category=${primaryCat.slug}` }] : []),
+                            { '@type': 'ListItem', position: primaryCat ? 4 : 3, name: product.name },
                         ],
                     }).replace(/</g, '\\u003c'),
                 }}

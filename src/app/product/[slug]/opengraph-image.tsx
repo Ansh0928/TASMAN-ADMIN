@@ -16,12 +16,12 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   try {
     const product = await prisma.product.findUnique({
       where: { slug },
-      select: { name: true, price: true, imageUrls: true, category: { select: { name: true } } },
+      select: { name: true, price: true, imageUrls: true, categories: { include: { category: { select: { name: true } } }, where: { isPrimary: true } } },
     });
     if (product) {
       productName = product.name;
       productPrice = `$${Number(product.price).toFixed(2)}`;
-      productCategory = product.category?.name || '';
+      productCategory = product.categories[0]?.category?.name || '';
       productImage = product.imageUrls[0] || '';
     }
   } catch {

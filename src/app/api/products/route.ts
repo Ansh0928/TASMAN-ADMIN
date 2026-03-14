@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
         }
 
         if (categorySlug) {
-            where.category = {
-                slug: categorySlug,
+            where.categories = {
+                some: { category: { slug: categorySlug } },
             };
         }
 
@@ -59,11 +59,12 @@ export async function GET(request: NextRequest) {
                         isFeatured: true,
                         isTodaysSpecial: true,
                         tags: true,
-                        category: {
+                        categories: {
                             select: {
-                                id: true,
-                                name: true,
-                                slug: true,
+                                isPrimary: true,
+                                category: {
+                                    select: { id: true, name: true, slug: true },
+                                },
                             },
                         },
                     },
@@ -78,24 +79,26 @@ export async function GET(request: NextRequest) {
 
         const response = NextResponse.json(
             {
-                products: products.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    slug: p.slug,
-                    description: p.description,
-                    price: p.price.toString(),
-                    imageUrls: p.imageUrls,
-                    category: {
-                        id: p.category.id,
-                        name: p.category.name,
-                        slug: p.category.slug,
-                    },
-                    unit: p.unit,
-                    stockQuantity: p.stockQuantity,
-                    isFeatured: p.isFeatured,
-                    isTodaysSpecial: p.isTodaysSpecial,
-                    tags: p.tags,
-                })),
+                products: products.map((p: any) => {
+                    const primary = p.categories.find((pc: any) => pc.isPrimary)?.category || p.categories[0]?.category;
+                    return {
+                        id: p.id,
+                        name: p.name,
+                        slug: p.slug,
+                        description: p.description,
+                        price: p.price.toString(),
+                        imageUrls: p.imageUrls,
+                        category: primary
+                            ? { id: primary.id, name: primary.name, slug: primary.slug }
+                            : { id: '', name: '', slug: '' },
+                        categorySlugs: p.categories.map((pc: any) => pc.category.slug),
+                        unit: p.unit,
+                        stockQuantity: p.stockQuantity,
+                        isFeatured: p.isFeatured,
+                        isTodaysSpecial: p.isTodaysSpecial,
+                        tags: p.tags,
+                    };
+                }),
                 pagination: {
                     page,
                     limit,

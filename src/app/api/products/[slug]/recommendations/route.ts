@@ -2,21 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { captureError } from '@/lib/error';
 
-function serializeProduct(p: {
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    price: { toString(): string } | number;
-    imageUrls: string[];
-    category: { id: string; name: string; slug: string };
-    unit: string;
-    stockQuantity: number;
-    isAvailable: boolean;
-    isFeatured: boolean;
-    isTodaysSpecial: boolean;
-    tags: string[];
-}) {
+function serializeProduct(p: any) {
+    const primaryCat = p.categories?.find((pc: any) => pc.isPrimary)?.category || p.categories?.[0]?.category;
     return {
         id: p.id,
         name: p.name,
@@ -24,7 +11,9 @@ function serializeProduct(p: {
         description: p.description || undefined,
         price: Number(p.price).toString(),
         imageUrls: p.imageUrls,
-        category: { id: p.category.id, name: p.category.name, slug: p.category.slug },
+        category: primaryCat
+            ? { id: primaryCat.id, name: primaryCat.name, slug: primaryCat.slug }
+            : { id: '', name: '', slug: '' },
         unit: p.unit,
         stockQuantity: p.stockQuantity,
         isAvailable: p.isAvailable,
@@ -34,6 +23,10 @@ function serializeProduct(p: {
     };
 }
 
+function getPrimaryCategoryId(p: any): string {
+    return p.categories?.find((pc: any) => pc.isPrimary)?.categoryId || p.categories?.[0]?.categoryId || '';
+}
+
 export async function GET(
     _request: NextRequest,
     { params }: { params: Promise<{ slug: string }> }
@@ -41,49 +34,52 @@ export async function GET(
     try {
         const { slug } = await params;
 
+        const includeCategories = { categories: { include: { category: true } } };
+
         const product = await prisma.product.findUnique({
             where: { slug },
-            include: { category: true },
+            include: includeCategories,
         });
 
         if (!product) {
             return NextResponse.json({ message: 'Product not found' }, { status: 404 });
         }
 
+        const primaryCategoryId = getPrimaryCategoryId(product);
         const MAX_ITEMS = 8;
 
         // ── 3. Same-category fallback (declared first for type inference) ──
         const sameCategoryProducts = await prisma.product.findMany({
             where: {
-                categoryId: product.categoryId,
+                categories: { some: { categoryId: primaryCategoryId } },
                 id: { not: product.id },
                 isAvailable: true,
             },
-            include: { category: true },
+            include: includeCategories,
             take: MAX_ITEMS,
             orderBy: { isFeatured: 'desc' },
         });
 
-        type ProductWithCategory = typeof sameCategoryProducts;
+        type ProductWithCategories = typeof sameCategoryProducts;
 
-        let frequentlyBoughtTogether: ProductWithCategory = [];
-        let youMayAlsoLike: ProductWithCategory = [];
+        let frequentlyBoughtTogether: ProductWithCategories = [];
+        let youMayAlsoLike: ProductWithCategories = [];
 
         // ── 1. Manual relatedProductIds ──
-        let manualRelated: ProductWithCategory = [];
+        let manualRelated: ProductWithCategories = [];
         if (product.relatedProductIds.length > 0) {
             manualRelated = await prisma.product.findMany({
                 where: {
                     id: { in: product.relatedProductIds },
                     isAvailable: true,
                 },
-                include: { category: true },
+                include: includeCategories,
                 take: MAX_ITEMS,
             });
         }
 
         // ── 2. Order co-occurrence ──
-        let coOccurrenceProducts: ProductWithCategory = [];
+        let coOccurrenceProducts: ProductWithCategories = [];
         const ordersContainingProduct = await prisma.orderItem.findMany({
             where: { productId: product.id },
             select: { orderId: true },
@@ -92,7 +88,6 @@ export async function GET(
         const orderIds = ordersContainingProduct.map(oi => oi.orderId);
 
         if (orderIds.length > 0) {
-            // Find other products in those same orders
             const coItems = await prisma.orderItem.findMany({
                 where: {
                     orderId: { in: orderIds },
@@ -101,17 +96,15 @@ export async function GET(
                 select: { productId: true },
             });
 
-            // Count co-occurrence frequency
             const freq: Record<string, number> = {};
             for (const item of coItems) {
                 freq[item.productId] = (freq[item.productId] || 0) + 1;
             }
 
-            // Sort by frequency desc
             const sortedIds = Object.entries(freq)
                 .sort((a, b) => b[1] - a[1])
                 .map(([id]) => id)
-                .slice(0, MAX_ITEMS * 2); // fetch more than needed, we'll filter
+                .slice(0, MAX_ITEMS * 2);
 
             if (sortedIds.length > 0) {
                 const coProducts = await prisma.product.findMany({
@@ -119,10 +112,9 @@ export async function GET(
                         id: { in: sortedIds },
                         isAvailable: true,
                     },
-                    include: { category: true },
+                    include: includeCategories,
                 });
 
-                // Maintain sort order by frequency
                 const productMap = new Map(coProducts.map(p => [p.id, p]));
                 coOccurrenceProducts = sortedIds
                     .map(id => productMap.get(id))
@@ -133,19 +125,18 @@ export async function GET(
         // ── 4. "You May Also Like" — featured from other categories ──
         const otherCategoryFeatured = await prisma.product.findMany({
             where: {
-                categoryId: { not: product.categoryId },
+                NOT: { categories: { some: { categoryId: primaryCategoryId } } },
                 isAvailable: true,
                 isFeatured: true,
             },
-            include: { category: true },
+            include: includeCategories,
             take: MAX_ITEMS,
             orderBy: { createdAt: 'desc' },
         });
 
         // ── Build "Frequently Bought Together" ──
-        // Priority: manual > co-occurrence > same-category
         const fbtSeen = new Set<string>([product.id]);
-        const fbtList: ProductWithCategory = [];
+        const fbtList: ProductWithCategories = [];
 
         for (const p of manualRelated) {
             if (fbtList.length >= MAX_ITEMS) break;
@@ -172,14 +163,12 @@ export async function GET(
         frequentlyBoughtTogether = fbtList;
 
         // ── Build "You May Also Like" ──
-        // Priority: co-occurrence from other categories > featured from other categories
         const ymalSeen = new Set<string>([product.id, ...fbtList.map(p => p.id)]);
-        const ymalList: ProductWithCategory = [];
+        const ymalList: ProductWithCategories = [];
 
-        // Co-occurrence products from OTHER categories
         for (const p of coOccurrenceProducts) {
             if (ymalList.length >= MAX_ITEMS) break;
-            if (!ymalSeen.has(p.id) && p.categoryId !== product.categoryId) {
+            if (!ymalSeen.has(p.id) && getPrimaryCategoryId(p) !== primaryCategoryId) {
                 ymalSeen.add(p.id);
                 ymalList.push(p);
             }

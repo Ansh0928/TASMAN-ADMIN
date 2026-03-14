@@ -10,7 +10,7 @@ export async function GET(
         const { slug } = await params;
         const product = await prisma.product.findUnique({
             where: { slug },
-            include: { category: true },
+            include: { categories: { include: { category: true } } },
         });
 
         if (!product) {
@@ -20,6 +20,8 @@ export async function GET(
             );
         }
 
+        const primaryCat = product.categories.find((pc: any) => pc.isPrimary)?.category || product.categories[0]?.category;
+
         return NextResponse.json({
             id: product.id,
             name: product.name,
@@ -27,11 +29,9 @@ export async function GET(
             description: product.description,
             price: product.price.toString(),
             imageUrls: product.imageUrls,
-            category: {
-                id: product.category.id,
-                name: product.category.name,
-                slug: product.category.slug,
-            },
+            category: primaryCat
+                ? { id: primaryCat.id, name: primaryCat.name, slug: primaryCat.slug }
+                : { id: '', name: '', slug: '' },
             unit: product.unit,
             stockQuantity: product.stockQuantity,
             isAvailable: product.isAvailable,

@@ -4,6 +4,7 @@ import { captureError } from '@/lib/error';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeProduct(p: any) {
+    const primaryCat = p.categories?.find((pc: any) => pc.isPrimary)?.category || p.categories?.[0]?.category;
     return {
         id: p.id,
         name: p.name,
@@ -11,7 +12,7 @@ function serializeProduct(p: any) {
         description: p.description || undefined,
         price: Number(p.price).toString(),
         imageUrls: p.imageUrls,
-        category: p.category ? { id: p.category.id, name: p.category.name, slug: p.category.slug } : { id: '', name: '', slug: '' },
+        category: primaryCat ? { id: primaryCat.id, name: primaryCat.name, slug: primaryCat.slug } : { id: '', name: '', slug: '' },
         unit: p.unit,
         stockQuantity: p.stockQuantity,
         isAvailable: p.isAvailable,
@@ -31,13 +32,14 @@ export async function POST(request: NextRequest) {
         }
 
         const MAX_ITEMS = 8;
+        const includeCategories = { categories: { include: { category: true }, where: { isPrimary: true } } };
 
-        // ── 2. Get categories of the given products for fallback ──
+        // ── 2. Get primary categories of the given products for fallback ──
         const cartProducts = await prisma.product.findMany({
             where: { id: { in: productIds } },
-            select: { categoryId: true },
+            select: { categories: { select: { categoryId: true }, where: { isPrimary: true } } },
         });
-        const cartCategoryIds = [...new Set(cartProducts.map(p => p.categoryId))];
+        const cartCategoryIds = [...new Set(cartProducts.map(p => p.categories[0]?.categoryId).filter(Boolean))];
 
         // ── 3. Fallback: featured products from different categories (declared early for type) ──
         const featuredFallback = await prisma.product.findMany({
@@ -45,13 +47,13 @@ export async function POST(request: NextRequest) {
                 id: { notIn: productIds },
                 isAvailable: true,
                 isFeatured: true,
-                ...(cartCategoryIds.length > 0 ? { categoryId: { notIn: cartCategoryIds } } : {}),
+                ...(cartCategoryIds.length > 0 ? { NOT: { categories: { some: { categoryId: { in: cartCategoryIds }, isPrimary: true } } } } : {}),
             },
-            include: { category: true },
+            include: includeCategories,
             take: MAX_ITEMS,
             orderBy: { createdAt: 'desc' },
         });
-        type ProductWithCategory = typeof featuredFallback;
+        type ProductWithCategories = typeof featuredFallback;
 
         // ── 1. Find orders containing any of the given products ──
         const orderItemsWithProducts = await prisma.orderItem.findMany({
@@ -61,10 +63,9 @@ export async function POST(request: NextRequest) {
         });
         const orderIds = [...new Set(orderItemsWithProducts.map(oi => oi.orderId))];
 
-        let coOccurrenceProducts: ProductWithCategory = [];
+        let coOccurrenceProducts: ProductWithCategories = [];
 
         if (orderIds.length > 0) {
-            // Find other products in those same orders
             const coItems = await prisma.orderItem.findMany({
                 where: {
                     orderId: { in: orderIds },
@@ -73,13 +74,11 @@ export async function POST(request: NextRequest) {
                 select: { productId: true },
             });
 
-            // Count co-occurrence frequency
             const freq: Record<string, number> = {};
             for (const item of coItems) {
                 freq[item.productId] = (freq[item.productId] || 0) + 1;
             }
 
-            // Sort by frequency desc
             const sortedIds = Object.entries(freq)
                 .sort((a, b) => b[1] - a[1])
                 .map(([id]) => id)
@@ -91,10 +90,9 @@ export async function POST(request: NextRequest) {
                         id: { in: sortedIds },
                         isAvailable: true,
                     },
-                    include: { category: true },
+                    include: includeCategories,
                 });
 
-                // Maintain frequency order
                 const productMap = new Map(products.map(p => [p.id, p]));
                 coOccurrenceProducts = sortedIds
                     .map(id => productMap.get(id))
@@ -108,16 +106,16 @@ export async function POST(request: NextRequest) {
                 id: { notIn: productIds },
                 isAvailable: true,
                 isFeatured: true,
-                ...(cartCategoryIds.length > 0 ? { categoryId: { in: cartCategoryIds } } : {}),
+                ...(cartCategoryIds.length > 0 ? { categories: { some: { categoryId: { in: cartCategoryIds }, isPrimary: true } } } : {}),
             },
-            include: { category: true },
+            include: includeCategories,
             take: MAX_ITEMS,
             orderBy: { createdAt: 'desc' },
         });
 
         // ── Build results ──
         const seen = new Set<string>(productIds);
-        const results: ProductWithCategory = [];
+        const results: ProductWithCategories = [];
 
         for (const p of coOccurrenceProducts) {
             if (results.length >= MAX_ITEMS) break;
