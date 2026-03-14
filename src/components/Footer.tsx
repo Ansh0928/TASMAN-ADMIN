@@ -77,12 +77,12 @@ export default function Footer() {
                         <h3 className="text-theme-text font-serif font-bold text-lg mb-6 tracking-wide">Contact Us</h3>
                         <ul className="space-y-4 text-sm">
                             <li className="flex gap-3 items-center">
-                                <Phone className="text-theme-accent shrink-0" size={18} />
-                                <span>(07) 5522 1221</span>
+                                <Phone className="text-theme-accent shrink-0" size={18} aria-hidden="true" />
+                                <a href="tel:+61755221221" className="hover:text-theme-accent transition-colors">(07) 5522 1221</a>
                             </li>
                             <li className="flex gap-3 items-center">
-                                <Mail className="text-theme-accent shrink-0" size={18} />
-                                <span>admin@tasmanstarseafood.com</span>
+                                <Mail className="text-theme-accent shrink-0" size={18} aria-hidden="true" />
+                                <a href="mailto:admin@tasmanstarseafood.com" className="hover:text-theme-accent transition-colors break-all">admin@tasmanstarseafood.com</a>
                             </li>
                         </ul>
                     </div>
@@ -94,7 +94,9 @@ export default function Footer() {
                             Subscribe to get special offers, free giveaways, and fresh catch alerts.
                         </p>
                         <form onSubmit={handleSubscribe} className="flex">
+                            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
                             <input
+                                id="newsletter-email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -105,9 +107,10 @@ export default function Footer() {
                             <button
                                 type="submit"
                                 disabled={loading}
+                                aria-label={loading ? 'Subscribing...' : 'Subscribe to newsletter'}
                                 className="bg-theme-accent hover:bg-theme-accent/90 active:bg-theme-accent/80 disabled:opacity-50 disabled:cursor-not-allowed text-theme-primary font-bold px-4 py-3 rounded-r-lg transition-colors"
                             >
-                                {loading ? '...' : 'Subscribe'}
+                                {loading ? 'Wait...' : 'Subscribe'}
                             </button>
                         </form>
                         {message && (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Sun, Moon, LogIn, UserPlus, User, LogOut, Building2, Search } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
 import { logout } from '@/app/actions/auth';
 import { NAV_LINKS } from '@/lib/nav-links';
@@ -107,7 +108,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                     {NAV_LINKS.map((link) => {
                         const isActive = pathname === link.href;
                         return (
-                            <a
+                            <Link
                                 key={link.href}
                                 href={link.href}
                                 className={`py-3 px-4 rounded-xl text-base font-medium transition-colors ${
@@ -120,11 +121,11 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                                 {link.label === 'Deals' && (
                                     <span className="ml-2 w-2 h-2 rounded-full bg-theme-accent animate-pulse inline-block" />
                                 )}
-                            </a>
+                            </Link>
                         );
                     })}
                     {user?.role === 'WHOLESALE' && user?.wholesaleStatus === 'APPROVED' && (
-                        <a
+                        <Link
                             href="/wholesale/prices"
                             className={`py-3 px-4 rounded-xl text-base font-medium transition-colors flex items-center gap-3 ${
                                 pathname === '/wholesale/prices'
@@ -134,7 +135,7 @@ export default function MobileMenu({ user }: MobileMenuProps) {
                         >
                             <Building2 size={18} />
                             Wholesale Prices
-                        </a>
+                        </Link>
                     )}
                 </nav>
 

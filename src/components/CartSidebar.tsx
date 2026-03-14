@@ -51,9 +51,6 @@ export default function CartSidebar() {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-                    {items.length > 0 && (
-                        <CartRecommendations productIds={items.map(i => i.productId)} />
-                    )}
                     {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center text-theme-text-muted space-y-4">
                             <div className="w-20 h-20 bg-theme-tertiary rounded-full flex items-center justify-center">
@@ -68,7 +65,8 @@ export default function CartSidebar() {
                             </button>
                         </div>
                     ) : (
-                        items.map((item) => (
+                        <>
+                        {items.map((item) => (
                             <div key={item.id} className="flex gap-4 p-4 bg-theme-tertiary rounded-2xl border border-theme-border">
                                 {/* Image */}
                                 <div className="w-20 h-20 bg-theme-tertiary rounded-xl overflow-hidden shrink-0 relative">
@@ -126,7 +124,9 @@ export default function CartSidebar() {
                                     </div>
                                 </div>
                             </div>
-                        ))
+                        ))}
+                        <CartRecommendations productIds={items.map(i => i.productId)} />
+                        </>
                     )}
                 </div>
 

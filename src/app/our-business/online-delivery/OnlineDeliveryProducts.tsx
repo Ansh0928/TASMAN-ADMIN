@@ -185,7 +185,7 @@ export default function OnlineDeliveryProducts() {
         return (
             <div className="container mx-auto max-w-7xl pb-16">
                 {/* Skeleton: Filter Bar */}
-                <div className="sticky top-0 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0">
+                <div className="sticky top-16 sm:top-20 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <div className="flex-1 flex gap-2">
                             {[1, 2, 3, 4, 5].map((i) => (
@@ -250,7 +250,7 @@ export default function OnlineDeliveryProducts() {
             {/* Filter & Sort Bar */}
             <div
                 ref={filterBarRef}
-                className="sticky top-0 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0 transition-all"
+                className="sticky top-16 sm:top-20 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0 transition-all"
             >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     {/* Category Dropdown (desktop) */}

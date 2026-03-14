@@ -73,6 +73,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://js.stripe.com" crossOrigin="anonymous" />
       </head>
       <body className="bg-theme-primary text-theme-secondary font-sans min-h-screen flex justify-center selection:bg-theme-accent/30 selection:text-white antialiased">
+        <a href="#main-content" className="skip-to-content">Skip to main content</a>
         <SessionProvider>
         <ThemeProvider>
           <CartProvider>
@@ -91,7 +92,7 @@ export default async function RootLayout({
                   </div>
 
                   {/* Desktop Nav */}
-                  <nav className="hidden lg:flex items-center gap-6 font-sans font-medium text-sm text-theme-secondary ml-4 shrink-0">
+                  <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-6 font-sans font-medium text-sm text-theme-secondary ml-4 shrink-0">
                     {NAV_LINKS.map((link) => (
                       link.label === 'Deals' ? (
                         <Link key={link.href} href={link.href} className="hover:text-theme-accent transition-colors flex items-center gap-1 bg-theme-toggle border border-theme-toggle-border px-3 py-1.5 rounded-full">
@@ -126,7 +127,7 @@ export default async function RootLayout({
               </header>
 
               {/* Mobile Nav */}
-              <nav className="lg:hidden w-full bg-theme-header border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
+              <nav aria-label="Mobile navigation" className="lg:hidden w-full bg-theme-header border-b border-theme-accent/20 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-1 px-4 py-1.5 min-w-max">
                   {NAV_LINKS.map((link) => (
                     link.label === 'Deals' ? (
@@ -146,7 +147,7 @@ export default async function RootLayout({
                 </div>
               </nav>
 
-              <main className="flex-grow w-full pb-16 lg:pb-0">
+              <main id="main-content" className="flex-grow w-full pb-16 lg:pb-0">
                 {children}
               </main>
 
