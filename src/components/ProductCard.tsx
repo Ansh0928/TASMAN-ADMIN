@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { useCart } from '@/components/CartProvider';
-import { useWishlist } from '@/components/WishlistProvider';
-import { Check, Heart } from 'lucide-react';
+import { Check } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -29,9 +28,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, badge, gridMode }: ProductCardProps) {
     const { addItem } = useCart();
-    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const [added, setAdded] = useState(false);
-    const inWishlist = isInWishlist(product.id);
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -74,19 +71,6 @@ export default function ProductCard({ product, badge, gridMode }: ProductCardPro
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl">🐟</div>
                     )}
-
-                    {/* Wishlist toggle */}
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id);
-                        }}
-                        className="absolute top-1 right-1 z-10 w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
-                        aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-                    >
-                        <Heart size={14} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-white'} />
-                    </button>
 
                     {/* Badge */}
                     {badge && (

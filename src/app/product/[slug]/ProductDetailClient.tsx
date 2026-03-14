@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/components/CartProvider';
-import { useWishlist } from '@/components/WishlistProvider';
-import { MapPin, ChevronLeft, Check, ShoppingBag, Heart } from 'lucide-react';
+import { MapPin, ChevronLeft, Check, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ProductCarousel from '@/components/ProductCarousel';
@@ -41,10 +40,8 @@ export default function ProductDetailClient({
     const [addedToCart, setAddedToCart] = useState(false);
     const [showStickyCta, setShowStickyCta] = useState(false);
     const { addItem } = useCart();
-    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const ctaRef = useRef<HTMLButtonElement>(null);
 
-    const inWishlist = isInWishlist(product.id);
     const isOutOfStock = product.stockQuantity <= 0 || !product.isAvailable;
     const maxQuantity = product.stockQuantity;
 
@@ -232,13 +229,6 @@ export default function ProductDetailClient({
                                 >
                                     Out of Stock
                                 </button>
-                                <button
-                                    onClick={() => inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
-                                    className="border border-theme-border rounded-xl p-3 min-h-11 min-w-11 flex items-center justify-center hover:border-red-500 transition-colors"
-                                    aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-                                >
-                                    <Heart size={22} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-theme-text-muted'} />
-                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
@@ -282,13 +272,6 @@ export default function ProductDetailClient({
                                     )}
                                 </button>
 
-                                <button
-                                    onClick={() => inWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
-                                    className="border border-theme-border rounded-xl p-3 min-h-11 min-w-11 flex items-center justify-center hover:border-red-500 transition-colors"
-                                    aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-                                >
-                                    <Heart size={22} className={inWishlist ? 'fill-red-500 text-red-500' : 'text-theme-text-muted'} />
-                                </button>
                             </div>
                         )}
 

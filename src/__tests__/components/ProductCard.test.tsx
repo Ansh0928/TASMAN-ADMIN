@@ -8,14 +8,6 @@ vi.mock('@/components/CartProvider', () => ({
     useCart: () => ({ addItem: mockAddItem }),
 }));
 
-vi.mock('@/components/WishlistProvider', () => ({
-    useWishlist: () => ({
-        isInWishlist: () => false,
-        addToWishlist: vi.fn(),
-        removeFromWishlist: vi.fn(),
-    }),
-}));
-
 vi.mock('next/link', () => ({
     default: ({ href, children, ...props }: any) => (
         <a href={href} {...props}>
