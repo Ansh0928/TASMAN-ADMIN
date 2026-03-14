@@ -22,7 +22,8 @@ export default function NewProduct() {
         name: '',
         description: '',
         price: '',
-        categoryId: '',
+        categoryIds: [] as string[],
+        primaryCategoryId: '',
         imageUrls: [] as string[],
         stockQuantity: '0',
         unit: 'PIECE',
@@ -122,20 +123,50 @@ export default function NewProduct() {
                                 className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
                             />
                         </div>
-                        <div>
-                            <label className="block text-theme-text-muted text-sm mb-1">Category *</label>
-                            <select
-                                required
-                                value={form.categoryId}
-                                onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                                className="w-full px-4 py-2 bg-theme-secondary border border-theme-border rounded-lg text-theme-text focus:border-theme-accent focus:outline-none"
-                            >
-                                <option value="">Select category</option>
-                                {categories.map((c) => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-theme-text-muted text-sm mb-1">Categories *</label>
+                        <div className="bg-theme-secondary border border-theme-border rounded-lg p-3 max-h-60 overflow-y-auto space-y-2">
+                            {categories.map((c) => (
+                                <label key={c.id} className="flex items-center gap-3 py-1 cursor-pointer hover:bg-theme-primary/50 rounded px-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.categoryIds.includes(c.id)}
+                                        onChange={(e) => {
+                                            const newIds = e.target.checked
+                                                ? [...form.categoryIds, c.id]
+                                                : form.categoryIds.filter(id => id !== c.id);
+                                            const newPrimary = !e.target.checked && form.primaryCategoryId === c.id
+                                                ? newIds[0] || ''
+                                                : form.primaryCategoryId || (e.target.checked && newIds.length === 1 ? c.id : form.primaryCategoryId);
+                                            setForm({ ...form, categoryIds: newIds, primaryCategoryId: newPrimary });
+                                        }}
+                                        className="accent-theme-accent"
+                                    />
+                                    <span className="text-theme-text text-sm flex-1">{c.name}</span>
+                                    {form.categoryIds.includes(c.id) && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setForm({ ...form, primaryCategoryId: c.id });
+                                            }}
+                                            className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                                                form.primaryCategoryId === c.id
+                                                    ? 'bg-theme-accent text-white'
+                                                    : 'bg-theme-primary text-theme-text-muted hover:bg-theme-accent/20'
+                                            }`}
+                                        >
+                                            {form.primaryCategoryId === c.id ? 'Primary' : 'Set primary'}
+                                        </button>
+                                    )}
+                                </label>
+                            ))}
                         </div>
+                        {form.categoryIds.length === 0 && (
+                            <p className="text-red-400 text-xs mt-1">Select at least one category</p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
