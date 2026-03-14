@@ -7,6 +7,8 @@ import ProductCarousel from '@/components/ProductCarousel';
 import ProductCard, { type ProductCardData } from '@/components/ProductCard';
 import CategoryCircles, { type CategoryData } from '@/components/CategoryCircles';
 
+type ProductWithSlugs = ProductCardData & { categorySlugs?: string[] };
+
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-az' | 'newest';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
@@ -23,7 +25,7 @@ export default function OnlineDeliveryProducts() {
     const [freshPickups, setFreshPickups] = useState<ProductCardData[]>([]);
     const [categories, setCategories] = useState<CategoryData[]>([]);
     const [categoryProducts, setCategoryProducts] = useState<Record<string, ProductCardData[]>>({});
-    const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
+    const [allProducts, setAllProducts] = useState<ProductWithSlugs[]>([]);
     const [loading, setLoading] = useState(true);
     const [allProductsPage, setAllProductsPage] = useState(1);
     const [hasMoreProducts, setHasMoreProducts] = useState(false);
@@ -72,8 +74,8 @@ export default function OnlineDeliveryProducts() {
             setCategoryProducts(prev => {
                 const updated = { ...prev };
                 for (const product of newProducts) {
-                    const slug = product.category?.slug;
-                    if (slug) {
+                    const slugs = (product as ProductWithSlugs).categorySlugs || [product.category?.slug].filter(Boolean);
+                    for (const slug of slugs) {
                         if (!updated[slug]) updated[slug] = [];
                         updated[slug].push(product);
                     }
@@ -105,7 +107,7 @@ export default function OnlineDeliveryProducts() {
                     fetch('/api/products?featured=true&limit=10'),
                     fetch('/api/products?todaysSpecial=true&limit=10'),
                     fetch('/api/categories'),
-                    fetch('/api/products?limit=20'),
+                    fetch('/api/products?limit=300'),
                 ]);
 
                 const bestData = await bestRes.json();
@@ -121,10 +123,10 @@ export default function OnlineDeliveryProducts() {
                 setCategories(catData || []);
                 setAllProducts(products);
 
-                const grouped: Record<string, ProductCardData[]> = {};
+                const grouped: Record<string, ProductWithSlugs[]> = {};
                 for (const product of products) {
-                    const slug = product.category?.slug;
-                    if (slug) {
+                    const slugs = (product as ProductWithSlugs).categorySlugs || [product.category?.slug].filter(Boolean);
+                    for (const slug of slugs) {
                         if (!grouped[slug]) grouped[slug] = [];
                         grouped[slug].push(product);
                     }
@@ -143,7 +145,9 @@ export default function OnlineDeliveryProducts() {
     const filteredAndSorted = useMemo(() => {
         let filtered = activeCategory === 'all'
             ? allProducts
-            : allProducts.filter(p => p.category?.slug === activeCategory);
+            : allProducts.filter(p =>
+                (p as ProductWithSlugs).categorySlugs?.includes(activeCategory) || p.category?.slug === activeCategory
+            );
 
         switch (sortBy) {
             case 'price-low':
@@ -249,53 +253,54 @@ export default function OnlineDeliveryProducts() {
                 className="sticky top-0 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0 transition-all"
             >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    {/* Category Pills with scroll arrows */}
-                    <div className="flex-1 flex items-center gap-1 min-w-0">
-                        {canScrollPillsLeft && (
-                            <button
-                                onClick={() => scrollPills('left')}
-                                className="hidden md:flex flex-shrink-0 w-8 h-8 rounded-full border border-theme-border items-center justify-center text-theme-text hover:bg-theme-secondary transition-colors"
-                                aria-label="Scroll categories left"
+                    {/* Category Dropdown (desktop) */}
+                    <div className="hidden md:flex flex-1 relative">
+                        <div className="relative">
+                            <select
+                                value={activeCategory}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setActiveCategory(val);
+                                    if (val === 'all') setSortBy('featured');
+                                }}
+                                className="appearance-none bg-theme-secondary text-theme-text border border-theme-border rounded-lg pl-3 pr-9 py-2.5 text-sm font-medium cursor-pointer hover:border-theme-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-theme-accent/30"
                             >
-                                <ChevronLeft size={16} />
+                                <option value="all">All Categories</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-theme-text-muted pointer-events-none" />
+                        </div>
+                    </div>
+
+                    {/* Category Pills (mobile — swipe works fine) */}
+                    <div ref={pillsRef} className="md:hidden flex-1 overflow-x-auto no-scrollbar scroll-smooth min-w-0">
+                        <div className="flex gap-2 pb-1">
+                            <button
+                                onClick={() => { setActiveCategory('all'); setSortBy('featured'); }}
+                                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                    activeCategory === 'all'
+                                        ? 'bg-theme-accent text-white shadow-sm'
+                                        : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
+                                }`}
+                            >
+                                All
                             </button>
-                        )}
-                        <div ref={pillsRef} className="flex-1 overflow-x-auto no-scrollbar scroll-smooth min-w-0">
-                            <div className="flex gap-2 pb-1">
+                            {categories.map((cat) => (
                                 <button
-                                    onClick={() => { setActiveCategory('all'); setSortBy('featured'); }}
+                                    key={cat.id}
+                                    onClick={() => setActiveCategory(cat.slug)}
                                     className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                        activeCategory === 'all'
+                                        activeCategory === cat.slug
                                             ? 'bg-theme-accent text-white shadow-sm'
                                             : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
                                     }`}
                                 >
-                                    All
+                                    {cat.name}
                                 </button>
-                                {categories.map((cat) => (
-                                    <button
-                                        key={cat.id}
-                                        onClick={() => setActiveCategory(cat.slug)}
-                                        className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                            activeCategory === cat.slug
-                                                ? 'bg-theme-accent text-white shadow-sm'
-                                                : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
-                                        }`}
-                                    >
-                                        {cat.name}
-                                    </button>
-                                ))}
-                            </div>
+                            ))}
                         </div>
-                        {canScrollPillsRight && (
-                            <button
-                                onClick={() => scrollPills('right')}
-                                className="hidden md:flex flex-shrink-0 w-8 h-8 rounded-full border border-theme-border items-center justify-center text-theme-text hover:bg-theme-secondary transition-colors"
-                                aria-label="Scroll categories right"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        )}
                     </div>
 
                     {/* Sort Dropdown */}
