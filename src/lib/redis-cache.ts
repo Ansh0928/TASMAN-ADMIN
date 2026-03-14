@@ -1,5 +1,8 @@
 import { Redis } from '@upstash/redis';
 
+// Bump this when schema changes invalidate cached data shapes
+const CACHE_VERSION = 'v2';
+
 let _redis: Redis | null = null;
 
 function getRedis(): Redis | null {
@@ -27,8 +30,10 @@ export async function getCached<T>(
   const redis = getRedis();
   if (!redis) return fn();
 
+  const versionedKey = `${CACHE_VERSION}:${key}`;
+
   try {
-    const cached = await redis.get<T>(key);
+    const cached = await redis.get<T>(versionedKey);
     if (cached !== null && cached !== undefined) return cached;
   } catch {
     // Redis unavailable — fall through to fresh fetch
@@ -37,7 +42,7 @@ export async function getCached<T>(
   const fresh = await fn();
 
   try {
-    await redis.set(key, JSON.stringify(fresh), { ex: ttl });
+    await redis.set(versionedKey, JSON.stringify(fresh), { ex: ttl });
   } catch {
     // Cache write failed — that's fine
   }
@@ -52,7 +57,7 @@ export async function deleteCached(...keys: string[]): Promise<void> {
   const redis = getRedis();
   if (!redis || keys.length === 0) return;
   try {
-    await redis.del(...keys);
+    await redis.del(...keys.map(k => `${CACHE_VERSION}:${k}`));
   } catch {
     // Ignore
   }

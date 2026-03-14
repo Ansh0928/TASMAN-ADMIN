@@ -80,7 +80,8 @@ export async function GET(request: NextRequest) {
         const response = NextResponse.json(
             {
                 products: products.map((p: any) => {
-                    const primary = p.categories.find((pc: any) => pc.isPrimary)?.category || p.categories[0]?.category;
+                    const cats = p.categories || [];
+                    const primary = cats.find((pc: any) => pc.isPrimary)?.category || cats[0]?.category;
                     return {
                         id: p.id,
                         name: p.name,
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
                         category: primary
                             ? { id: primary.id, name: primary.name, slug: primary.slug }
                             : { id: '', name: '', slug: '' },
-                        categorySlugs: p.categories.map((pc: any) => pc.category.slug),
+                        categorySlugs: cats.map((pc: any) => pc.category.slug),
                         unit: p.unit,
                         stockQuantity: p.stockQuantity,
                         isFeatured: p.isFeatured,
