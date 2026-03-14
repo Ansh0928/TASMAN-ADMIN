@@ -134,6 +134,13 @@ model Product {
   orderItems        OrderItem[]
   reviews           Review[]
 
+  @@index([isAvailable])
+  @@index([isFeatured])
+  @@index([isTodaysSpecial])
+  @@index([categoryId])
+  @@index([isAvailable, isFeatured])
+  @@index([isAvailable, isTodaysSpecial])
+  @@index([createdAt])
   @@map("products")
 }
 
@@ -186,6 +193,8 @@ model OrderItem {
   unitPrice Decimal @db.Decimal(10, 2) @map("unit_price")
   total     Decimal @db.Decimal(10, 2)
 
+  @@index([productId])
+  @@index([orderId])
   @@map("order_items")
 }
 
@@ -233,6 +242,8 @@ model WholesalePriceItem {
   updatedAt       DateTime             @updatedAt @map("updated_at")
   orderItems      WholesaleOrderItem[]
 
+  @@index([categoryId])
+  @@index([isAvailable])
   @@map("wholesale_price_items")
 }
 

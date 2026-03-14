@@ -12,6 +12,11 @@ vi.mock('@/lib/admin-auth', () => ({
     requireAdmin: mockRequireAdmin,
 }));
 
+vi.mock('next/cache', () => ({
+    revalidateTag: vi.fn(),
+    unstable_cache: vi.fn((fn: (...args: unknown[]) => unknown) => fn),
+}));
+
 import { GET, POST } from '@/app/api/admin/products/route';
 import {
     GET as GET_BY_ID,

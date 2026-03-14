@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/admin-auth';
 import { captureError } from '@/lib/error';
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { error } = await requireAdmin();
@@ -75,6 +76,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             include: { category: true },
         });
 
+        revalidateTag('products', 'max');
         return NextResponse.json({ product });
     } catch (err) {
         captureError(err, 'Update product error');
@@ -90,6 +92,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     try {
         await prisma.product.delete({ where: { id } });
+        revalidateTag('products', 'max');
         return NextResponse.json({ message: 'Product deleted' });
     } catch (err) {
         captureError(err, 'Delete product error');

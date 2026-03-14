@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { captureError } from '@/lib/error';
+import { getCached } from '@/lib/redis-cache';
 
 export async function GET(request: NextRequest) {
     try {
@@ -38,36 +39,42 @@ export async function GET(request: NextRequest) {
             where.isTodaysSpecial = true;
         }
 
-        // Fetch products with only needed fields
-        const [products, total] = await Promise.all([
-            prisma.product.findMany({
-                where,
-                select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    description: true,
-                    price: true,
-                    imageUrls: true,
-                    unit: true,
-                    stockQuantity: true,
-                    isFeatured: true,
-                    isTodaysSpecial: true,
-                    tags: true,
-                    category: {
-                        select: {
-                            id: true,
-                            name: true,
-                            slug: true,
+        // Build cache key from all query params
+        const cacheKey = `products:${JSON.stringify({ search, categorySlug, featured, todaysSpecial, limit, page })}`;
+
+        // Fetch products with only needed fields (Redis-cached for 60s)
+        const { products, total } = await getCached(cacheKey, 60, async () => {
+            const [rows, count] = await Promise.all([
+                prisma.product.findMany({
+                    where,
+                    select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                        description: true,
+                        price: true,
+                        imageUrls: true,
+                        unit: true,
+                        stockQuantity: true,
+                        isFeatured: true,
+                        isTodaysSpecial: true,
+                        tags: true,
+                        category: {
+                            select: {
+                                id: true,
+                                name: true,
+                                slug: true,
+                            },
                         },
                     },
-                },
-                orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
-            }),
-            prisma.product.count({ where }),
-        ]);
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit,
+                }),
+                prisma.product.count({ where }),
+            ]);
+            return { products: rows, total: count };
+        });
 
         const response = NextResponse.json(
             {

@@ -1,12 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { captureError } from '@/lib/error';
+import { getCached } from '@/lib/redis-cache';
 
 export async function GET() {
     try {
-        const categories = await prisma.category.findMany({
-            orderBy: { sortOrder: 'asc' },
-        });
+        const categories = await getCached('categories', 3600, () =>
+            prisma.category.findMany({
+                orderBy: { sortOrder: 'asc' },
+            })
+        );
 
         return NextResponse.json(
             categories.map((c) => ({

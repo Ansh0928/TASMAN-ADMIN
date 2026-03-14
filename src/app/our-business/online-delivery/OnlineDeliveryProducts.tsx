@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCarousel from '@/components/ProductCarousel';
 import ProductCard, { type ProductCardData } from '@/components/ProductCard';
 import CategoryCircles, { type CategoryData } from '@/components/CategoryCircles';
@@ -25,8 +25,67 @@ export default function OnlineDeliveryProducts() {
     const [categoryProducts, setCategoryProducts] = useState<Record<string, ProductCardData[]>>({});
     const [allProducts, setAllProducts] = useState<ProductCardData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [allProductsPage, setAllProductsPage] = useState(1);
+    const [hasMoreProducts, setHasMoreProducts] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
     const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const filterBarRef = useRef<HTMLDivElement>(null);
+    const pillsRef = useRef<HTMLDivElement>(null);
+    const [canScrollPillsLeft, setCanScrollPillsLeft] = useState(false);
+    const [canScrollPillsRight, setCanScrollPillsRight] = useState(false);
+
+    const checkPillsScroll = useCallback(() => {
+        const el = pillsRef.current;
+        if (!el) return;
+        setCanScrollPillsLeft(el.scrollLeft > 0);
+        setCanScrollPillsRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+    }, []);
+
+    useEffect(() => {
+        checkPillsScroll();
+        const el = pillsRef.current;
+        if (!el) return;
+        el.addEventListener('scroll', checkPillsScroll, { passive: true });
+        window.addEventListener('resize', checkPillsScroll);
+        return () => {
+            el.removeEventListener('scroll', checkPillsScroll);
+            window.removeEventListener('resize', checkPillsScroll);
+        };
+    }, [categories, checkPillsScroll]);
+
+    const scrollPills = (direction: 'left' | 'right') => {
+        const el = pillsRef.current;
+        if (!el) return;
+        el.scrollBy({ left: direction === 'left' ? -200 : 200, behavior: 'smooth' });
+    };
+
+    const loadMoreProducts = async () => {
+        setLoadingMore(true);
+        try {
+            const nextPage = allProductsPage + 1;
+            const res = await fetch(`/api/products?limit=20&page=${nextPage}`);
+            const data = await res.json();
+            const newProducts = (data.products || []) as ProductCardData[];
+            setAllProducts(prev => [...prev, ...newProducts]);
+            setAllProductsPage(nextPage);
+            setHasMoreProducts(nextPage < (data.pagination?.pages || 1));
+            setCategoryProducts(prev => {
+                const updated = { ...prev };
+                for (const product of newProducts) {
+                    const slug = product.category?.slug;
+                    if (slug) {
+                        if (!updated[slug]) updated[slug] = [];
+                        updated[slug].push(product);
+                    }
+                }
+                return updated;
+            });
+        } catch {
+            // Sentry captures this
+        } finally {
+            setLoadingMore(false);
+        }
+    };
 
     const [activeCategory, setActiveCategory] = useState<string>('all');
     const [sortBy, setSortBy] = useState<SortOption>('featured');
@@ -46,7 +105,7 @@ export default function OnlineDeliveryProducts() {
                     fetch('/api/products?featured=true&limit=10'),
                     fetch('/api/products?todaysSpecial=true&limit=10'),
                     fetch('/api/categories'),
-                    fetch('/api/products?limit=100'),
+                    fetch('/api/products?limit=20'),
                 ]);
 
                 const bestData = await bestRes.json();
@@ -55,6 +114,7 @@ export default function OnlineDeliveryProducts() {
                 const allData = await allRes.json();
 
                 const products = (allData.products || []) as ProductCardData[];
+                setHasMoreProducts((allData.pagination?.pages || 1) > 1);
 
                 setBestBuys(bestData.products || []);
                 setFreshPickups(freshData.products || []);
@@ -189,33 +249,53 @@ export default function OnlineDeliveryProducts() {
                 className="sticky top-0 z-20 bg-theme-primary/95 backdrop-blur-sm border-b border-theme-border py-4 px-4 md:px-0 -mx-4 md:mx-0 transition-all"
             >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    {/* Category Pills */}
-                    <div className="flex-1 overflow-x-auto no-scrollbar">
-                        <div className="flex gap-2 pb-1">
+                    {/* Category Pills with scroll arrows */}
+                    <div className="flex-1 flex items-center gap-1 min-w-0">
+                        {canScrollPillsLeft && (
                             <button
-                                onClick={() => { setActiveCategory('all'); setSortBy('featured'); }}
-                                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                    activeCategory === 'all'
-                                        ? 'bg-theme-accent text-white shadow-sm'
-                                        : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
-                                }`}
+                                onClick={() => scrollPills('left')}
+                                className="hidden md:flex flex-shrink-0 w-8 h-8 rounded-full border border-theme-border items-center justify-center text-theme-text hover:bg-theme-secondary transition-colors"
+                                aria-label="Scroll categories left"
                             >
-                                All
+                                <ChevronLeft size={16} />
                             </button>
-                            {categories.map((cat) => (
+                        )}
+                        <div ref={pillsRef} className="flex-1 overflow-x-auto no-scrollbar scroll-smooth min-w-0">
+                            <div className="flex gap-2 pb-1">
                                 <button
-                                    key={cat.id}
-                                    onClick={() => setActiveCategory(cat.slug)}
+                                    onClick={() => { setActiveCategory('all'); setSortBy('featured'); }}
                                     className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                                        activeCategory === cat.slug
+                                        activeCategory === 'all'
                                             ? 'bg-theme-accent text-white shadow-sm'
                                             : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
                                     }`}
                                 >
-                                    {cat.name}
+                                    All
                                 </button>
-                            ))}
+                                {categories.map((cat) => (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setActiveCategory(cat.slug)}
+                                        className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                                            activeCategory === cat.slug
+                                                ? 'bg-theme-accent text-white shadow-sm'
+                                                : 'bg-theme-secondary text-theme-text border border-theme-border hover:border-theme-accent/50'
+                                        }`}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
+                        {canScrollPillsRight && (
+                            <button
+                                onClick={() => scrollPills('right')}
+                                className="hidden md:flex flex-shrink-0 w-8 h-8 rounded-full border border-theme-border items-center justify-center text-theme-text hover:bg-theme-secondary transition-colors"
+                                aria-label="Scroll categories right"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        )}
                     </div>
 
                     {/* Sort Dropdown */}
@@ -248,11 +328,24 @@ export default function OnlineDeliveryProducts() {
             {isFiltered ? (
                 <div className="px-4 md:px-0 pt-6">
                     {filteredAndSorted.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                            {filteredAndSorted.map((product) => (
-                                <ProductCard key={product.id} product={product} gridMode />
-                            ))}
-                        </div>
+                        <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                                {filteredAndSorted.map((product) => (
+                                    <ProductCard key={product.id} product={product} gridMode />
+                                ))}
+                            </div>
+                            {hasMoreProducts && (
+                                <div className="flex justify-center mt-8">
+                                    <button
+                                        onClick={loadMoreProducts}
+                                        disabled={loadingMore}
+                                        className="px-6 py-3 bg-theme-accent text-white font-semibold rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
+                                    >
+                                        {loadingMore ? 'Loading...' : 'Load More'}
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="text-center py-16">
                             <p className="text-theme-text-muted text-lg">No products found</p>
